@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
-from PIL import ImageTk, Image, ImageDraw
+from PIL import ImageTk, Image
 from video_processing import VideoProcessor
 from utils import resize_frame
 import cv2
@@ -75,7 +75,7 @@ class MenuScreen:
         base_width = 700  # Set width smaller than the window width for padding considerations
         w_percent = (base_width / float(image.size[0]))
         h_size = int((float(image.size[1]) * float(w_percent)))
-        image = image.resize((base_width, h_size), Image.ANTIALIAS)
+        image = image.resize((base_width, h_size), Image.Resampling.LANCZOS)
 
         photo = ImageTk.PhotoImage(image)
 

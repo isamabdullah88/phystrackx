@@ -38,7 +38,7 @@ class MenuScreen:
         base_width = 700  # Set width smaller than the window width for padding considerations
         w_percent = (base_width / float(image.size[0]))
         h_size = int((float(image.size[1]) * float(w_percent)))
-        image = image.resize((base_width, h_size), Image.ANTIALIAS)
+        image = image.resize((base_width, h_size), Image.Resampling.LANCZOS)
 
         photo = ImageTk.PhotoImage(image)
 
@@ -201,7 +201,7 @@ class VideoApp2:
         # Compute scaling factor to maintain aspect ratio within 640x640 limit
         max_size = 640
         scale = min(max_size / original_img.width, max_size / original_img.height)
-        display_img = original_img.resize((int(original_img.width * scale), int(original_img.height * scale)), Image.ANTIALIAS)
+        display_img = original_img.resize((int(original_img.width * scale), int(original_img.height * scale)), Image.Resampling.LANCZOS)
 
         photo = ImageTk.PhotoImage(image=display_img)
         canvas = tk.Canvas(top, width=display_img.width, height=display_img.height)
