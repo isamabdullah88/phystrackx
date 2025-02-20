@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
-from scipy.signal import butter, filtfilt
-from utils import resize_frame
+# from scipy.signal import butter, filtfilt
+# from utils import resize_frame
 
 class VideoProcessor:
     def __init__(self):
