@@ -25,6 +25,8 @@ class VideoApp:
         self.create_widgets()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
+        self._ref_frame = []
+
         self.sliding_friction = SlidingFriction()
 
     def exit_fullscreen(self):
@@ -68,16 +70,16 @@ class VideoApp:
             self.undo_button = ctk.CTkButton(self.filter_frame, text="Reset", command=self.undo_filter)
             self.undo_button.pack(pady=10)
             
-            self.frame_button = ctk.CTkButton(self.filter_frame, text="Select Initial and Final Frames", command=self.select_frames)
-            self.frame_button.pack(pady=10)
+            # self.frame_button = ctk.CTkButton(self.filter_frame, text="Select Initial and Final Frames", command=self.select_frames)
+            # self.frame_button.pack(pady=10)
             
-            self.distance_button = ctk.CTkButton(self.filter_frame, text="Set Reference Distance", command=self.set_reference_distance)
-            self.distance_button.pack(pady=10)
+            # self.distance_button = ctk.CTkButton(self.filter_frame, text="Set Reference Distance", command=self.set_reference_distance)
+            # self.distance_button.pack(pady=10)
             
             # self.clip_button = ctk.CTkButton(self.filter_frame, text="Clip Video", command=self.clip_video)
             # self.clip_button.pack(pady=10)
             
-            self.axis_button = ctk.CTkButton(self.filter_frame, text="Mark Axes", command=self.check_reference_distance)
+            self.axis_button = ctk.CTkButton(self.filter_frame, text="Mark Axes", command=self.mark_axes)
             self.axis_button.pack(pady=10)
             
             self.track_button = ctk.CTkButton(self.filter_frame, text="Mark Points to Track", command=self.choose_tracking_method)
@@ -268,16 +270,16 @@ class VideoApp:
         self.video_view.create_image(x, y, image=photo, anchor='nw')
         self.photo = photo
 
-    def select_frames(self):
-        self.processor.initial_frame = int(simpledialog.askinteger("Initial Frame", "Enter the initial frame number:"))
-        self.processor.final_frame = int(simpledialog.askinteger("Final Frame", "Enter the final frame number:"))
-        self.info_label.configure(text=f"Initial Frame: {self.processor.initial_frame}, Final Frame: {self.processor.final_frame}")
-        self.clip_video()
+    # def select_frames(self):
+    #     self.processor.initial_frame = int(simpledialog.askinteger("Initial Frame", "Enter the initial frame number:"))
+    #     self.processor.final_frame = int(simpledialog.askinteger("Final Frame", "Enter the final frame number:"))
+    #     self.info_label.configure(text=f"Initial Frame: {self.processor.initial_frame}, Final Frame: {self.processor.final_frame}")
+    #     self.clip_video()
 
-    def set_reference_distance(self):
-        self.processor.line_coords = []
-        messagebox.showinfo("Instruction", "Please click two points on the video to set the reference distance.")
-        self.video_view.bind("<Button-1>", self.mark_line)
+    # def set_reference_distance(self):
+    #     self.processor.line_coords = []
+    #     messagebox.showinfo("Instruction", "Please click two points on the video to set the reference distance.")
+    #     self.video_view.bind("<Button-1>", self.mark_line)
     
     def mark_line(self, event):
         if len(self.processor.line_coords) < 2:
@@ -325,51 +327,74 @@ class VideoApp:
         else:
             self.mark_axes()
 
+
     def mark_axes(self):
-        self.processor.axis_coords = []
-        messagebox.showinfo("Instruction", "Please click to set the origin of the axes.")
-        self.video_view.bind("<Button-1>", self.set_origin)
 
-    def set_origin(self, event):
-        self.processor.axis_coords = [(event.x, event.y)]  # Origin point
-        self.video_view.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="blue", width=2)
-        self.video_view.unbind("<Button-1>")
-        messagebox.showinfo("Instruction", "Click Again To Finalize The Axes")
-        self.video_view.bind("<Motion>", self.update_axes_image)
-        self.video_view.bind("<Button-1>", self.drop_axes)
+        def update_axes(event):
+            """ Update the axes to follow the mouse cursor. """
+            self.video_view.delete("axes")  # Remove old axes
+            x, y = event.x, event.y  # Get mouse position
+            
+            # Draw new axes centered on mouse position
+            self.video_view.create_line(0, y, self.canvas_width, y, fill="red", width=2, tags="axes")  # X-axis
+            self.video_view.create_line(x, 0, x, self.canvas_height, fill="blue", width=2, tags="axes")  # Y-axis
 
-    def update_axes_image(self, event):
-        if len(self.processor.axis_coords) == 1:
-            origin = self.processor.axis_coords[0]
-            if self.processor.axis_image_id:
-                self.video_view.delete(self.processor.axis_image_id)
-            
-            img = Image.new('RGBA', (640, 480), (0, 0, 0, 0))
-            draw = ImageDraw.Draw(img)
-            
-            # Draw axes extending to the borders of the image/frame
-            # X-axis
-            draw.line([(0, origin[1]), (640, origin[1])], fill="blue", width=2)
-            # Y-axis
-            draw.line([(origin[0], 0), (origin[0], 480)], fill="green", width=2)
-            
-            self.processor.axis_image = ImageTk.PhotoImage(img)
-            self.processor.axis_image_id = self.video_view.create_image(0, 0, image=self.processor.axis_image, anchor='nw')
+        def store_click(event):
+            """ Store the clicked coordinates and draw a point. """
+            x, y = event.x, event.y
+            self._ref_frame = [x, y]  # Store coordinates
+            self.video_view.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-    def drop_axes(self, event):
-        if len(self.processor.axis_coords) == 1:
-            origin = self.processor.axis_coords[0]
-            self.processor.axis_coords.append((640, origin[1]))  # Positive X-axis end point
-            self.processor.axis_coords.append((0, origin[1]))    # Negative X-axis end point
-            self.processor.axis_coords.append((origin[0], 480))  # Positive Y-axis end point
-            self.processor.axis_coords.append((origin[0], 0))    # Negative Y-axis end point
-
-            # Draw axes to the borders of the image/frame
-            self.video_view.create_line(0, origin[1], 640, origin[1], fill="blue", width=2)  # X-axis
-            self.video_view.create_line(origin[0], 0, origin[0], 480, fill="green", width=2)  # Y-axis
-            
+            print(self._ref_frame)
             self.video_view.unbind("<Motion>")
-            self.video_view.unbind("<Button-1>")
+            self.video_view.unbind("<Button>")
+            # print("Stored Click:", x, y)  # Print for debugging
+        # self.processor.axis_coords = []
+        # messagebox.showinfo("Instruction", "Please click to set the origin of the axes.")
+        # self.video_view.bind("<Button-1>", self.set_origin)
+        self.video_view.bind("<Motion>", update_axes)
+        self.video_view.bind("<Button>", store_click)
+
+    # def set_origin(self, event):
+    #     self.processor.axis_coords = [(event.x, event.y)]  # Origin point
+    #     self.video_view.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="blue", width=2)
+    #     self.video_view.unbind("<Button-1>")
+    #     messagebox.showinfo("Instruction", "Click Again To Finalize The Axes")
+    #     self.video_view.bind("<Motion>", self.update_axes_image)
+    #     self.video_view.bind("<Button-1>", self.drop_axes)
+
+    # def update_axes_image(self, event):
+    #     if len(self.processor.axis_coords) == 1:
+    #         origin = self.processor.axis_coords[0]
+    #         if self.processor.axis_image_id:
+    #             self.video_view.delete(self.processor.axis_image_id)
+            
+    #         img = Image.new('RGBA', (640, 480), (0, 0, 0, 0))
+    #         draw = ImageDraw.Draw(img)
+            
+    #         # Draw axes extending to the borders of the image/frame
+    #         # X-axis
+    #         draw.line([(0, origin[1]), (640, origin[1])], fill="blue", width=2)
+    #         # Y-axis
+    #         draw.line([(origin[0], 0), (origin[0], 480)], fill="green", width=2)
+            
+    #         self.processor.axis_image = ImageTk.PhotoImage(img)
+    #         self.processor.axis_image_id = self.video_view.create_image(0, 0, image=self.processor.axis_image, anchor='nw')
+
+    # def drop_axes(self, event):
+    #     if len(self.processor.axis_coords) == 1:
+    #         origin = self.processor.axis_coords[0]
+    #         self.processor.axis_coords.append((640, origin[1]))  # Positive X-axis end point
+    #         self.processor.axis_coords.append((0, origin[1]))    # Negative X-axis end point
+    #         self.processor.axis_coords.append((origin[0], 480))  # Positive Y-axis end point
+    #         self.processor.axis_coords.append((origin[0], 0))    # Negative Y-axis end point
+
+    #         # Draw axes to the borders of the image/frame
+    #         self.video_view.create_line(0, origin[1], 640, origin[1], fill="blue", width=2)  # X-axis
+    #         self.video_view.create_line(origin[0], 0, origin[0], 480, fill="green", width=2)  # Y-axis
+            
+    #         self.video_view.unbind("<Motion>")
+    #         self.video_view.unbind("<Button-1>")
 
     def translate_to_real_coordinates(self, points):
         origin = self.processor.axis_coords[0]
@@ -657,11 +682,41 @@ class VideoApp:
         ctk.CTkButton(popup, text="Show Tracked Points Table", command=self.show_tracked_points_table).pack(pady=5)
 
     def plot_distances(self):
-        if not hasattr(self.processor, 'points_tracked'):
+        # if not hasattr(self.processor, 'points_tracked'):
+        if len(self.sliding_friction.tracked_pts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
         
-        self.processor.plot_distances()
+        # self.processor.plot_distances()
+        ox, oy = self._ref_frame
+        x_axis_end = self.axis_coords[1]
+        y_axis_end = self.axis_coords[2]
+        
+        # ref_pixel_dist = np.linalg.norm(np.array(self.line_coords[0]) - np.array(self.line_coords[1]))
+        # scale_factor = self.ref_distance / ref_pixel_dist
+        
+        for points in self.sliding_friction.tracked_pts:
+            # x_coords = [(p[0] - origin[0]) * scale_factor for p in points]
+            # y_coords = [(origin[1] - p[1]) * scale_factor for p in points]
+            x = points[0] - ox
+            y = points[1] - oy
+            
+            plt.figure()
+            plt.subplot(2, 1, 1)
+            plt.plot(x, label=f'Point {i} X')
+            plt.xlabel('Frame')
+            plt.ylabel('X Distance')
+            plt.legend()
+            
+            plt.subplot(2, 1, 2)
+            plt.plot(y_coords, label=f'Point {i} Y')
+            plt.xlabel('Frame')
+            plt.ylabel('Y Distance')
+            plt.legend()
+            
+            plt.tight_layout()
+            plt.show()
+            
 
     def calculate_and_export_derivative(self, order):
         if not hasattr(self.processor, 'points_tracked'):
@@ -858,82 +913,83 @@ class VideoApp:
         This method processes the entire video sequence and tracks the motion of selected points.
         """
         # Input validation: ensure video has been clipped
-        if not self.processor.frames:
-            messagebox.showerror("Error", "Please clip the video first.")
-            return
+        # if not self.processor.frames:
+        #     messagebox.showerror("Error", "Please clip the video first.")
+        #     return
         
         # Input validation: ensure points have been marked for tracking
         if not self.processor.points_to_track:
             messagebox.showerror("Error", "Please mark points to track first.")
             return
 
+        self.sliding_friction.track(self.processor.points_to_track)
         # Convert point coordinates to numpy array format required by OpenCV
         # Shape: Nx1x2 array where N is number of points, 1 is for single coordinate, 2 for x,y
-        p0 = np.array(self.processor.points_to_track, dtype=np.float32).reshape(-1, 1, 2)
+        # p0 = np.array(self.processor.points_to_track, dtype=np.float32).reshape(-1, 1, 2)
 
-        # Define Lucas-Kanade optical flow parameters
-        lk_params = dict(
-            winSize=(15, 15),      # Size of search window for each pyramid level
-            maxLevel=2,            # Number of pyramid levels (0 means single level)
-            criteria=(             # Termination criteria for iterative algorithm
-                cv2.TERM_CRITERIA_EPS |      # Stop if accuracy is reached
-                cv2.TERM_CRITERIA_COUNT,     # Stop if max iterations reached
-                10,                          # Maximum iterations
-                0.03                         # Minimum accuracy/epsilon
-            )
-        )
+        # # Define Lucas-Kanade optical flow parameters
+        # lk_params = dict(
+        #     winSize=(15, 15),      # Size of search window for each pyramid level
+        #     maxLevel=2,            # Number of pyramid levels (0 means single level)
+        #     criteria=(             # Termination criteria for iterative algorithm
+        #         cv2.TERM_CRITERIA_EPS |      # Stop if accuracy is reached
+        #         cv2.TERM_CRITERIA_COUNT,     # Stop if max iterations reached
+        #         10,                          # Maximum iterations
+        #         0.03                         # Minimum accuracy/epsilon
+        #     )
+        # )
 
-        # Convert first frame to grayscale if necessary
-        # OpenCV optical flow requires grayscale images
-        if self.processor.frames[0].ndim == 3 and self.processor.frames[0].shape[2] == 3:
-            old_gray = cv2.cvtColor(self.processor.frames[0], cv2.COLOR_BGR2GRAY)
-        else:
-            old_gray = self.processor.frames[0]  # Frame is already grayscale
+        # # Convert first frame to grayscale if necessary
+        # # OpenCV optical flow requires grayscale images
+        # if self.processor.frames[0].ndim == 3 and self.processor.frames[0].shape[2] == 3:
+        #     old_gray = cv2.cvtColor(self.processor.frames[0], cv2.COLOR_BGR2GRAY)
+        # else:
+        #     old_gray = self.processor.frames[0]  # Frame is already grayscale
 
-        # Initialize dictionary to store tracking history
-        # Keys: point indices, Values: lists of (x,y) coordinates
-        points_tracked = {i: [p] for i, p in enumerate(self.processor.points_to_track)}
+        # # Initialize dictionary to store tracking history
+        # # Keys: point indices, Values: lists of (x,y) coordinates
+        # points_tracked = {i: [p] for i, p in enumerate(self.processor.points_to_track)}
 
-        # Process all frames after the first one
-        for frame in self.processor.frames[1:]:
-            # Convert current frame to grayscale if necessary
-            if frame.ndim == 3 and frame.shape[2] == 3:
-                frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            else:
-                frame_gray = frame
+        # # Process all frames after the first one
+        # for frame in self.processor.frames[1:]:
+        #     # Convert current frame to grayscale if necessary
+        #     if frame.ndim == 3 and frame.shape[2] == 3:
+        #         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #     else:
+        #         frame_gray = frame
 
-            # Calculate optical flow using Lucas-Kanade method
-            # p1: calculated new positions of input points
-            # st: status array (1 = point found, 0 = point lost)
-            # err: array of error measures for each point
-            p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
+        #     # Calculate optical flow using Lucas-Kanade method
+        #     # p1: calculated new positions of input points
+        #     # st: status array (1 = point found, 0 = point lost)
+        #     # err: array of error measures for each point
+        #     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
 
-            # Select good points by checking status array
-            good_new = p1[st == 1]  # New positions of successfully tracked points
-            good_old = p0[st == 1]  # Previous positions of successfully tracked points
+        #     # Select good points by checking status array
+        #     good_new = p1[st == 1]  # New positions of successfully tracked points
+        #     good_old = p0[st == 1]  # Previous positions of successfully tracked points
 
-            # Update tracking history for successfully tracked points
-            for i, (new, old) in enumerate(zip(good_new, good_old)):
-                a, b = new.ravel()  # Extract x,y coordinates from array
-                points_tracked[i].append((a, b))  # Add new position to tracking history
+        #     # Update tracking history for successfully tracked points
+        #     for i, (new, old) in enumerate(zip(good_new, good_old)):
+        #         a, b = new.ravel()  # Extract x,y coordinates from array
+        #         points_tracked[i].append((a, b))  # Add new position to tracking history
 
-            # Update for next iteration
-            old_gray = frame_gray.copy()
-            p0 = good_new.reshape(-1, 1, 2)  # Update previous points
+        #     # Update for next iteration
+        #     old_gray = frame_gray.copy()
+        #     p0 = good_new.reshape(-1, 1, 2)  # Update previous points
 
-        # Visualize tracked points on all frames
-        for i, frame in enumerate(self.processor.frames):
-            for j, point in points_tracked.items():
-                if i < len(point):  # Check if point was tracked in this frame
-                    x, y = point[i]
-                    # Draw green circle at tracked point position
-                    cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
+        # # Visualize tracked points on all frames
+        # for i, frame in enumerate(self.processor.frames):
+        #     for j, point in points_tracked.items():
+        #         if i < len(point):  # Check if point was tracked in this frame
+        #             x, y = point[i]
+        #             # Draw green circle at tracked point position
+        #             cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
 
-        # Store tracked points for later analysis
-        self.processor.points_tracked = points_tracked
+        # # Store tracked points for later analysis
+        # self.processor.points_tracked = points_tracked
 
         # Update display and UI
-        self.display_clipped_frames()
+        # self.display_clipped_frames()
         self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
 
