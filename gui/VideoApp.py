@@ -244,9 +244,9 @@ class VideoApp:
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        x = floor(self.canvas_width/2 - self.sliding_friction.frame_width/2)
-        y = floor(self.canvas_height/2 - self.sliding_friction.frame_height/2)
-        self.video_view.create_image(x, y, image=photo, anchor='nw')
+        self.frame_ox = floor(self.canvas_width/2 - self.sliding_friction.frame_width/2)
+        self.frame_oy = floor(self.canvas_height/2 - self.sliding_friction.frame_height/2)
+        self.video_view.create_image(self.frame_ox, self.frame_oy, image=photo, anchor='nw')
         self.photo = photo
         # self.slider['to'] = len(self.processor.frames) - 1
         print('frame count: ', self.sliding_friction.frame_count)
@@ -342,7 +342,7 @@ class VideoApp:
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
-            self._ref_frame = [x, y]  # Store coordinates
+            self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
             self.video_view.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
             print(self._ref_frame)
@@ -664,8 +664,8 @@ class VideoApp:
         self.video_view.unbind("<ButtonRelease-1>")
         bbox_coords = (self.start_x, self.start_y, event.x, event.y)
         self.bboxes_to_track.append(bbox_coords)
-        centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2
-        centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2
+        centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - self.frame_ox
+        centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - self.frame_oy
         self.processor.points_to_track.append((centroid_x, centroid_y))
         self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
@@ -689,33 +689,42 @@ class VideoApp:
         
         # self.processor.plot_distances()
         ox, oy = self._ref_frame
-        x_axis_end = self.axis_coords[1]
-        y_axis_end = self.axis_coords[2]
+        # x_axis_end = self.axis_coords[1]
+        # y_axis_end = self.axis_coords[2]
         
         # ref_pixel_dist = np.linalg.norm(np.array(self.line_coords[0]) - np.array(self.line_coords[1]))
         # scale_factor = self.ref_distance / ref_pixel_dist
         
-        for points in self.sliding_friction.tracked_pts:
+        xcoords = self.sliding_friction.tracked_pts[0, :] - ox
+        ycoords = self.sliding_friction.tracked_pts[1, :] - oy
+        # for points in self.sliding_friction.tracked_pts:
             # x_coords = [(p[0] - origin[0]) * scale_factor for p in points]
             # y_coords = [(origin[1] - p[1]) * scale_factor for p in points]
-            x = points[0] - ox
-            y = points[1] - oy
+            # x = points[0] - ox
+            # y = points[1] - oy
             
-            plt.figure()
-            plt.subplot(2, 1, 1)
-            plt.plot(x, label=f'Point {i} X')
-            plt.xlabel('Frame')
-            plt.ylabel('X Distance')
-            plt.legend()
+            # plt.figure()
+            # plt.subplot(2, 1, 1)
+            # plt.plot(x, label=f'Point {i} X')
+            # plt.plot(x)
+            # plt.xlabel('Frame')
+            # plt.ylabel('X Distance')
+            # plt.legend()
             
-            plt.subplot(2, 1, 2)
-            plt.plot(y_coords, label=f'Point {i} Y')
-            plt.xlabel('Frame')
-            plt.ylabel('Y Distance')
-            plt.legend()
-            
-            plt.tight_layout()
-            plt.show()
+            # plt.subplot(2, 1, 2)
+            # plt.plot(y_coords, label=f'Point {i} Y')
+            # plt.plot(y)
+            # plt.xlabel('Frame')
+            # plt.ylabel('Y Distance')
+            # plt.legend()
+
+        p, axes = plt.subplots(2, 1, figsize=(6, 5))
+        axes[0].plot(xcoords)
+        axes[0].set_title("X coordinates")
+        axes[1].plot(ycoords)
+        axes[1].set_title("X coordinates")
+        plt.tight_layout()
+        plt.show()
             
 
     def calculate_and_export_derivative(self, order):

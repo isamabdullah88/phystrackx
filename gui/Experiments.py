@@ -3,6 +3,7 @@ import customtkinter
 from PIL import Image, ImageTk
 
 from .VideoApp import VideoApp
+from .CollisionApp import CollisionApp
 # customtkinter.set_appearance_mode("dark")
 # customtkinter.set_default_color_theme("dark-blue")
 
@@ -29,16 +30,26 @@ class Experiments:
 
         sf_img2 = Image.open("assets/add-folder.png").resize((20, 20), Image.Resampling.LANCZOS)
         sf_img2 = ImageTk.PhotoImage(sf_img2)
-        butn_sf2 = customtkinter.CTkButton(master=self.root, image=sf_img2, text="Rotating Friction",
-                                          width=190, height=40, compound="left", fg_color="#D35B58")
-                                        #   , hover_color="#C77C78")
+        butn_sf2 = customtkinter.CTkButton(master=self.root, image=sf_img2, text="Collision",
+                                          width=190, height=40, compound="left", fg_color="#D35B58",
+                                          command=self.collision)
+        
         butn_sf2.pack(pady=10, padx=20)
         butn_sf.pack(pady=20, padx=20)
 
         self.root.mainloop()
 
+    def clear_screen(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+    def collision(self):
+        self.clear_screen()
+        
+        app = CollisionApp(self.root)
 
     def sliding_friction(self):
+        self.clear_screen()
 
         app = VideoApp(self.root)
         # Title label
