@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from itertools import groupby
 from media import VideoReader
 
-class SlidingFriction():
+class Collision():
     def __init__(self):
         self._vidreader = None
         self.frame_width = None
@@ -12,6 +12,7 @@ class SlidingFriction():
         self.frame_count = 0
         self._clip_start = 0
         
+        self.active_duration = []
         self.tracked_pts = []
 
     def add_video(self, video_path):
@@ -22,7 +23,12 @@ class SlidingFriction():
 
 
     def frame(self, index=None):
-        return self._vidreader.read(index=index)
+        if (index is None) or (self.active_duration is None):
+            f = self._vidreader.read()
+        else:
+            f = self._vidreader.read(self.active_duration[index])
+
+        return f
 
     def crop_intime(self):
         """
@@ -68,22 +74,37 @@ class SlidingFriction():
         idx = 0
         for _, group_ in groupby(scores_bin):
             group = list(group_)
+            # The group has to be valid group having 80% 1's atleast
+            # print('sum: ', sum(group))
+            # print('group: ', group)
+            if sum(group) < 0.8*len(group):
+                idx += len(group)
+                continue
             groups.append((idx, len(group)+idx))
             idx += len(group)
 
         groups = sorted(groups, key=lambda x: x[1]-x[0], reverse=True)
         # print(g)
         print(groups)
-        # plt.plot(scores_bin)
-        # plt.plot(scores_filtered)
-        # plt.show()
         start, end = groups[0]
+        
+        start = max(start-20, 0)
+        end = min(end+20, self._vidreader.frame_count)
+
+        self.active_duration = list(range(start, end, 1))
         # self._vidreader.seek(max_group[0])
         # self._vidreader.frame_count = max_group[1] - max_group[0]
-        self._vidreader.set_extents(start, end-start)
+        # self._vidreader.set_extents(start, end-start)
 
-        self._clip_start = start
-        self.frame_count = self._vidreader.frame_count
+        # self._clip_start = start
+        # self.frame_count = self._vidreader.frame_count
+        # print('start: ', self._clip_start)
+        # print('frame count: ', self.frame_count)
+        self.frame_count = len(self.active_duration)
+
+        plt.plot(scores_bin)
+        plt.plot(motion_scores)
+        plt.show()
 
 
     def track(self, points):
@@ -169,7 +190,7 @@ class SlidingFriction():
 
 
 if __name__ == '__main__':
-    sliding_friction = SlidingFriction()
-    sliding_friction.add_video("/home/isam/MSPhysics/Projects/PhysTrack/phystrackx/R1.MP4")
+    sliding_friction = Collision()
+    sliding_friction.add_video("/home/isam/MSPhysics/Projects/PhysTrack/phystrackx/HeadOn.MP4")
 
     sliding_friction.crop_intime()
