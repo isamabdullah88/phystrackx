@@ -6,12 +6,13 @@ from media import VideoReader
 
 class SlidingFriction():
     def __init__(self):
-        # if video_path is not None:
-            # self._vidreader = VideoReader(video_path)
         self._vidreader = None
         self.frame_width = None
         self.frame_height = None
         self.frame_count = 0
+        self._clip_start = 0
+        
+        self.tracked_pts = []
 
     def add_video(self, video_path):
         self._vidreader = VideoReader(video_path)
@@ -46,9 +47,7 @@ class SlidingFriction():
 
         motion_scores = np.array(motion_scores)
         motion_scores = motion_scores / np.max(motion_scores)
-
-        # plt.plot(motion_scores)
-        # plt.show()
+        
         win_len = 15
 
         scores_bin = []
@@ -62,8 +61,6 @@ class SlidingFriction():
                 scores_bin.append(1)
             else:
                 scores_bin.append(0)
-
-
 
         self._vidreader.seek(0)
     
@@ -85,7 +82,88 @@ class SlidingFriction():
         # self._vidreader.frame_count = max_group[1] - max_group[0]
         self._vidreader.set_extents(start, end-start)
 
+        self._clip_start = start
         self.frame_count = self._vidreader.frame_count
+
+
+    def track(self, points):
+        print('points: ', points)
+        p0 = np.array(points, dtype=np.float32).reshape(-1, 1, 2)
+        print('p0: ', p0)
+        print('p0: ', p0.shape)
+
+        # Define Lucas-Kanade optical flow parameters
+        lk_params = dict(
+            winSize=(15, 15),      # Size of search window for each pyramid level
+            maxLevel=2,            # Number of pyramid levels (0 means single level)
+            criteria=(             # Termination criteria for iterative algorithm
+                cv2.TERM_CRITERIA_EPS |      # Stop if accuracy is reached
+                cv2.TERM_CRITERIA_COUNT,     # Stop if max iterations reached
+                10,                          # Maximum iterations
+                0.03                         # Minimum accuracy/epsilon
+            )
+        )
+
+        # Convert first frame to grayscale if necessary
+        # OpenCV optical flow requires grayscale images
+        # if self.processor.frames[0].ndim == 3 and self.processor.frames[0].shape[2] == 3:
+        #     old_gray = cv2.cvtColor(self.processor.frames[0], cv2.COLOR_BGR2GRAY)
+        # else:
+        #     old_gray = self.processor.frames[0]  # Frame is already grayscale
+
+        # Initialize dictionary to store tracking history
+        # Keys: point indices, Values: lists of (x,y) coordinates
+        points_tracked = {i: [p] for i, p in enumerate(points)}
+        tracked_pts = []
+
+        # Process all frames after the first one
+        fprev = None
+        self._vidreader.seek(self._clip_start)
+        for _ in range(self.frame_count):
+            # Convert current frame to grayscale if necessary
+            # if frame.ndim == 3 and frame.shape[2] == 3:
+            #     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # else:
+            #     frame_gray = frame
+            frame = self._vidreader.read()
+            fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Calculate optical flow using Lucas-Kanade method
+            # p1: calculated new positions of input points
+            # st: status array (1 = point found, 0 = point lost)
+            # err: array of error measures for each point
+            if fprev is None:
+                fprev = fgray.copy()
+
+            p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
+            print('p1: ', type(p1))
+            print('p1: ', p1.shape)
+
+            self.tracked_pts.append(p1)
+            # Select good points by checking status array
+            # good_new = p1[st == 1]  # New positions of successfully tracked points
+            # good_old = p0[st == 1]  # Previous positions of successfully tracked points
+
+            # Update tracking history for successfully tracked points
+            # for i, (new, old) in enumerate(zip(good_new, good_old)):
+            #     a, b = new.ravel()  # Extract x,y coordinates from array
+            #     points_tracked[i].append((a, b))  # Add new position to tracking history
+
+            # Update for next iteration
+            # old_gray = frame_gray.copy()
+            # p0 = good_new.reshape(-1, 1, 2)  # Update previous points
+            fprev = fgray.copy()
+
+        # Visualize tracked points on all frames
+        # for i, frame in enumerate(self.processor.frames):
+        #     for j, point in points_tracked.items():
+        #         if i < len(point):  # Check if point was tracked in this frame
+        #             x, y = point[i]
+        #             # Draw green circle at tracked point position
+        #             cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
+
+        # Store tracked points for later analysis
+        # self.processor.points_tracked = points_tracked
 
 
 
