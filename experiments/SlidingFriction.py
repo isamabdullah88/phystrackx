@@ -10,8 +10,9 @@ class SlidingFriction():
         self.frame_width = None
         self.frame_height = None
         self.frame_count = 0
-        self._clip_start = 0
+        # self._clip_start = 0
         
+        self.active_duration = []
         self.tracked_pts = []
 
     def add_video(self, video_path):
@@ -22,7 +23,12 @@ class SlidingFriction():
 
 
     def frame(self, index=None):
-        return self._vidreader.read(index=index)
+        if (index is None) or (self.active_duration is None):
+            f = self._vidreader.read()
+        else:
+            f = self._vidreader.read(self.active_duration[index])
+
+        return f
 
     def crop_intime(self):
         """
@@ -68,6 +74,10 @@ class SlidingFriction():
         idx = 0
         for _, group_ in groupby(scores_bin):
             group = list(group_)
+            # The group has to be valid group having 80% 1's atleast
+            if sum(group) < 0.8*len(group):
+                idx += len(group)
+                continue
             groups.append((idx, len(group)+idx))
             idx += len(group)
 
@@ -78,12 +88,17 @@ class SlidingFriction():
         # plt.plot(scores_filtered)
         # plt.show()
         start, end = groups[0]
+
+        start = max(start-20, 0)
+        end = min(end+20, self._vidreader.frame_count)
+
+        self.active_duration = list(range(start, end, 1))
         # self._vidreader.seek(max_group[0])
         # self._vidreader.frame_count = max_group[1] - max_group[0]
-        self._vidreader.set_extents(start, end-start)
+        # self._vidreader.set_extents(start, end-start)
 
-        self._clip_start = start
-        self.frame_count = self._vidreader.frame_count
+        # self._clip_start = start
+        self.frame_count = len(self.active_duration)
 
 
     def track(self, points):
@@ -115,7 +130,7 @@ class SlidingFriction():
 
         # Process all frames after the first one
         fprev = None
-        self._vidreader.seek(self._clip_start)
+        # self._vidreader.seek(self._clip_start)
         for i in range(self.frame_count):
             # Convert current frame to grayscale if necessary
             # if frame.ndim == 3 and frame.shape[2] == 3:
