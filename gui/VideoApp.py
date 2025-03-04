@@ -112,7 +112,7 @@ class VideoApp:
             self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
                                         width=400, fg_color="red", progress_color="green",
                                         button_color="yellow", command=self.update_frame)
-            # self.slider = ctk.CTkSlider(self.video_frame)
+            self.slider.set(0)
             self.slider.pack(pady=10)
 
             self.menu_button = ctk.CTkButton(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
@@ -150,7 +150,7 @@ class VideoApp:
 
         # Show cropping interface
         # self.show_crop_interface()
-        frame1 = self.sliding_friction.frame()
+        frame1 = self.sliding_friction.frame(0)
         # print('frame1: ', frame1)
         self.display_first_frame(frame1)
 
@@ -238,8 +238,8 @@ class VideoApp:
             self.display_first_frame()
 
     def display_first_frame(self, frame=None):
-        if frame is None:
-            frame = self.processor.frames[0]
+        # if frame is None:
+        #     frame = self.processor.frames[0]
 
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
@@ -251,6 +251,7 @@ class VideoApp:
         # self.slider['to'] = len(self.processor.frames) - 1
         print('frame count: ', self.sliding_friction.frame_count)
         self.slider.configure(from_=0, to=self.sliding_friction.frame_count - 1)
+        self.slider.set(0)
 
     def update_frame(self, event):
         frame_idx = int(self.slider.get())

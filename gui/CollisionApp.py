@@ -151,7 +151,7 @@ class CollisionApp:
 
         # Show cropping interface
         # self.show_crop_interface()
-        frame1 = self.collision.frame(1)
+        frame1 = self.collision.frame(0)
         # print('frame1: ', frame1)
         self.display_first_frame(frame1)
 
