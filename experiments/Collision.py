@@ -10,7 +10,7 @@ class Collision():
         self.frame_width = None
         self.frame_height = None
         self.frame_count = 0
-        self._clip_start = 0
+        # self._clip_start = 0
         
         self.active_duration = []
         self.tracked_pts = []
@@ -136,7 +136,7 @@ class Collision():
 
         # Process all frames after the first one
         fprev = None
-        self._vidreader.seek(self._clip_start)
+        # self._vidreader.seek(self._clip_start)
         for i in range(self.frame_count):
             # Convert current frame to grayscale if necessary
             # if frame.ndim == 3 and frame.shape[2] == 3:
