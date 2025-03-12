@@ -25,7 +25,7 @@ class CollisionApp:
         self.create_widgets()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        self._ref_frame = []
+        self._ref_frame = [0.0, 0.0]
 
         self.collision = Collision()
 
@@ -697,34 +697,40 @@ class CollisionApp:
         # ref_pixel_dist = np.linalg.norm(np.array(self.line_coords[0]) - np.array(self.line_coords[1]))
         # scale_factor = self.ref_distance / ref_pixel_dist
         
-        xcoords = self.collision.tracked_pts[0, :] - ox
-        ycoords = self.collision.tracked_pts[1, :] - oy
-        # for points in self.collision.tracked_pts:
-            # x_coords = [(p[0] - origin[0]) * scale_factor for p in points]
-            # y_coords = [(origin[1] - p[1]) * scale_factor for p in points]
-            # x = points[0] - ox
-            # y = points[1] - oy
-            
-            # plt.figure()
-            # plt.subplot(2, 1, 1)
-            # plt.plot(x, label=f'Point {i} X')
-            # plt.plot(x)
-            # plt.xlabel('Frame')
-            # plt.ylabel('X Distance')
-            # plt.legend()
-            
-            # plt.subplot(2, 1, 2)
-            # plt.plot(y_coords, label=f'Point {i} Y')
-            # plt.plot(y)
-            # plt.xlabel('Frame')
-            # plt.ylabel('Y Distance')
-            # plt.legend()
+        # for tracked_pts in self.collision.tracked_pts:
+            # for points in self.collision.tracked_pts:
+                # x_coords = [(p[0] - origin[0]) * scale_factor for p in points]
+                # y_coords = [(origin[1] - p[1]) * scale_factor for p in points]
+                # x = points[0] - ox
+                # y = points[1] - oy
+                
+                # plt.figure()
+                # plt.subplot(2, 1, 1)
+                # plt.plot(x, label=f'Point {i} X')
+                # plt.plot(x)
+                # plt.xlabel('Frame')
+                # plt.ylabel('X Distance')
+                # plt.legend()
+                
+                # plt.subplot(2, 1, 2)
+                # plt.plot(y_coords, label=f'Point {i} Y')
+                # plt.plot(y)
+                # plt.xlabel('Frame')
+                # plt.ylabel('Y Distance')
+                # plt.legend()
 
-        p, axes = plt.subplots(2, 1, figsize=(6, 5))
-        axes[0].plot(xcoords)
-        axes[0].set_title("X coordinates")
-        axes[1].plot(ycoords)
-        axes[1].set_title("X coordinates")
+        num_tracks = len(self.collision.tracked_pts)
+        _, axes = plt.subplots(num_tracks, 2, figsize=(6, 5))
+
+        for i in range(num_tracks):
+            tracked_pts = self.collision.tracked_pts[i]
+            xcoords = tracked_pts[0, :] - ox
+            ycoords = tracked_pts[1, :] - oy
+        
+            axes[i][0].plot(xcoords)
+            axes[i][0].set_title("x coordinates")
+            axes[i][1].plot(ycoords)
+            axes[i][1].set_title("y coordinates")
         plt.tight_layout()
         plt.show()
             
