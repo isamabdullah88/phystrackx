@@ -2,7 +2,7 @@
 import cv2
 import tkinter as tk
 import customtkinter as ctk
-from PIL import Image, ImageTk, ImageDraw, ImageSequence
+from PIL import Image, ImageTk, ImageSequence
 import numpy as np
 from matplotlib import pyplot as plt
 from tkinter import ttk
