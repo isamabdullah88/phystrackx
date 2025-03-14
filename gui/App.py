@@ -1,16 +1,16 @@
 
-import cv2
-import tkinter as tk
+# import cv2
+# import tkinter as tk
 import customtkinter as ctk
-from PIL import Image, ImageTk, ImageSequence
-import numpy as np
-from matplotlib import pyplot as plt
-from tkinter import ttk
+# from PIL import Image, ImageTk, ImageSequence
+# import numpy as np
+# from matplotlib import pyplot as plt
+# from tkinter import ttk
 from tkinter import filedialog, simpledialog, messagebox
 from video_processing import VideoProcessor
-import csv
-import imageio
-from math import floor
+# import csv
+# import imageio
+# from math import floor
 
 class App:
     def __init__(self, root):
@@ -65,8 +65,8 @@ class App:
             # self.filter_button = ctk.CTkButton(self.filter_frame, text="Apply Filters", command=self.show_filter_popup)
             # self.filter_button.pack(pady=10)
             
-            self.undo_button = ctk.CTkButton(self.filter_frame, text="Reset", command=self.undo_filter)
-            self.undo_button.pack(pady=10)
+            # self.undo_button = ctk.CTkButton(self.filter_frame, text="Reset", command=self.undo_filter)
+            # self.undo_button.pack(pady=10)
             
             # self.frame_button = ctk.CTkButton(self.filter_frame, text="Select Initial and Final Frames", command=self.select_frames)
             # self.frame_button.pack(pady=10)
@@ -211,12 +211,12 @@ class App:
         popup.title("Tracked Coordinates Options")
 
         ctk.CTkButton(popup, text="Plot X and Y Distances", command=self.plot_distances).pack(pady=5)
-        ctk.CTkButton(popup, text="1st Derivative (Velocity)", command=lambda: self.calculate_and_export_derivative(1)).pack(pady=5)
-        ctk.CTkButton(popup, text="2nd Derivative (Acceleration)", command=lambda: self.calculate_and_export_derivative(2)).pack(pady=5)
+        # ctk.CTkButton(popup, text="1st Derivative (Velocity)", command=lambda: self.calculate_and_export_derivative(1)).pack(pady=5)
+        # ctk.CTkButton(popup, text="2nd Derivative (Acceleration)", command=lambda: self.calculate_and_export_derivative(2)).pack(pady=5)
         # ctk.CTkButton(popup, text="Calculate Path Length", command=self.calculate_path_length).pack(pady=5)
         # ctk.CTkButton(popup, text="Calculate Angle of Movement", command=self.calculate_angle_of_movement).pack(pady=5)
-        ctk.CTkButton(popup, text="Track Angle Between Three Points", command=self.select_third_point).pack(pady=5)
-        ctk.CTkButton(popup, text="Show Tracked Points Table", command=self.show_tracked_points_table).pack(pady=5)
+        # ctk.CTkButton(popup, text="Track Angle Between Three Points", command=self.select_third_point).pack(pady=5)
+        # ctk.CTkButton(popup, text="Show Tracked Points Table", command=self.show_tracked_points_table).pack(pady=5)
 
     def plot_distances(self):
         pass
