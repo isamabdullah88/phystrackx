@@ -2,7 +2,7 @@ from tkinter import *
 import customtkinter
 from PIL import Image, ImageTk
 
-from .VideoApp import VideoApp
+from .SlidingFrictionApp import SlidingFrictionApp
 from .CollisionApp import CollisionApp
 # customtkinter.set_appearance_mode("dark")
 # customtkinter.set_default_color_theme("dark-blue")
@@ -51,7 +51,7 @@ class Experiments:
     def sliding_friction(self):
         self.clear_screen()
 
-        app = VideoApp(self.root)
+        app = SlidingFrictionApp(self.root)
         # Title label
         # tk.Label(master, text="Choose a tracking type:", font=("Helvetica", 16)).pack(pady=(20, 10))
 

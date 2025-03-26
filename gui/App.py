@@ -1,16 +1,8 @@
 
-# import cv2
-# import tkinter as tk
 import customtkinter as ctk
-# from PIL import Image, ImageTk, ImageSequence
-# import numpy as np
-# from matplotlib import pyplot as plt
-# from tkinter import ttk
+
 from tkinter import filedialog, simpledialog, messagebox
 from video_processing import VideoProcessor
-# import csv
-# import imageio
-# from math import floor
 
 class App:
     def __init__(self, root):
@@ -25,7 +17,6 @@ class App:
 
         self._ref_frame = [0.0, 0.0]
 
-        # self.collision = Collision()
 
     def exit_fullscreen(self):
         self.root.attributes('-fullscreen', False)
@@ -62,21 +53,6 @@ class App:
             self.fps_label = ctk.CTkLabel(self.filter_frame, text="")
             self.fps_label.pack(pady=5)
             
-            # self.filter_button = ctk.CTkButton(self.filter_frame, text="Apply Filters", command=self.show_filter_popup)
-            # self.filter_button.pack(pady=10)
-            
-            # self.undo_button = ctk.CTkButton(self.filter_frame, text="Reset", command=self.undo_filter)
-            # self.undo_button.pack(pady=10)
-            
-            # self.frame_button = ctk.CTkButton(self.filter_frame, text="Select Initial and Final Frames", command=self.select_frames)
-            # self.frame_button.pack(pady=10)
-            
-            # self.distance_button = ctk.CTkButton(self.filter_frame, text="Set Reference Distance", command=self.set_reference_distance)
-            # self.distance_button.pack(pady=10)
-            
-            # self.clip_button = ctk.CTkButton(self.filter_frame, text="Clip Video", command=self.clip_video)
-            # self.clip_button.pack(pady=10)
-            
             self.axis_button = ctk.CTkButton(self.filter_frame, text="Mark Axes", command=self.mark_axes)
             self.axis_button.pack(pady=10)
             
@@ -93,10 +69,6 @@ class App:
             self.info_label = ctk.CTkLabel(self.filter_frame, text="")
             self.info_label.pack(pady=10)
             
-            # Create a button to show tracked points in a table
-            # self.table_button = ctk.CTkButton(self.filter_frame, text="Show Tracked Points Table", command=self.show_tracked_points_table)
-            # self.table_button.pack(pady=10)
-            
             # Create a frame to hold the video and slider widgets on the right side
             self.video_frame = ctk.CTkFrame(self.root)
             self.video_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True, padx=10, pady=10)
@@ -111,7 +83,6 @@ class App:
                                         width=400, fg_color="red", progress_color="green",
                                         button_color="yellow", command=self.update_frame)
             self.slider.set(0)
-            # self.slider = ctk.CTkSlider(self.video_frame)
             self.slider.pack(pady=10)
 
             self.menu_button = ctk.CTkButton(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
@@ -201,8 +172,11 @@ class App:
         self.video_view.unbind("<ButtonRelease-1>")
         bbox_coords = (self.start_x, self.start_y, event.x, event.y)
         self.bboxes_to_track.append(bbox_coords)
-        centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - self.frame_ox
-        centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - self.frame_oy
+
+        frame_ox, frame_oy = self._ref_frame
+
+        centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - frame_ox
+        centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - frame_oy
         self.processor.points_to_track.append((centroid_x, centroid_y))
         self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
@@ -211,12 +185,6 @@ class App:
         popup.title("Tracked Coordinates Options")
 
         ctk.CTkButton(popup, text="Plot X and Y Distances", command=self.plot_distances).pack(pady=5)
-        # ctk.CTkButton(popup, text="1st Derivative (Velocity)", command=lambda: self.calculate_and_export_derivative(1)).pack(pady=5)
-        # ctk.CTkButton(popup, text="2nd Derivative (Acceleration)", command=lambda: self.calculate_and_export_derivative(2)).pack(pady=5)
-        # ctk.CTkButton(popup, text="Calculate Path Length", command=self.calculate_path_length).pack(pady=5)
-        # ctk.CTkButton(popup, text="Calculate Angle of Movement", command=self.calculate_angle_of_movement).pack(pady=5)
-        # ctk.CTkButton(popup, text="Track Angle Between Three Points", command=self.select_third_point).pack(pady=5)
-        # ctk.CTkButton(popup, text="Show Tracked Points Table", command=self.show_tracked_points_table).pack(pady=5)
 
     def plot_distances(self):
         pass
@@ -234,11 +202,5 @@ class App:
     
 
     def back_to_menu(self):
-        # self.root.destroy()
-        # root = ctk.Tk()
-        # root.geometry("960x640")
-        # menu_x = MenuScreen(root)
-        # root.mainloop()
-        # self._restart()
         self.root.update()
         self.root.deiconify()

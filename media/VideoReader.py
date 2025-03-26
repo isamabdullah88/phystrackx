@@ -26,7 +26,7 @@ class VideoReader():
 
     def read(self, index=None):
         self._idx += 1
-        print('idx: ', self._idx)
+        # print('idx: ', self._idx)
 
         # if self._idx > (self._start_idx + self.frame_count):
         #     self.seek(self._start_idx)
