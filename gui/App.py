@@ -154,31 +154,31 @@ class App:
             messagebox.showerror("Error", "Invalid method. Please select 'points' or 'bbox'.")
 
     def mark_bboxes_to_track(self):
-        self.bboxes_to_track = []
+        # self.bboxes_to_track = []
         messagebox.showinfo("Instruction", "Please draw bounding boxes around the objects to track. Draw multiple bounding boxes if needed.")
         self.video_view.bind("<Button-1>", self.start_bbox)
 
-    def start_bbox(self, event):
-        self.start_x, self.start_y = event.x, event.y
-        self.current_bbox = self.video_view.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
-        self.video_view.bind("<B1-Motion>", self.draw_bbox)
-        self.video_view.bind("<ButtonRelease-1>", self.finish_bbox)
+    # def start_bbox(self, event):
+    #     self.start_x, self.start_y = event.x, event.y
+    #     self.current_bbox = self.video_view.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
+    #     self.video_view.bind("<B1-Motion>", self.draw_bbox)
+    #     self.video_view.bind("<ButtonRelease-1>", self.finish_bbox)
 
-    def draw_bbox(self, event):
-        self.video_view.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
+    # def draw_bbox(self, event):
+    #     self.video_view.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
 
-    def finish_bbox(self, event):
-        self.video_view.unbind("<B1-Motion>")
-        self.video_view.unbind("<ButtonRelease-1>")
-        bbox_coords = (self.start_x, self.start_y, event.x, event.y)
-        self.bboxes_to_track.append(bbox_coords)
+    # def finish_bbox(self, event):
+    #     self.video_view.unbind("<B1-Motion>")
+    #     self.video_view.unbind("<ButtonRelease-1>")
+    #     bbox_coords = (self.start_x, self.start_y, event.x, event.y)
+    #     self.bboxes_to_track.append(bbox_coords)
 
-        frame_ox, frame_oy = self._ref_frame
+    #     frame_ox, frame_oy = self._ref_frame
 
-        centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - frame_ox
-        centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - frame_oy
-        self.processor.points_to_track.append((centroid_x, centroid_y))
-        self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
+    #     centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - frame_ox
+    #     centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - frame_oy
+    #     self.processor.points_to_track.append((centroid_x, centroid_y))
+    #     self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
     def show_tracked_coordinates_window(self):
         popup = ctk.CTkToplevel(self.root)

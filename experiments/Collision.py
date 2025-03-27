@@ -102,9 +102,9 @@ class Collision():
         # print('frame count: ', self.frame_count)
         self.frame_count = len(self.active_duration)
 
-        plt.plot(scores_bin)
-        plt.plot(motion_scores)
-        plt.show()
+        # plt.plot(scores_bin)
+        # plt.plot(motion_scores)
+        # plt.show()
 
 
     def track(self, points):
