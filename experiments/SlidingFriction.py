@@ -154,14 +154,14 @@ class SlidingFriction():
 
                 p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
                 # print('p1: ', type(p1))
-                print('p1: ', p1)
+                # print('p1: ', p1)
                 # print('err: ', err)
 
                 tracked_pts[:, i] = p1.reshape(2,)
                 ptmp = p1.reshape(2,)
 
                 cv2.circle(fgray, (int(ptmp[0]), int(ptmp[1])), radius=7, color=(255,0,0), thickness=2)
-                cv2.imwrite(f"gray-{i}.png", fgray)
+                # cv2.imwrite(f"gray-{i}.png", fgray)
                 # Select good points by checking status array
                 # good_new = p1[st == 1]  # New positions of successfully tracked points
                 # good_old = p0[st == 1]  # Previous positions of successfully tracked points
