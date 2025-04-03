@@ -81,15 +81,15 @@ class CollisionApp(App):
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        ox, oy = self._ref_frame
+        # ox, oy = self._ref_frame
 
         num_tracks = len(self.collision.tracked_pts)
         _, axes = plt.subplots(num_tracks, 2, figsize=(6, 5))
 
         for i in range(num_tracks):
             tracked_pts = self.collision.tracked_pts[i]
-            xcoords = tracked_pts[0, :] - ox
-            ycoords = tracked_pts[1, :] - oy
+            xcoords = tracked_pts[0, :] - self.fx
+            ycoords = tracked_pts[1, :] - self.fy
 
             axes[i][0].plot(xcoords)
             axes[i][0].set_title("x coordinates")
