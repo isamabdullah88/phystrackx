@@ -118,18 +118,10 @@ class Marangoni():
 
     def track(self):
 
-        
-        tracked_pts = np.zeros((2, self.frame_count))
-
-        # Process all frames after the first one
-        fprev = None
         self._vidreader.seek(200)
+        
         for i in range(self.frame_count):
-            # Convert current frame to grayscale if necessary
-            # if frame.ndim == 3 and frame.shape[2] == 3:
-            #     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # else:
-            #     frame_gray = frame
+
             frame = self._vidreader.read()
             frame = frame[:, 200:1750]
             h, w = frame.shape[:2]
@@ -137,37 +129,13 @@ class Marangoni():
             w = floor(w/3)
             
             gray = np.sum(frame.copy(), axis=2)
-            # gray = 255-cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
             gray = 1-gray/np.max(gray)
             gray[gray > 0.75] = 0
-            # gray[gray < 0.1] = 0
-            gray *= 5.5
-            # Apply gamma correction (γ < 1: brighten, γ > 1: darken)
-            gamma = 2.5  # Higher gamma enhances bright regions more
-            # gray = np.power(gray, gamma)
-            # gamma_corrected = np.uint8(gamma_corrected)
-            # gray = normalize(gray)
-            # gray *= 1.5
             
+            gray *= 5.5
+                        
             gray[gray > 1] = 1
             gray = (gray * 255).astype(np.uint8)
-            # gray = normalize(gray)
-            # cv2.imwrite("without-minus255-gamma-multiplication.png", gray)
-
-            # cv2.imwrite(f"gray-{i}.png", gray)
-            cv2.imshow('gray', gray)
-            # gray[gray > 150] = 0
-            # blurred = cv2.GaussianBlur(gray.copy(), (3, 3), 3)
-            # Subtract the blurred image from the original
-            # fgraysh = cv2.addWeighted(gray.copy(), 1.5, blurred, -0.5, 0)
-            
-            # Increase contrast (alpha: contrast factor, beta: brightness)
-            alpha = 1.5  # Increase contrast (1.0 = original)
-            beta = 0     # No change in brightness
-
-            # Apply contrast adjustment
-            # fgraysh = cv2.convertScaleAbs(fgraysh, alpha=alpha, beta=beta)
-            # cv2.imshow('contrast', fgraysh)
             
             # Use Canny edge detection
             edges = cv2.Canny(gray*255, 25, 250)
@@ -175,19 +143,6 @@ class Marangoni():
             # Find contours
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            # # Define a size threshold for small contours
-            maxarea = 100  # Adjust this value as needed
-            minarea = 0
-
-            # # Filter and draw small contours
-            
-            #     if cv2.contourArea(contour) < maxarea:
-            #         cv2.drawContours(frame, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
-                    
-            # mask = np.zeros_like(fgraysh, dtype=np.uint8)
-
-            # Fill the contour region with white in the mask
-            
             framep = frame.copy()
             cv2.drawContours(framep, contours, -1, (0, 255, 255), thickness=1)
             
@@ -212,106 +167,12 @@ class Marangoni():
                 # Draw the circle
                 cv2.circle(frame, center, radius, (255, 0, 0), 3)  # Green circle
 
-            cv2.imshow('grayp', edges)
-            # Increase brightness only inside the contour region
-            brightness_factor = 50
-            # brightened = cv2.add(fgraysh, (brightness_factor, brightness_factor, brightness_factor, 0), mask=mask)
-
-            # Combine the brightened region with the original image
-            # fgraysh = np.where(mask == 255, brightened, fgraysh)
-            # cv2.imshow('result', result)
-                    
-            
-            # cv2.imwrite(f"frame-{i}.png", frame)
-            cv2.imshow('frame', frame)
-            # sharpening_kernel = np.array([[-1, -1, -1], 
-            #                 [-1,  9, -1], 
-            #                 [-1, -1, -1]])
-
-            # # Apply the kernel using filter2D
-            # framesh = cv2.filter2D(frame, -1, sharpening_kernel)
-            # Apply Gaussian Blur
-            
-            frame = cv2.resize(frame, (w, h))
-            # framesh = cv2.resize(framesh, (w, h))
-            fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            # fgraysh = 255 - cv2.cvtColor(framesh, cv2.COLOR_BGR2GRAY)
-            # fgraysh = cv2.resize(fgraysh, (w, h))
-            # gray = cv2.resize(gray, (w, h))
-            
-            
-            # fgray[fgray > 150] = 0
-            # fgraysh[fgraysh > 150] = 0
-            # fgray *= 2
-            
-            # cv2.imshow('sharp', fgraysh)
-            
-            # labels, details = self.model.predict_instances(normalize(gray))
-
-
-            
-            # Calculate optical flow using Lucas-Kanade method
-            # p1: calculated new positions of input points
-            # st: status array (1 = point found, 0 = point lost)
-            # err: array of error measures for each point
-            # if fprev is None:
-            #     fprev = fgray.copy()
-            
-                # Apply Gaussian Blur
-            # blurred = cv2.GaussianBlur(fgray, (1, 1), 0)
-
-
-            # cv2.imshow("edge", edges)
-            # cv2.waitKey(0)
-            # plt.subplot(1,2,1)
-            # plt.imshow(fgray, cmap="gray")
-            # plt.axis("off")
-            # plt.title("input image")
-
-            # plt.subplot(1,2,2)
-            # plt.imshow(render_label(labels, img=fgray))
-            # plt.axis("off")
-            # plt.title("prediction + input overlay")
-            # print('yup!')
-            # plt.show()
-            # plt.savefig(f"nonrigid-{i}.png", dpi=300)
-            # f = tp.locate(fgray, 31, invert=False, maxsize=15)
-            # print('after locate')
-            # print('after annotate')
-            # fig, ax = plt.subplots()
-            # ax.hist(f['mass'], bins=20)
-
-            # Optionally, label the axes.
-            # ax.set(xlabel='mass', ylabel='count')
-            # plt.figure()
-            # tp.annotate(f, fgray)
-            # plt.show()
-
-            # Show the image
-            # cv2.imshow("Small Contours", fgray)
-            
-            # cv2.imshow("blurred", blurred)
-
             cv2.waitKey(0)
             if i%10==0:
                 print('Processed: ', i)
             
-        # cv2.destroyAllWindows()
-            # p0 = good_new.reshape(-1, 1, 2)  # Update previous points
-            # fprev = fgray.copy()
-            # p0 = p1
-
-            # Add the set of tracked points
-            # self.tracked_pts.append(tracked_pts)
-
-        # Visualize tracked points on all frames
-        # for i, frame in enumerate(self.processor.frames):
-        #     for j, point in points_tracked.items():
-        #         if i < len(point):  # Check if point was tracked in this frame
-        #             x, y = point[i]
-        #             # Draw green circle at tracked point position
-        #             cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 0), -1)
-
+        cv2.destroyAllWindows()
+            
         # Store tracked points for later analysis
         # self.processor.points_tracked = points_tracked
 
