@@ -1,13 +1,17 @@
+
+# import matplotlib.pyplot as plt
+# import trackpy as tp
+# from math import floor
+# from stardist.models import StarDist2D
+# from stardist.plot import render_label
+# from csbdeep.utils import normalize
+from itertools import groupby
+from math import floor
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-import trackpy as tp
-from math import floor
-# from stardist.models import StarDist2D
-from stardist.plot import render_label
-from csbdeep.utils import normalize
-from itertools import groupby
+
 from media import VideoReader
+from filters import Smoothen
 
 class Marangoni():
     def __init__(self):
@@ -100,16 +104,28 @@ class Marangoni():
 
 
     def track(self):
+        
+        import os
+
+        tempdir =  "./tempdir"
+        if not os.path.exists(tempdir):
+            os.makedirs(tempdir)
+
+        crop = (200, 1750, 0, 1080)
+
+        smoothenx = Smoothen(tol=50)
+        smootheny = Smoothen(tol=50)
+        smoothenr = Smoothen(tol=100)
+        
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        videowriter = cv2.VideoWriter(os.path.join(tempdir, "TMP.MP4"), fourcc, 24, (1750-200, 1080))
 
         self._vidreader.seek(200)
 
-        for i in range(self.frame_count):
+        for i in range(480):
 
             frame = self._vidreader.read()
             frame = frame[:, 200:1750]
-            h, w = frame.shape[:2]
-            h = floor(h/3)
-            w = floor(w/3)
             
             gray = np.sum(frame.copy(), axis=2)
             gray = 1-gray/np.max(gray)
@@ -138,24 +154,31 @@ class Marangoni():
 
             # Find contours
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-            contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]  # Largest contour only
-            cv2.drawContours(frame, contours, -1, (0, 255, 255), thickness=1)
-            
-            for contour in contours:
-                (x, y), radius = cv2.minEnclosingCircle(contour)
-                center = (int(x), int(y))
-                radius = int(radius)
+
+            contourr = sorted(contours, key=cv2.contourArea, reverse=True)[0]  # Largest contour only
+            (x, y), r = cv2.minEnclosingCircle(contourr)
+            cv2.drawContours(frame, [contourr], -1, (0, 255, 255), thickness=1)
+
+            x = floor(smoothenx.smoothen(x))
+            y = floor(smootheny.smoothen(y))
+            r = floor(smoothenr.smoothen(r))
+
+            # for contour in contours:
+            #     (x, y), r = cv2.minEnclosingCircle(contour)
+            #     center = (int(x), int(y))
+            #     r = int(r)
 
                 # Draw the circle
-                cv2.circle(frame, center, radius, (255, 0, 0), 3)  # Green circle
+            cv2.circle(frame, (x, y), r, (255, 0, 0), 3)  # Green circle
 
-            cv2.waitKey(0)
+            videowriter.write(frame)
+
             if i%10==0:
                 print('Processed: ', i)
-            
-        cv2.destroyAllWindows()
-            
+
+        # cv2.destroyAllWindows()
+        videowriter.release()
+
         # Store tracked points for later analysis
         # self.processor.points_tracked = points_tracked
 
@@ -163,7 +186,7 @@ class Marangoni():
 
 if __name__ == '__main__':
     marangoni = Marangoni()
-    marangoni.add_video("../Marangoni.MOV")
+    marangoni.add_video("../Dataset/Marangoni/Green_Marangoni_Bursting_1.MOV")
 
     # marangoni.crop_intime()
     marangoni.track()
