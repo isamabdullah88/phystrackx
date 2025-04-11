@@ -14,27 +14,9 @@ class VideoReader():
 
         self._idx = 0
 
-    # def set_extents(self, start_idx, frame_count):
-    #     """
-    #     Set the start index where video starts and ends (using frame count). This is to enable
-    #     cropping in time for start and ending of experiments.
-    #     """
-    #     self._start_idx = start_idx
-    #     self.frame_count = frame_count
-    #     self._idx = start_idx
-    #     self.seek(self._idx)
-
     def read(self, index=None):
         self._idx += 1
-        # print('idx: ', self._idx)
-
-        # if self._idx > (self._start_idx + self.frame_count):
-        #     self.seek(self._start_idx)
-        #     self._idx = self._start_idx
-
-        # if index is not None:
-        #     self.seek(index+self._start_idx)
-        #     self._idx = index+self._start_idx
+        
         if index is not None:
             self.seek(index)
             self._idx = index
