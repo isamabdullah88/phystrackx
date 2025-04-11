@@ -15,13 +15,11 @@ class Marangoni():
         self.frame_width = None
         self.frame_height = None
         self.frame_count = 0
-        # self._clip_start = 0
         
         self.active_duration = []
         self.tracked_pts = []
 
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
-        # print('model: ', self.model)
 
     def add_video(self, video_path):
         self._vidreader = VideoReader(video_path)
@@ -83,9 +81,6 @@ class Marangoni():
         idx = 0
         for _, group_ in groupby(scores_bin):
             group = list(group_)
-            # The group has to be valid group having 80% 1's atleast
-            # print('sum: ', sum(group))
-            # print('group: ', group)
             if sum(group) < 0.8*len(group):
                 idx += len(group)
                 continue
@@ -93,33 +88,21 @@ class Marangoni():
             idx += len(group)
 
         groups = sorted(groups, key=lambda x: x[1]-x[0], reverse=True)
-        # print(g)
-        print(groups)
+        
         start, end = groups[0]
         
         start = max(start-20, 0)
         end = min(end+20, self._vidreader.frame_count)
 
         self.active_duration = list(range(start, end, 1))
-        # self._vidreader.seek(max_group[0])
-        # self._vidreader.frame_count = max_group[1] - max_group[0]
-        # self._vidreader.set_extents(start, end-start)
 
-        # self._clip_start = start
-        # self.frame_count = self._vidreader.frame_count
-        # print('start: ', self._clip_start)
-        # print('frame count: ', self.frame_count)
         self.frame_count = len(self.active_duration)
-
-        # plt.plot(scores_bin)
-        # plt.plot(motion_scores)
-        # plt.show()
 
 
     def track(self):
 
         self._vidreader.seek(200)
-        
+
         for i in range(self.frame_count):
 
             frame = self._vidreader.read()
