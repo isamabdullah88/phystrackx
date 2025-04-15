@@ -1,6 +1,6 @@
 
 import cv2
-# import tkinter as tk
+import numpy as np
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
@@ -17,9 +17,14 @@ class MarangoniApp(App):
         self.processor = VideoProcessor()
         self.marangoni = Marangoni()
 
+        self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
+        self.boundary.pack(pady=10)
+
+
     def load_video(self):
         self.marangoni.add_video(self.processor.video_path)
-        self.marangoni.crop_intime()
+        # self.marangoni.crop_intime()
+        print('frameconut1: ', self.marangoni.frame_count)
 
         frame1 = self.marangoni.frame(0)
         self.display_first_frame(frame1)
@@ -34,12 +39,14 @@ class MarangoniApp(App):
         # print('frame ox: ', self.frame_ox)
         self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
         self.video_view.photo = photo
+        print('framecount2: ', self.marangoni.frame_count)
 
         self.slider.configure(from_=0, to=self.marangoni.frame_count - 1)
         self.slider.set(0)
 
     def update_frame(self, event):
         frame_idx = int(self.slider.get())
+        print('frameidx: ', frame_idx)
 
         frame = self.marangoni.frame(index=frame_idx)
 
@@ -76,30 +83,31 @@ class MarangoniApp(App):
         self.video_view.bind("<Motion>", update_axes)
         self.video_view.bind("<Button>", store_click)
 
-    def start_bbox(self, event):
-        self.start_x, self.start_y = event.x, event.y
-        self.current_bbox = self.video_view.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
-        self.video_view.bind("<B1-Motion>", self.draw_bbox)
-        self.video_view.bind("<ButtonRelease-1>", self.finish_bbox)
+    def drawcircle(self, event):
+        self.sx, self.sy = event.x, event.y
+        self.curr_circ = self.video_view.create_aa_circle(self.sx, self.sy, 1, outline="red")
+        self.video_view.bind("<B1-Motion>", self.on_circle)
+        self.video_view.bind("<ButtonRelease-1>", self.circle_end)
 
-    def draw_bbox(self, event):
-        self.video_view.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
+    def on_circle(self, event):
+        rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
+        self.video_view.coords(self.curr_circ, self.sx, self.sy, rad)
 
-    def finish_bbox(self, event):
+    def circle_end(self, event):
         self.video_view.unbind("<B1-Motion>")
         self.video_view.unbind("<ButtonRelease-1>")
-        bbox_coords = (self.start_x, self.start_y, event.x, event.y)
+        rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
         # self.bboxes_to_track.append(bbox_coords)
-        cx = (bbox_coords[0] + bbox_coords[2]) / 2
-        cy = (bbox_coords[1] + bbox_coords[3]) / 2
+        # cx = (bbox_coords[0] + bbox_coords[2]) / 2
+        # cy = (bbox_coords[1] + bbox_coords[3]) / 2
 
-        self.video_view.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="red")
+        # self.video_view.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="red")
 
         # frame_ox, frame_oy = self._ref_frame
 
-        cx -= self.fx
-        cy -= self.fy
-        self.processor.points_to_track.append((cx, cy))
+        # cx -= self.fx
+        # cy -= self.fy
+        # self.processor.points_to_track.append((cx, cy))
 
     def plot_distances(self):
         if len(self.marangoni.tracked_pts) < 1:
