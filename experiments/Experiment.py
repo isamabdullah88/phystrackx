@@ -22,10 +22,11 @@ class Experiment:
         self.frame_width = self._vidreader.width
         self.frame_height = self._vidreader.height
         self.frame_count = self._vidreader.frame_count
+        print('frame count: ', self.frame_count)
 
 
     def frame(self, index=None):
-        if (index is None) or (self.active_duration is None):
+        if (index is None) or (len(self.active_duration) == 0):
             f = self._vidreader.read()
         else:
             f = self._vidreader.read(self.active_duration[index])
