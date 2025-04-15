@@ -106,7 +106,7 @@ class Marangoni(Experiment):
 
 if __name__ == '__main__':
     marangoni = Marangoni()
-    marangoni.add_video("../Dataset/Marangoni/Green_Marangoni_Bursting_1.MOV")
+    marangoni.add_video("../Dataset/Marangoni/Green_Marangoni_Bursting_1.mov")
 
     # marangoni.crop_intime()
     marangoni.track()
