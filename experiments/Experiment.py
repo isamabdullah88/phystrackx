@@ -26,8 +26,11 @@ class Experiment:
 
 
     def frame(self, index=None):
-        if (index is None) or (len(self.active_duration) == 0):
-            f = self._vidreader.read()
+        if (index is None):
+            return self._vidreader.read()
+        
+        if (len(self.active_duration) == 0):
+            f = self._vidreader.read(index)
         else:
             f = self._vidreader.read(self.active_duration[index])
 
