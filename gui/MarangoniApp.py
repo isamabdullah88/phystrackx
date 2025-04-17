@@ -19,6 +19,7 @@ class MarangoniApp(App):
 
         self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
         self.boundary.pack(pady=10)
+        self._idx = 0
 
 
     def load_video(self):
@@ -29,12 +30,16 @@ class MarangoniApp(App):
         frame1 = self.marangoni.frame(0)
         self.display_first_frame(frame1)
 
-    def display_first_frame(self, frame=None):
+    def display_first_frame(self, frame):
+        fwidth = self.marangoni.frame_width
+        fheight = self.marangoni.frame_height
+        frame = self.resize_frame(frame, fwidth, fheight)
+
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        self.fx = floor(self.canvas_width/2 - self.marangoni.frame_width/2)
-        self.fy = floor(self.canvas_height/2 - self.marangoni.frame_height/2)
+        self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
+        self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
 
         # print('frame ox: ', self.frame_ox)
         self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
@@ -49,6 +54,12 @@ class MarangoniApp(App):
         print('frameidx: ', frame_idx)
 
         frame = self.marangoni.frame(index=frame_idx)
+        fwidth = self.marangoni.frame_width
+        fheight = self.marangoni.frame_height
+
+        frame = self.resize_frame(frame, fwidth, fheight)
+        # cv2.imwrite(f"frame-{self._idx}.png", frame)
+        # self._idx += 1
 
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
