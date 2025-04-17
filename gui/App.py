@@ -1,5 +1,6 @@
-
+from math import floor
 import customtkinter as ctk
+import cv2
 
 from tkinter import filedialog, simpledialog, messagebox
 from video_processing import VideoProcessor
@@ -179,6 +180,25 @@ class App:
     #     centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - frame_oy
     #     self.processor.points_to_track.append((centroid_x, centroid_y))
     #     self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
+
+    def resize_frame(self, frame, fwidth, fheight):
+        if (fwidth > self.canvas_width):
+            ratio = fheight/fwidth
+            fwidth = self.canvas_width
+            fheight = floor(fwidth * ratio)
+            
+            frame = cv2.resize(frame, (fwidth, fheight))
+
+        if (fheight > self.canvas_height):
+            ratio = fwidth/fheight
+            fheight = self.canvas_height
+            fwidth = floor(fheight*ratio)
+            
+            frame = cv2.resize(frame, (fwidth, fheight))
+        
+        print('frame: ', frame.shape)
+
+        return frame
 
     def show_tracked_coordinates_window(self):
         popup = ctk.CTkToplevel(self.root)
