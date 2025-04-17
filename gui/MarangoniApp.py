@@ -51,7 +51,7 @@ class MarangoniApp(App):
 
     def update_frame(self, event):
         frame_idx = int(self.slider.get())
-        print('frameidx: ', frame_idx)
+        # print('frameidx: ', frame_idx)
 
         frame = self.marangoni.frame(index=frame_idx)
         fwidth = self.marangoni.frame_width
@@ -94,20 +94,28 @@ class MarangoniApp(App):
         self.video_view.bind("<Motion>", update_axes)
         self.video_view.bind("<Button>", store_click)
 
-    def drawcircle(self, event):
-        self.sx, self.sy = event.x, event.y
-        self.curr_circ = self.video_view.create_aa_circle(self.sx, self.sy, 1, outline="red")
-        self.video_view.bind("<B1-Motion>", self.on_circle)
-        self.video_view.bind("<ButtonRelease-1>", self.circle_end)
+    def drawcircle(self):
 
-    def on_circle(self, event):
-        rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
-        self.video_view.coords(self.curr_circ, self.sx, self.sy, rad)
+        def ondown(event):
+            self.sx, self.sy = event.x, event.y
+            self.curr_circ = self.video_view.create_aa_circle(self.sx, self.sy, 1)
+            # self.video_view.bind("<B1-Motion>", oncircle)
+            # self.video_view.bind("<ButtonRelease-1>", circle_end)
+            # self.video_view.bind("<Motion>", circle)
 
-    def circle_end(self, event):
-        self.video_view.unbind("<B1-Motion>")
-        self.video_view.unbind("<ButtonRelease-1>")
-        rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
+        def circle(event):
+            rad = floor(np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2)))
+            self.video_view.coords(self.curr_circ, self.sx, self.sy, rad)
+
+        def circleend(event):
+            # self.video_view.unbind("<Button-1>")
+            # self.video_view.unbind("<ButtonRelease-1>")
+            rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
+
+        self.video_view.bind("<Button-1>", ondown)
+        self.video_view.bind("<B1-Motion>", circle)
+        self.video_view.bind("<ButtonRelease-1>", circleend)
+
         # self.bboxes_to_track.append(bbox_coords)
         # cx = (bbox_coords[0] + bbox_coords[2]) / 2
         # cy = (bbox_coords[1] + bbox_coords[3]) / 2
