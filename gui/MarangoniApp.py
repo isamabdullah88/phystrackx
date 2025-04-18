@@ -10,12 +10,15 @@ from math import floor
 
 from .App import App
 from experiments.Marangoni import Marangoni
+from .Core import Circle
 
 class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
         self.processor = VideoProcessor()
         self.marangoni = Marangoni()
+
+        self.circle = Circle()
 
         self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
         self.boundary.pack(pady=10)
@@ -96,37 +99,33 @@ class MarangoniApp(App):
 
     def drawcircle(self):
 
+        cx = cy = 0
+        circle = None
+        rad = 0
+
         def ondown(event):
-            self.sx, self.sy = event.x, event.y
-            self.curr_circ = self.video_view.create_aa_circle(self.sx, self.sy, 1)
+            cx, cy = event.x, event.y
+            circle = self.video_view.create_aa_circle(cx, cy, 1)
             # self.video_view.bind("<B1-Motion>", oncircle)
             # self.video_view.bind("<ButtonRelease-1>", circle_end)
             # self.video_view.bind("<Motion>", circle)
 
-        def circle(event):
-            rad = floor(np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2)))
-            self.video_view.coords(self.curr_circ, self.sx, self.sy, rad)
+        def incircle(event):
+            rad = floor(np.sqrt(np.pow(event.x - cx, 2) + np.pow(event.y - cy, 2)))
+            self.video_view.coords(circle, cx, cy, rad)
 
-        def circleend(event):
+        def end(event):
             # self.video_view.unbind("<Button-1>")
             # self.video_view.unbind("<ButtonRelease-1>")
-            rad = np.sqrt(np.pow(event.x - self.sx, 2) + np.pow(event.y - self.sy, 2))
+            rad = np.sqrt(np.pow(event.x - cx, 2) + np.pow(event.y - cy, 2))
+            self.circle = Circle(cx=cx, cy=cy, rad=rad)
 
         self.video_view.bind("<Button-1>", ondown)
-        self.video_view.bind("<B1-Motion>", circle)
-        self.video_view.bind("<ButtonRelease-1>", circleend)
+        self.video_view.bind("<B1-Motion>", incircle)
+        self.video_view.bind("<ButtonRelease-1>", end)
 
-        # self.bboxes_to_track.append(bbox_coords)
-        # cx = (bbox_coords[0] + bbox_coords[2]) / 2
-        # cy = (bbox_coords[1] + bbox_coords[3]) / 2
 
-        # self.video_view.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="red")
 
-        # frame_ox, frame_oy = self._ref_frame
-
-        # cx -= self.fx
-        # cy -= self.fy
-        # self.processor.points_to_track.append((cx, cy))
 
     def plot_distances(self):
         if len(self.marangoni.tracked_pts) < 1:
