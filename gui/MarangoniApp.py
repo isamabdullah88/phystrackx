@@ -10,7 +10,7 @@ from math import floor
 
 from .App import App
 from experiments.Marangoni import Marangoni
-from .Core import Circle
+from .Core import Circle, circilize
 
 class MarangoniApp(App):
     def __init__(self, root):
@@ -23,6 +23,8 @@ class MarangoniApp(App):
         self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
         self.boundary.pack(pady=10)
         self._idx = 0
+
+        self.ccoords = (0, 0)
 
 
     def load_video(self):
@@ -99,26 +101,40 @@ class MarangoniApp(App):
 
     def drawcircle(self):
 
-        cx = cy = 0
+        # coords = (0, 0)
         circle = None
         rad = 0
 
         def ondown(event):
-            cx, cy = event.x, event.y
-            circle = self.video_view.create_aa_circle(cx, cy, 1)
+            self.ccoords = (event.x, event.y)
+            print('cx, cy: ', (self.ccoords[0], self.ccoords[1]))
+            # circle = self.video_view.create_aa_circle(self.ccoords[0], self.ccoords[1], 1)
+            circle = ImageTk.PhotoImage(circilize(10, 10))
+            self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
+            self.video_view.photo = circle
+            print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
             # self.video_view.bind("<B1-Motion>", oncircle)
             # self.video_view.bind("<ButtonRelease-1>", circle_end)
             # self.video_view.bind("<Motion>", circle)
 
         def incircle(event):
-            rad = floor(np.sqrt(np.pow(event.x - cx, 2) + np.pow(event.y - cy, 2)))
-            self.video_view.coords(circle, cx, cy, rad)
+            rad = floor(np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2)))
+            print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
+            print('rad: ', rad)
+
+            img = circilize(rad, rad)
+            circle = ImageTk.PhotoImage(img)
+            img.save("circle.png")
+            self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
+            self.video_view.photo = circle
+            # self.video_view.self.ccoords(circle, self.ccoords[0], self.ccoords[1], rad)
+            # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
 
         def end(event):
             # self.video_view.unbind("<Button-1>")
             # self.video_view.unbind("<ButtonRelease-1>")
-            rad = np.sqrt(np.pow(event.x - cx, 2) + np.pow(event.y - cy, 2))
-            self.circle = Circle(cx=cx, cy=cy, rad=rad)
+            rad = np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2))
+            self.circle = Circle(cx=self.ccoords[0], cy=self.ccoords[1], rad=rad)
 
         self.video_view.bind("<Button-1>", ondown)
         self.video_view.bind("<B1-Motion>", incircle)
