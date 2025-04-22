@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
 from tkinter import messagebox
 from video_processing import VideoProcessor
-from math import floor
+from math import floor, ceil
 
 from .App import App
 from experiments.Marangoni import Marangoni
@@ -40,15 +40,17 @@ class MarangoniApp(App):
         fheight = self.marangoni.frame_height
         frame = self.resize_frame(frame, fwidth, fheight)
 
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        photo = ImageTk.PhotoImage(image=img)
+        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=img)
+        self._frame = frame
 
         self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
         self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
 
         # print('frame ox: ', self.frame_ox)
-        self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        # self.video_view.itemconfig(self.imgview, image=self.photo)
+        # self.video_view.photo = photo
         print('framecount2: ', self.marangoni.frame_count)
 
         self.slider.configure(from_=0, to=self.marangoni.frame_count - 1)
@@ -66,14 +68,17 @@ class MarangoniApp(App):
         # cv2.imwrite(f"frame-{self._idx}.png", frame)
         # self._idx += 1
 
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        photo = ImageTk.PhotoImage(image=img)
+        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=img)
+        self._frame = frame
+
+        self.video_view.itemconfig(self.imgview, image=self.photo)
 
         # x = floor(self.canvas_width/2 - self.marangoni.frame_width/2)
         # y = floor(self.canvas_height/2 - self.marangoni.frame_height/2)
         # self.video_view.delete('all')
-        self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        # self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
+        # self.video_view.photo = photo
 
     def mark_axes(self):
 
@@ -106,27 +111,75 @@ class MarangoniApp(App):
         rad = 0
 
         def ondown(event):
-            self.ccoords = (event.x, event.y)
+            self.ccoords = (event.x-self.fx, event.y-self.fy)
             print('cx, cy: ', (self.ccoords[0], self.ccoords[1]))
             # circle = self.video_view.create_aa_circle(self.ccoords[0], self.ccoords[1], 1)
-            circle = ImageTk.PhotoImage(circilize(10, 10))
-            self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
-            self.video_view.photo = circle
-            print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
+            self.photo = ImageTk.PhotoImage(circilize(10, 10))
+            # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
+            # self.video_view.photo = circle
+            self.video_view.itemconfig(self.imgview, image=self.photo)
+            # print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
             # self.video_view.bind("<B1-Motion>", oncircle)
             # self.video_view.bind("<ButtonRelease-1>", circle_end)
             # self.video_view.bind("<Motion>", circle)
 
         def incircle(event):
-            rad = floor(np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2)))
-            print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
-            print('rad: ', rad)
+            # rad = floor(np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2)))
+            # print('self.ccoords[0], self.ccoords[1]: ', (self.ccoords[0], self.ccoords[1]))
+            # print('rad: ', rad)
+            ex = (event.x-self.fx)
+            ey = (event.y-self.fy)
+            radx = 2*(ex - self.ccoords[0])
+            rady = 2*(ey - self.ccoords[1])
+            # print('radx, rady: ', (radx, rady))
 
-            img = circilize(rad, rad)
-            circle = ImageTk.PhotoImage(img)
-            img.save("circle.png")
-            self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
-            self.video_view.photo = circle
+            circ, matte = circilize(radx, rady)
+            # circle = np.array(circ)[:,:,:3]
+            # circlealpha = np.array(circ)[:,:,3]
+            # circle[circlealpha < ]
+            
+            height, width = self._frame.shape[:2]
+            cx, cy = self.ccoords
+            frame = self._frame.copy()
+
+
+            cysrt = cy-floor(rady/2)
+            cyend = cy+ceil(rady/2)
+            cxsrt = cx-floor(radx/2)
+            cxend = cx+ceil(radx/2)
+
+            if cxsrt < 0:
+                circ = circ[:,-cxsrt:]
+                cxsrt = 0
+
+            if cxend > width:
+                cxend = width
+                circ = circ[:,:cxend-cxsrt]
+
+            if cysrt < 0:
+                circ = circ[-cysrt:,:]
+                cysrt = 0
+
+            if cyend > height:
+                cyend = height
+                circ = circ[:cyend-cysrt, :radx]
+
+
+            # print('circ: ', circ.shape)
+
+            frame_crop = frame[cysrt:cyend, cxsrt:cxend]
+            # print('frame crop: ', frame_crop.shape)
+            frame_crop = cv2.addWeighted(frame_crop, 0.5, circ, 0.5, 0)
+            # frame_cropbd[matte < 150] = frame_crop[matte < 150]
+            
+
+            frame[cysrt:cyend, cxsrt:cxend] = frame_crop
+            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            self.photo = ImageTk.PhotoImage(image=img)
+            # img.save("circle.png")
+            # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
+            # self.video_view.photo = circle
+            self.video_view.itemconfig(self.imgview, image=self.photo)
             # self.video_view.self.ccoords(circle, self.ccoords[0], self.ccoords[1], rad)
             # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
 
