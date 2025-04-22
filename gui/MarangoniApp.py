@@ -129,8 +129,8 @@ class MarangoniApp(App):
             # print('rad: ', rad)
             ex = (event.x-self.fx)
             ey = (event.y-self.fy)
-            radx = 2*(ex - self.ccoords[0])
-            rady = 2*(ey - self.ccoords[1])
+            radx = 2*abs(ex - self.ccoords[0])
+            rady = 2*abs(ey - self.ccoords[1])
             # print('radx, rady: ', (radx, rady))
 
             circ, matte = circilize(radx, rady)
@@ -150,30 +150,34 @@ class MarangoniApp(App):
 
             if cxsrt < 0:
                 circ = circ[:,-cxsrt:]
+                matte = matte[:,-cxsrt:]
                 cxsrt = 0
 
             if cxend > width:
                 cxend = width
                 circ = circ[:,:cxend-cxsrt]
+                matte = matte[:,:cxend-cxsrt]
 
             if cysrt < 0:
                 circ = circ[-cysrt:,:]
+                matte = matte[-cysrt:,:]
                 cysrt = 0
 
             if cyend > height:
                 cyend = height
                 circ = circ[:cyend-cysrt, :radx]
+                matte = matte[:cyend-cysrt, :radx]
 
 
             # print('circ: ', circ.shape)
 
             frame_crop = frame[cysrt:cyend, cxsrt:cxend]
             # print('frame crop: ', frame_crop.shape)
-            frame_crop = cv2.addWeighted(frame_crop, 0.5, circ, 0.5, 0)
-            # frame_cropbd[matte < 150] = frame_crop[matte < 150]
+            frame_cropbd = cv2.addWeighted(frame_crop, 0.6, circ, 0.4, 0)
+            frame_cropbd[matte < 150] = frame_crop[matte < 150]
             
 
-            frame[cysrt:cyend, cxsrt:cxend] = frame_crop
+            frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             self.photo = ImageTk.PhotoImage(image=img)
             # img.save("circle.png")
