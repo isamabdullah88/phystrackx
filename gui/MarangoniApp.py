@@ -1,4 +1,4 @@
-
+import os
 import cv2
 import numpy as np
 import customtkinter as ctk
@@ -16,7 +16,6 @@ class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
         self.processor = VideoProcessor()
-        self.marangoni = Marangoni()
 
         self.circle = Circle()
 
@@ -26,9 +25,20 @@ class MarangoniApp(App):
 
         self.ccoords = (0, 0)
 
+        # mask from user for tracking
+        self._mask = None
 
-    def load_video(self):
-        self.marangoni.add_video(self.processor.video_path)
+        tempdir = './temp'
+        if not os.path.exists(tempdir):
+            os.makedirs(tempdir)
+
+        self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+
+        self.marangoni = Marangoni(trackpath=self._trackpath)
+
+
+    def load_video(self, videopath):
+        self.marangoni.add_video(videopath)
         # self.marangoni.crop_intime()
         print('frameconut1: ', self.marangoni.frame_count)
 
@@ -186,16 +196,18 @@ class MarangoniApp(App):
             self.video_view.itemconfig(self.imgview, image=self.photo)
             # self.video_view.self.ccoords(circle, self.ccoords[0], self.ccoords[1], rad)
             # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
+            self._mask = matte
 
-        def end(event):
+        # def end(event):
+        #     pass
             # self.video_view.unbind("<Button-1>")
             # self.video_view.unbind("<ButtonRelease-1>")
-            rad = np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2))
-            self.circle = Circle(cx=self.ccoords[0], cy=self.ccoords[1], rad=rad)
+            # rad = np.sqrt(np.pow(event.x - self.ccoords[0], 2) + np.pow(event.y - self.ccoords[1], 2))
+            # self.circle = Circle(cx=self.ccoords[0], cy=self.ccoords[1], rad=rad)
 
         self.video_view.bind("<Button-1>", ondown)
         self.video_view.bind("<B1-Motion>", incircle)
-        self.video_view.bind("<ButtonRelease-1>", end)
+        # self.video_view.bind("<ButtonRelease-1>", end)
 
 
 
@@ -229,10 +241,12 @@ class MarangoniApp(App):
         This method processes the entire video sequence and tracks the motion of selected points.
         """
         # Input validation: ensure points have been marked for tracking
-        if not self.processor.points_to_track:
-            messagebox.showerror("Error", "Please mark points to track first.")
-            return
+        # if not self.processor.points_to_track:
+        #     messagebox.showerror("Error", "Please mark points to track first.")
+        #     return
 
-        self.marangoni.track(self.processor.points_to_track)
+        self.marangoni.track()
+
+        self.load_video(self._trackpath)
 
         self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button

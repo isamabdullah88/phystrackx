@@ -93,13 +93,18 @@ class App:
 
 
     def open_video(self):
-        self.processor.video_path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
-        if self.processor.video_path:
-            self.processor.fps = int(simpledialog.askinteger("FPS", "Enter FPS:"))
-            self.fps_label.configure(text=f"FPS: {self.processor.fps}")
-            self.load_video()
+        # print('video path: ', videopath)
+        # if videopath is not None:
+        #     self.load_video(videopath)
+        #     return 
+        
+        videopath = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
+        if videopath:
+            # self.processor.fps = int(simpledialog.askinteger("FPS", "Enter FPS:"))
+            # self.fps_label.configure(text=f"FPS: {self.processor.fps}")
+            self.load_video(videopath)
     
-    def load_video(self):
+    def load_video(self, videopath):
         pass
 
     def display_first_frame(self, frame=None):
