@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 from PIL import Image, ImageDraw
 
 class Circle:
@@ -10,16 +12,22 @@ class Circle:
 
 def circilize(width, height):
     """Create a fully transparent image (RGBA)"""
-    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    image = Image.new("RGB", (width, height), (0, 0, 0, 0))
 
     # Create a drawing context
     draw = ImageDraw.Draw(image)
 
     # Define circle parameters
     circle_bounds = (0, 0, width, height)  # (left, top, right, bottom)
-    circle_color = (255, 0, 0, 128)     # Red color with 50% opacity
+    circle_color = (255, 255, 255)     # Red color with 50% opacity
 
     # Draw the circle (ellipse) on the transparent background
     draw.ellipse(circle_bounds, fill=circle_color)
 
-    return image
+    matte = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
+    matte[matte < 150] = 0
+
+    circle_color = (255, 0, 0)     # Red color with 50% opacity
+    draw.ellipse(circle_bounds, fill=circle_color)
+
+    return np.array(image), matte
