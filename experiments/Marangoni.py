@@ -16,29 +16,29 @@ from media import VideoReader
 from filters import Smoothen
 
 class Marangoni(Experiment):
-    def __init__(self):
+    def __init__(self, trackpath):
         super().__init__()
 
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self._videowriter = cv2.VideoWriter(trackpath, fourcc, 24, (1750-200, 1080))
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
     def track(self):
 
         self._vidreader.seek(250)
 
-        import os
+        # import os
 
-        tempdir =  "./tempdir"
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
+        # tempdir =  "./tempdir"
+        # if not os.path.exists(tempdir):
+        #     os.makedirs(tempdir)
 
-        crop = (200, 1750, 0, 1080)
+        # crop = (200, 1750, 0, 1080)
 
         smoothenx = Smoothen(tol=50)
         smootheny = Smoothen(tol=50)
         smoothenr = Smoothen(tol=100)
         
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        videowriter = cv2.VideoWriter(os.path.join(tempdir, "TMP.MP4"), fourcc, 24, (1750-200, 1080))
 
         self._vidreader.seek(200)
 
@@ -91,13 +91,13 @@ class Marangoni(Experiment):
                 # Draw the circle
             cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
 
-            videowriter.write(frame)
+            self._videowriter.write(frame)
 
             # if i%10==0:
             #     print('Processed: ', i)
 
         # cv2.destroyAllWindows()
-        videowriter.release()
+        self._videowriter.release()
 
         # Store tracked points for later analysis
         # self.processor.points_tracked = points_tracked
