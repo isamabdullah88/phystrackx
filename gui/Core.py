@@ -12,6 +12,9 @@ class Circle:
 
 def circilize(width, height):
     """Create a fully transparent image (RGBA)"""
+    if width < 5: width = 5
+    if height < 5: height = 5
+
     image = Image.new("RGB", (width, height), (0, 0, 0, 0))
 
     # Create a drawing context
