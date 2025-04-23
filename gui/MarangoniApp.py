@@ -1,6 +1,6 @@
 import os
 import cv2
-import numpy as np
+import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
@@ -11,6 +11,7 @@ from math import floor, ceil
 from .App import App
 from experiments.Marangoni import Marangoni
 from .Core import Circle, circilize
+from .Components import SpinnerPopup
 
 class MarangoniApp(App):
     def __init__(self, root):
@@ -211,6 +212,26 @@ class MarangoniApp(App):
 
 
 
+    def start_tracking(self):
+        """
+        Detects and tracks radius for the main marangoni circle using classical techniques.
+        """
+
+        popup = SpinnerPopup(self.video_view)
+
+        def trackbg():
+            self.marangoni.track()
+            popup.destroy()
+
+            self.load_video(self._trackpath)
+
+            self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
+
+        threading.Thread(target=trackbg).start()
+
+
+
+
 
     def plot_distances(self):
         if len(self.marangoni.tracked_pts) < 1:
@@ -233,20 +254,3 @@ class MarangoniApp(App):
             axes[i][1].set_title("y coordinates")
         plt.tight_layout()
         plt.show()
-
-
-    def start_tracking(self):
-        """
-        Implements Lucas-Kanade optical flow tracking for marked points across video frames.
-        This method processes the entire video sequence and tracks the motion of selected points.
-        """
-        # Input validation: ensure points have been marked for tracking
-        # if not self.processor.points_to_track:
-        #     messagebox.showerror("Error", "Please mark points to track first.")
-        #     return
-
-        self.marangoni.track()
-
-        self.load_video(self._trackpath)
-
-        self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
