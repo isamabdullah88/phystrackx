@@ -50,6 +50,7 @@ class MarangoniApp(App):
         fwidth = self.marangoni.frame_width
         fheight = self.marangoni.frame_height
         frame = self.resize_frame(frame, fwidth, fheight)
+        print('display first frame: ', frame.shape)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -57,8 +58,10 @@ class MarangoniApp(App):
 
         self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
         self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
+        # print('canvas width: ', self.canvas_width)
 
         # print('frame ox: ', self.frame_ox)
+        # self.video_view.configure(width=frame.shape[1], height=frame.shape[0])
         self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         # self.video_view.itemconfig(self.imgview, image=self.photo)
         # self.video_view.photo = photo
@@ -68,6 +71,7 @@ class MarangoniApp(App):
         self.slider.set(0)
 
     def update_frame(self, event):
+        print('In update!')
         frame_idx = int(self.slider.get())
         # print('frameidx: ', frame_idx)
 
@@ -217,17 +221,19 @@ class MarangoniApp(App):
         Detects and tracks radius for the main marangoni circle using classical techniques.
         """
 
-        popup = SpinnerPopup(self.video_view)
+        self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
 
-        def trackbg():
+        def trackbg(popup):
             self.marangoni.track()
-            popup.destroy()
+            # popup.destroy()
+            # popup = None
+            self.root.after(0, popup.destroy())
 
             self.load_video(self._trackpath)
 
             self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
-        threading.Thread(target=trackbg).start()
+        threading.Thread(target=trackbg, args=(self.popup,)).start()
 
 
 
