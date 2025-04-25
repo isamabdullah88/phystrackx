@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
@@ -191,7 +192,8 @@ class MarangoniApp(App):
             frame_cropbd = cv2.addWeighted(frame_crop, 0.6, circ, 0.4, 0)
             frame_cropbd[matte < 150] = frame_crop[matte < 150]
             
-
+            matte_frame = np.zeros((height, width), np.uint8)
+            matte_frame[cysrt:cyend, cxsrt:cxend] = matte
             frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             self.photo = ImageTk.PhotoImage(image=img)
@@ -201,7 +203,7 @@ class MarangoniApp(App):
             self.video_view.itemconfig(self.imgview, image=self.photo)
             # self.video_view.self.ccoords(circle, self.ccoords[0], self.ccoords[1], rad)
             # self.video_view.create_image(self.ccoords[0], self.ccoords[1], image=circle)
-            self._mask = matte
+            self._mask = matte_frame
 
         # def end(event):
         #     pass
@@ -224,7 +226,7 @@ class MarangoniApp(App):
         self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
 
         def trackbg(popup):
-            self.marangoni.track()
+            self.marangoni.track(self._mask)
             # popup.destroy()
             # popup = None
             self.root.after(0, popup.destroy())
