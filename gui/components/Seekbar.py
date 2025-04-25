@@ -2,36 +2,43 @@ import customtkinter as ctk
 import tkinter as tk
 
 class CutSeekBar(ctk.CTkFrame):
-    def __init__(self, master, width=700, height=40, total_frames=100, *args, **kwargs):
+    def __init__(self, master, width=700, height=40, fcount=100, ondrag=None, *args, **kwargs):
         super().__init__(master, width=width, height=height, *args, **kwargs)
         self.pack_propagate(False)
 
         self.canvas = tk.Canvas(self, width=width, height=height, bg="#222222", highlightthickness=0)
         self.canvas.pack()
 
-        self.total_frames = total_frames
+        self.fcount = fcount
         self.width = width
         self.height = height
 
-        self.start_frame = 20
-        self.end_frame = 80
+        self.startidx = 20
+        self.endidx = 80
         self.active_marker = None
+        self.idx = self.startidx
+
+        self._ondrag = ondrag
 
         self.canvas.bind("<Button-1>", self.click)
         self.canvas.bind("<B1-Motion>", self.drag)
         self.draw()
 
+
+    def setcount(self, fcount):
+        self.fcount = fcount
+
     def frame_to_x(self, frame):
-        return int(frame / self.total_frames * self.width)
+        return int(frame / self.fcount * self.width)
 
     def x_to_frame(self, x):
-        return min(max(0, int(x / self.width * self.total_frames)), self.total_frames)
+        return min(max(0, int(x / self.width * self.fcount)), self.fcount)
 
     def draw(self):
         self.canvas.delete("all")
 
-        x1 = self.frame_to_x(self.start_frame)
-        x2 = self.frame_to_x(self.end_frame)
+        x1 = self.frame_to_x(self.startidx)
+        x2 = self.frame_to_x(self.endidx)
 
         # Draw background bar
         self.canvas.create_rectangle(0, self.height//2 - 4, self.width, self.height//2 + 4, fill="#444")
@@ -45,12 +52,12 @@ class CutSeekBar(ctk.CTkFrame):
 
         # Optional: display current range
         self.canvas.create_text(self.width//2, self.height - 8, fill="white",
-                                text=f"Trim Range: {self.start_frame} - {self.end_frame}")
+                                text=f"Trim Range: {self.startidx} - {self.endidx}")
 
     def click(self, event):
         x = event.x
-        x1 = self.frame_to_x(self.start_frame)
-        x2 = self.frame_to_x(self.end_frame)
+        x1 = self.frame_to_x(self.startidx)
+        x2 = self.frame_to_x(self.endidx)
         if abs(x - x1) < 10:
             self.active_marker = "start"
         elif abs(x - x2) < 10:
@@ -63,14 +70,18 @@ class CutSeekBar(ctk.CTkFrame):
         frame = self.x_to_frame(x)
 
         if self.active_marker == "start":
-            self.start_frame = min(max(0, frame), self.end_frame - 1)
+            self.startidx = min(max(0, frame), self.endidx - 1)
+            self.idx = self.startidx
         elif self.active_marker == "end":
-            self.end_frame = max(min(self.total_frames, frame), self.start_frame + 1)
+            self.endidx = max(min(self.fcount, frame), self.startidx + 1)
+            self.idx = self.endidx
+
+        self._ondrag()
 
         self.draw()
 
     def get_trim_range(self):
-        return self.start_frame, self.end_frame
+        return self.startidx, self.endidx
 
 
 class App(ctk.CTk):
@@ -82,7 +93,7 @@ class App(ctk.CTk):
         self.video_view = ctk.CTkFrame(self, width=700, height=300, fg_color="#1a1a1a")
         self.video_view.pack(pady=30)
 
-        self.seekbar = CutSeekBar(self, total_frames=200)
+        self.seekbar = CutSeekBar(self, fcount=200)
         self.seekbar.pack(pady=20)
 
         self.print_button = ctk.CTkButton(self, text="Print Cut Range", command=self.print_range)
