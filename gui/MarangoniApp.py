@@ -12,7 +12,8 @@ from math import floor, ceil
 from .App import App
 from experiments.Marangoni import Marangoni
 from .Core import Circle, circilize
-from .Components import SpinnerPopup
+from .components.Spinner import SpinnerPopup
+from .components.Seekbar import CutSeekBar
 
 class MarangoniApp(App):
     def __init__(self, root):
@@ -24,6 +25,10 @@ class MarangoniApp(App):
         self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
         self.boundary.pack(pady=10)
         self._idx = 0
+
+        self.seekbar = CutSeekBar(self.video_frame)
+        # self.seekbar = ctk.CTkCanvas(self.video_frame)
+        self.seekbar.pack(pady=10)
 
         self.ccoords = (0, 0)
 
