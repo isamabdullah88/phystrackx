@@ -1,3 +1,4 @@
+import math
 import customtkinter as ctk
 import tkinter as tk
 
@@ -27,6 +28,9 @@ class CutSeekBar(ctk.CTkFrame):
 
     def setcount(self, fcount):
         self.fcount = fcount
+        self.startidx = math.floor(0.2*self.fcount)
+        self.endidx = math.floor(0.8*self.fcount)
+        self.idx = self.startidx
 
     def frame_to_x(self, frame):
         return int(frame / self.fcount * self.width)

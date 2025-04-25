@@ -27,7 +27,6 @@ class MarangoniApp(App):
         self._idx = 0
 
         self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
-        self.seekbar.pack(pady=10)
 
         self.ccoords = (0, 0)
 
@@ -48,6 +47,7 @@ class MarangoniApp(App):
         self.marangoni.add_video(videopath)
         # self.marangoni.crop_intime()
         print('framecount: ', self.marangoni.fcount)
+        self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.marangoni.fcount)
 
         frame1 = self.marangoni.frame(0)
