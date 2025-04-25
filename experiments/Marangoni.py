@@ -19,11 +19,20 @@ class Marangoni(Experiment):
     def __init__(self, trackpath):
         super().__init__()
 
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self._videowriter = cv2.VideoWriter(trackpath, fourcc, 24, (1750-200, 1080))
+        self._trackpath = trackpath
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
-    def track(self):
+    def track(self, mask):
+        """Tracks the radius in marangoni effect
+
+        Args:
+            mask (np.ndarray): A mask that specifies diameter inside which the experiment is
+            happening. It has size of gui canvas.
+        """
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
+
+        mask = cv2.resize(mask, (self.frame_width, self.frame_height))
 
         self._vidreader.seek(250)
 
@@ -42,10 +51,11 @@ class Marangoni(Experiment):
 
         self._vidreader.seek(200)
 
-        for i in tqdm(range(480), desc="Marangoni", total=480):
+        for i in tqdm(range(50), desc="Marangoni", total=480):
 
             frame = self._vidreader.read()
-            frame = frame[:, 200:1750]
+            # frame = frame[:, 200:1750]
+            frame[mask < 150] = 0
             
             gray = np.sum(frame.copy(), axis=2)
             gray = 1-gray/np.max(gray)
@@ -90,6 +100,8 @@ class Marangoni(Experiment):
 
                 # Draw the circle
             cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
+            # print('frame:', frame.shape)
+            # cv2.imwrite(f"frame-{i}.png", frame)
 
             self._videowriter.write(frame)
 
