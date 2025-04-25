@@ -18,7 +18,7 @@ from .components.Seekbar import CutSeekBar
 class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
-        self.processor = VideoProcessor()
+        # self.processor = VideoProcessor()
 
         self.circle = Circle()
 
@@ -26,7 +26,7 @@ class MarangoniApp(App):
         self.boundary.pack(pady=10)
         self._idx = 0
 
-        self.seekbar = CutSeekBar(self.video_frame)
+        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
         self.seekbar.pack(pady=10)
 
         self.ccoords = (0, 0)
@@ -43,10 +43,12 @@ class MarangoniApp(App):
         self.marangoni = Marangoni(trackpath=self._trackpath)
 
 
+
     def load_video(self, videopath):
         self.marangoni.add_video(videopath)
         # self.marangoni.crop_intime()
-        print('frameconut1: ', self.marangoni.frame_count)
+        print('framecount: ', self.marangoni.fcount)
+        self.seekbar.setcount(self.marangoni.fcount)
 
         frame1 = self.marangoni.frame(0)
         self.display_first_frame(frame1)
@@ -70,17 +72,18 @@ class MarangoniApp(App):
         self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         # self.video_view.itemconfig(self.imgview, image=self.photo)
         # self.video_view.photo = photo
-        print('framecount2: ', self.marangoni.frame_count)
+        print('framecount2: ', self.marangoni.fcount)
 
-        self.slider.configure(from_=0, to=self.marangoni.frame_count - 1)
-        self.slider.set(0)
+        # self.slider.configure(from_=0, to=self.marangoni.frame_count - 1)
+        # self.slider.set(0)
 
-    def update_frame(self, event):
+    def update_frame(self):
         print('In update!')
-        frame_idx = int(self.slider.get())
+        # frame_idx = int(self.slider.get())
+        # frameidx = self.seekbar.startidx
         # print('frameidx: ', frame_idx)
 
-        frame = self.marangoni.frame(index=frame_idx)
+        frame = self.marangoni.frame(index=self.seekbar.idx)
         fwidth = self.marangoni.frame_width
         fheight = self.marangoni.frame_height
 
