@@ -27,7 +27,6 @@ class MarangoniApp(App):
         self._idx = 0
 
         self.seekbar = CutSeekBar(self.video_frame)
-        # self.seekbar = ctk.CTkCanvas(self.video_frame)
         self.seekbar.pack(pady=10)
 
         self.ccoords = (0, 0)
