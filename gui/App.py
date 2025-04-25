@@ -78,13 +78,13 @@ class App:
             self.canvas_height = 480
             self.video_view = ctk.CTkCanvas(self.video_frame, width=self.canvas_width, height=self.canvas_height)
             self.video_view.pack(pady=20, expand=True)
+
+            # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
+            #                             width=400, fg_color="red", progress_color="green",
+            #                             button_color="yellow", command=self.update_frame)
             
-            # self.slider = ctk.Scale(self.video_frame, from_=0, to=100, orient=ctk.HORIZONTAL, length=400, resolution=1, command=self.update_frame)
-            self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
-                                        width=400, fg_color="red", progress_color="green",
-                                        button_color="yellow", command=self.update_frame)
-            self.slider.set(0)
-            self.slider.pack(pady=10)
+            # self.slider.set(0)
+            # self.slider.pack(pady=10)
 
             self.menu_button = ctk.CTkButton(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
             self.menu_button.pack(pady=10)
