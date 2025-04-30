@@ -22,7 +22,7 @@ class Marangoni(Experiment):
         self._trackpath = trackpath
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
-    def track(self, mask):
+    def track(self, mask, startidx=0, endidx=0):
         """Tracks the radius in marangoni effect
 
         Args:
@@ -34,27 +34,23 @@ class Marangoni(Experiment):
 
         mask = cv2.resize(mask, (self.frame_width, self.frame_height))
 
-        self._vidreader.seek(250)
+        self._vidreader.seek(startidx)
+        
+        if endidx == 0:
+            fcount = self._vidreader.fcount - startidx
+        else:
+            fcount = endidx - startidx
 
-        # import os
-
-        # tempdir =  "./tempdir"
-        # if not os.path.exists(tempdir):
-        #     os.makedirs(tempdir)
-
-        # crop = (200, 1750, 0, 1080)
-
+        # Filters for trajectory smoothing
         smoothenx = Smoothen(tol=50)
         smootheny = Smoothen(tol=50)
         smoothenr = Smoothen(tol=100)
-        
 
-        self._vidreader.seek(200)
 
-        for i in tqdm(range(50), desc="Marangoni", total=480):
+        for i in tqdm(range(fcount), desc="Marangoni", total=fcount):
 
             frame = self._vidreader.read()
-            # frame = frame[:, 200:1750]
+
             frame[mask < 150] = 0
             
             gray = np.sum(frame.copy(), axis=2)
@@ -93,22 +89,11 @@ class Marangoni(Experiment):
             y = floor(smootheny.smoothen(y))
             r = floor(smoothenr.smoothen(r))
 
-            # for contour in contours:
-            #     (x, y), r = cv2.minEnclosingCircle(contour)
-            #     center = (int(x), int(y))
-            #     r = int(r)
-
-                # Draw the circle
+            # Draw the circle
             cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
-            # print('frame:', frame.shape)
-            # cv2.imwrite(f"frame-{i}.png", frame)
 
             self._videowriter.write(frame)
 
-            # if i%10==0:
-            #     print('Processed: ', i)
-
-        # cv2.destroyAllWindows()
         self._videowriter.release()
 
         # Store tracked points for later analysis
