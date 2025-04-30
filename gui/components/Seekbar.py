@@ -31,6 +31,7 @@ class CutSeekBar(ctk.CTkFrame):
         self.startidx = math.floor(0.2*self.fcount)
         self.endidx = math.floor(0.8*self.fcount)
         self.idx = self.startidx
+        self.draw()
 
     def frame_to_x(self, frame):
         return int(frame / self.fcount * self.width)
