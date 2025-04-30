@@ -233,7 +233,9 @@ class MarangoniApp(App):
         self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
 
         def trackbg(popup):
-            self.marangoni.track(self._mask)
+            startidx = self.seekbar.startidx
+            endidx = self.seekbar.endidx
+            self.marangoni.track(self._mask, startidx, endidx)
             # popup.destroy()
             # popup = None
             self.root.after(0, popup.destroy())
