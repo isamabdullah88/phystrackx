@@ -1,18 +1,13 @@
 
-# import matplotlib.pyplot as plt
-# import trackpy as tp
-# from math import floor
 # from stardist.models import StarDist2D
 # from stardist.plot import render_label
 # from csbdeep.utils import normalize
-from itertools import groupby
 from math import floor
 import cv2
 import numpy as np
 from tqdm import tqdm
 
 from .Experiment import Experiment
-from media import VideoReader
 from filters import Smoothen
 
 class Marangoni(Experiment):

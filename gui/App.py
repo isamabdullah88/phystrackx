@@ -1,6 +1,7 @@
 from math import floor
 import customtkinter as ctk
 import cv2
+from PIL import Image, ImageTk
 
 from tkinter import filedialog, simpledialog, messagebox
 from video_processing import VideoProcessor
@@ -16,80 +17,137 @@ class App:
         self.create_widgets()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        self._ref_frame = [0.0, 0.0]
+        # self._ref_frame = [0.0, 0.0]
 
 
-    def exit_fullscreen(self):
-        self.root.attributes('-fullscreen', False)
+    # def exit_fullscreen(self):
+    #     self.root.attributes('-fullscreen', False)
 
-    def show_progress_bar(self):
-        self.progress_popup = ctk.CTkToplevel(self.root)
-        self.progress_popup.title("Applying Filters")
+    # def show_progress_bar(self):
+    #     self.progress_popup = ctk.CTkToplevel(self.root)
+    #     self.progress_popup.title("Applying Filters")
 
-        self.progress_label = ctk.CTkLabel(self.progress_popup, text="Processing frames...")
-        self.progress_label.pack(pady=10)
+    #     self.progress_label = ctk.CTkLabel(self.progress_popup, text="Processing frames...")
+    #     self.progress_label.pack(pady=10)
 
-        self.progress_bar = ctk.CTkProgressBar(self.progress_popup, orientation="horizontal", mode="determinate")
-        self.progress_bar.pack(pady=10)
+    #     self.progress_bar = ctk.CTkProgressBar(self.progress_popup, orientation="horizontal",
+    #                                            mode="determinate")
+    #     self.progress_bar.pack(pady=10)
 
-        self.progress_popup.update()
+    #     self.progress_popup.update()
 
-    def update_progress_bar(self, value, max_value):
-        self.progress_bar["value"] = value
-        self.progress_bar["maximum"] = max_value
-        self.progress_label.configure(text=f"Processing frames... {value}/{max_value}")
-        self.progress_popup.update()
+    # def update_progress_bar(self, value, max_value):
+    #     self.progress_bar["value"] = value
+    #     self.progress_bar["maximum"] = max_value
+    #     self.progress_label.configure(text=f"Processing frames... {value}/{max_value}")
+    #     self.progress_popup.update()
 
-    def close_progress_bar(self):
-        self.progress_popup.destroy()
+    # def close_progress_bar(self):
+    #     self.progress_popup.destroy()
 
     def create_widgets(self):
-            # Create a frame to hold the filter widgets on the left side
-            self.filter_frame = ctk.CTkFrame(self.root)
-            self.filter_frame.pack(side=ctk.LEFT, fill=ctk.Y, padx=10, pady=10)
             
-            self.open_button = ctk.CTkButton(self.filter_frame, text="Open Video", command=self.open_video)
-            self.open_button.pack(pady=10)
-            
-            self.fps_label = ctk.CTkLabel(self.filter_frame, text="")
-            self.fps_label.pack(pady=5)
-            
-            self.axis_button = ctk.CTkButton(self.filter_frame, text="Mark Axes", command=self.mark_axes)
-            self.axis_button.pack(pady=10)
-            
-            self.track_button = ctk.CTkButton(self.filter_frame, text="Mark Points to Track", command=self.choose_tracking_method)
-            self.track_button.pack(pady=10)
+        # ==== LEFT TOOLBAR PANEL ====
+        container = ctk.CTkFrame(self.root)
+        container.pack(side=ctk.LEFT, fill="both", expand=True)
 
-            self.track_start_button = ctk.CTkButton(self.filter_frame, text="Start Tracking", command=self.start_tracking)
-            self.track_start_button.pack(pady=10)
-            
-            self.track_coords_button = ctk.CTkButton(self.filter_frame, text="Tracked Coordinates", command=self.show_tracked_coordinates_window)
-            self.track_coords_button.pack(pady=10)
-            self.track_coords_button.configure(state=ctk.DISABLED)  # Disable the button initially
+        self.canvas = ctk.CTkCanvas(container, width=80)
+        self.canvas.pack(side=ctk.LEFT, fill="both", expand=True)
 
-            self.info_label = ctk.CTkLabel(self.filter_frame, text="")
-            self.info_label.pack(pady=10)
-            
-            # Create a frame to hold the video and slider widgets on the right side
-            self.video_frame = ctk.CTkFrame(self.root)
-            self.video_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True, padx=10, pady=10)
-            
-            self.canvas_width = 640
-            self.canvas_height = 480
-            self.video_view = ctk.CTkCanvas(self.video_frame, width=self.canvas_width, height=self.canvas_height)
-            self.video_view.pack(pady=20, expand=True)
+        # Scrollbar for the canvas
+        scrollbar = ctk.CTkScrollbar(container, orientation="vertical", command=self.canvas.yview)
+        scrollbar.pack(side=ctk.LEFT, fill="y")
+        self.canvas.configure(yscrollcommand=scrollbar.set)
 
-            # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
-            #                             width=400, fg_color="red", progress_color="green",
-            #                             button_color="yellow", command=self.update_frame)
-            
-            # self.slider.set(0)
-            # self.slider.pack(pady=10)
+        # Create a frame to hold the filter widgets on the left side
+        self.toolbar_frame = ctk.CTkFrame(self.canvas, width=80, height=7*80)
+        self.toolbar_frame.pack(side=ctk.LEFT, fill=ctk.Y, padx=10, pady=10)
+        self.toolbar_window = self.canvas.create_window((0, 0), window=self.toolbar_frame, anchor="nw")
 
-            self.menu_button = ctk.CTkButton(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
-            self.menu_button.pack(pady=10)
+        sfimg = Image.open("assets/open-video.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.open_button = ctk.CTkButton(self.toolbar_frame, command=self.open_video,width=80,
+                                            height=80, image=sfimg, text="")
+        self.open_button.pack(pady=10)
+        
+        # self.fps_label = ctk.CTkLabel(self.toolbar_frame, text="")
+        # self.fps_label.pack(pady=5)
+        
+        sfimg = Image.open("assets/axis.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.axis_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                            image=sfimg, command=self.mark_axes)
+        self.axis_button.pack(pady=10)
+        
+        sfimg = Image.open("assets/points.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.track_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                            image=sfimg, command=self.choose_tracking_method)
+        self.track_button.pack(pady=10)
 
-    
+        sfimg = Image.open("assets/start.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.track_start_button = ctk.CTkButton(self.toolbar_frame, text="", width=80,
+                                                height=90, image=sfimg,
+                                                command=self.start_tracking)
+        self.track_start_button.pack(pady=10)
+        
+        sfimg = Image.open("assets/plot.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.track_coords_button = ctk.CTkButton(self.toolbar_frame, text="", width=80,
+                                                    height=80, image=sfimg,
+                                                    command=self.show_tracked_coordinates_window)
+        self.track_coords_button.pack(pady=10)
+        self.track_coords_button.configure(state=ctk.DISABLED)  # Disable the button initially
+
+        sfimg = Image.open("assets/back.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.menu_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                            image=sfimg, command=self.back_to_menu)
+        self.menu_button.pack(pady=10)
+
+        # self.info_label = ctk.CTkLabel(self.toolbar_frame, text="")
+        # self.info_label.pack(pady=10)
+        
+        # Create a frame to hold the video and slider widgets on the right side
+        self.video_frame = ctk.CTkFrame(self.root)
+        self.video_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True, padx=10, pady=10)
+        
+        self.canvas_width = 640
+        self.canvas_height = 480
+        self.video_view = ctk.CTkCanvas(self.video_frame, width=self.canvas_width,
+                                        height=self.canvas_height)
+        self.video_view.pack(pady=20, expand=True)
+
+        # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
+        #                             width=400, fg_color="red", progress_color="green",
+        #                             button_color="yellow", command=self.update_frame)
+        
+        # self.slider.set(0)
+        # self.slider.pack(pady=10)
+        # Bind updates to scrollbar & resizing
+        self.toolbar_frame.bind("<Configure>", self.on_frame_configure)
+        self.canvas.bind("<Configure>", self.on_canvas_configure)
+
+        # Enable mousewheel scrolling
+        self.canvas.bind_all("<MouseWheel>", self.on_mousewheel)  # Windows/macOS
+        self.canvas.bind_all("<Button-4>", self.on_mousewheel)    # Linux scroll up
+        self.canvas.bind_all("<Button-5>", self.on_mousewheel)    # Linux scroll down
+
+
+    def on_frame_configure(self, event):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def on_canvas_configure(self, event):
+        # Resize inner frame's width to match canvas width
+        canvas_width = event.width
+        self.canvas.itemconfig(self.toolbar_window, width=canvas_width)
+
+    def on_mousewheel(self, event):
+        if event.num == 5 or event.delta == -120:
+            self.canvas.yview_scroll(1, "units")
+        elif event.num == 4 or event.delta == 120:
+            self.canvas.yview_scroll(-1, "units")
 
 
     def open_video(self):
@@ -98,7 +156,8 @@ class App:
         #     self.load_video(videopath)
         #     return 
         
-        videopath = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
+        videopath = filedialog.askopenfilename(
+            filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
             # self.processor.fps = int(simpledialog.askinteger("FPS", "Enter FPS:"))
             # self.fps_label.configure(text=f"FPS: {self.processor.fps}")
@@ -118,9 +177,12 @@ class App:
         if len(self.processor.line_coords) < 2:
             self.processor.line_coords.append((event.x, event.y))
             if len(self.processor.line_coords) == 2:
-                self.video_view.create_line(self.processor.line_coords[0], self.processor.line_coords[1], fill="red", width=2)
-                self.processor.ref_distance = simpledialog.askfloat("Reference Distance", "Enter the reference distance in your chosen unit:")
-                self.info_label.configure(text=f"Reference Distance: {self.processor.ref_distance} units")
+                self.video_view.create_line(self.processor.line_coords[0],
+                                            self.processor.line_coords[1], fill="red", width=2)
+                self.processor.ref_distance = simpledialog.askfloat("Reference Distance",
+                                            "Enter the reference distance in your chosen unit:")
+                self.info_label.configure(
+                    text=f"Reference Distance: {self.processor.ref_distance} units")
     
 
     def mark_axes(self):
