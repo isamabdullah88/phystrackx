@@ -1,13 +1,11 @@
 import os
 import cv2
-import numpy as np
 import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
 from tkinter import messagebox
-from video_processing import VideoProcessor
-from math import floor, ceil
+from math import floor
 
 from .App import App
 from experiments.Marangoni import Marangoni
@@ -19,10 +17,11 @@ class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
 
-        # self.circle = Circle()
-
-        self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
-        self.boundary.pack(pady=5)
+        sfimg = Image.open("assets/boundary.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.boundary = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                      image=sfimg, command=self.drawcircle)
+        self.boundary.pack(pady=10)
         self._idx = 0
 
         self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
@@ -114,7 +113,7 @@ class MarangoniApp(App):
         def incircle(event):
             ex = (event.x-self.fx)
             ey = (event.y-self.fy)
-            
+
             frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
 
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
