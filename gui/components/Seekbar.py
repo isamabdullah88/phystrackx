@@ -1,4 +1,4 @@
-import math
+from math import floor
 import customtkinter as ctk
 import tkinter as tk
 
@@ -10,7 +10,7 @@ class CutSeekBar(ctk.CTkFrame):
         self.canvas = tk.Canvas(self, width=width, height=height, bg="#222222", highlightthickness=0)
         self.canvas.pack()
 
-        self.fcount = fcount
+        self.fcount = fcount-1
         self.width = width
         self.height = height
 
@@ -27,9 +27,9 @@ class CutSeekBar(ctk.CTkFrame):
 
 
     def setcount(self, fcount):
-        self.fcount = fcount
-        self.startidx = math.floor(0.2*self.fcount)
-        self.endidx = math.floor(0.8*self.fcount)
+        self.fcount = fcount-1
+        self.startidx = floor(0.2*self.fcount)
+        self.endidx = floor(0.8*self.fcount)
         self.idx = self.startidx
         self.draw()
 
@@ -45,18 +45,19 @@ class CutSeekBar(ctk.CTkFrame):
         x1 = self.frame_to_x(self.startidx)
         x2 = self.frame_to_x(self.endidx)
 
+        recth = floor(self.height/2)
         # Draw background bar
-        self.canvas.create_rectangle(0, self.height//2 - 4, self.width, self.height//2 + 4, fill="#444")
+        self.canvas.create_rectangle(0, recth//2 - 3, self.width, recth//2 + 3, fill="#444")
 
         # Draw selected range (trim region)
-        self.canvas.create_rectangle(x1, self.height//2 - 6, x2, self.height//2 + 6, fill="#3a89f4", outline="")
+        self.canvas.create_rectangle(x1, recth//2 - 4, x2, recth//2 + 4, fill="#3a89f4", outline="")
 
         # Draw draggable handles
-        self.canvas.create_line(x1, 0, x1, self.height, fill="white", width=3, tag="start")
-        self.canvas.create_line(x2, 0, x2, self.height, fill="white", width=3, tag="end")
+        self.canvas.create_line(x1, 0, x1, recth-2, fill="white", width=3, tag="start")
+        self.canvas.create_line(x2, 0, x2, recth-2, fill="white", width=3, tag="end")
 
         # Optional: display current range
-        self.canvas.create_text(self.width//2, self.height - 8, fill="white",
+        self.canvas.create_text(self.width//2, recth+10, fill="white",
                                 text=f"Trim Range: {self.startidx} - {self.endidx}")
 
     def click(self, event):
