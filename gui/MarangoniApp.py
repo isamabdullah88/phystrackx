@@ -11,7 +11,7 @@ from math import floor, ceil
 
 from .App import App
 from experiments.Marangoni import Marangoni
-from .Core import Circle, circilize
+from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
 
@@ -19,10 +19,10 @@ class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
 
-        self.circle = Circle()
+        # self.circle = Circle()
 
         self.boundary = ctk.CTkButton(self.filter_frame, text="Mark Boundary", command=self.drawcircle)
-        self.boundary.pack(pady=10)
+        self.boundary.pack(pady=5)
         self._idx = 0
 
         self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
@@ -66,7 +66,7 @@ class MarangoniApp(App):
         self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def update_frame(self):
-
+        
         frame = self.marangoni.frame(index=self.seekbar.idx)
         fwidth = self.marangoni.frame_width
         fheight = self.marangoni.frame_height
@@ -114,54 +114,57 @@ class MarangoniApp(App):
         def incircle(event):
             ex = (event.x-self.fx)
             ey = (event.y-self.fy)
-            radx = 2*abs(ex - self.ccoords[0])
-            rady = 2*abs(ey - self.ccoords[1])
+
+            # radx = 2*abs(ex - self.ccoords[0])
+            # rady = 2*abs(ey - self.ccoords[1])
             
-            circ, matte = circilize(radx, rady)
+            # circ, matte = circilize(radx, rady)
             
-            height, width = self._frame.shape[:2]
-            cx, cy = self.ccoords
-            frame = self._frame.copy()
+            # height, width = self._frame.shape[:2]
+            # cx, cy = self.ccoords
+            # frame = self._frame.copy()
 
-            cysrt = cy-floor(rady/2)
-            cyend = cy+ceil(rady/2)
-            cxsrt = cx-floor(radx/2)
-            cxend = cx+ceil(radx/2)
+            # cysrt = cy-floor(rady/2)
+            # cyend = cy+ceil(rady/2)
+            # cxsrt = cx-floor(radx/2)
+            # cxend = cx+ceil(radx/2)
 
-            if cxsrt < 0:
-                circ = circ[:,-cxsrt:]
-                matte = matte[:,-cxsrt:]
-                cxsrt = 0
+            # if cxsrt < 0:
+            #     circ = circ[:,-cxsrt:]
+            #     matte = matte[:,-cxsrt:]
+            #     cxsrt = 0
 
-            if cxend > width:
-                cxend = width
-                circ = circ[:,:cxend-cxsrt]
-                matte = matte[:,:cxend-cxsrt]
+            # if cxend > width:
+            #     cxend = width
+            #     circ = circ[:,:cxend-cxsrt]
+            #     matte = matte[:,:cxend-cxsrt]
 
-            if cysrt < 0:
-                circ = circ[-cysrt:,:]
-                matte = matte[-cysrt:,:]
-                cysrt = 0
+            # if cysrt < 0:
+            #     circ = circ[-cysrt:,:]
+            #     matte = matte[-cysrt:,:]
+            #     cysrt = 0
 
-            if cyend > height:
-                cyend = height
-                circ = circ[:cyend-cysrt, :radx]
-                matte = matte[:cyend-cysrt, :radx]
+            # if cyend > height:
+            #     cyend = height
+            #     circ = circ[:cyend-cysrt, :radx]
+            #     matte = matte[:cyend-cysrt, :radx]
 
-            frame_crop = frame[cysrt:cyend, cxsrt:cxend]
+            # frame_crop = frame[cysrt:cyend, cxsrt:cxend]
 
-            frame_cropbd = cv2.addWeighted(frame_crop, 0.6, circ, 0.4, 0)
-            frame_cropbd[matte < 150] = frame_crop[matte < 150]
+            # frame_cropbd = cv2.addWeighted(frame_crop, 0.6, circ, 0.4, 0)
+            # frame_cropbd[matte < 150] = frame_crop[matte < 150]
             
-            matte_frame = np.zeros((height, width), np.uint8)
-            matte_frame[cysrt:cyend, cxsrt:cxend] = matte
-            frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
+            # matte_frame = np.zeros((height, width), np.uint8)
+            # matte_frame[cysrt:cyend, cxsrt:cxend] = matte
+            # frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
+            frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
+
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             self.photo = ImageTk.PhotoImage(image=img)
+            self._mask = mask
 
             self.video_view.itemconfig(self.imgview, image=self.photo)
-
-            self._mask = matte_frame
+            
 
         self.video_view.bind("<Button-1>", ondown)
         self.video_view.bind("<B1-Motion>", incircle)
