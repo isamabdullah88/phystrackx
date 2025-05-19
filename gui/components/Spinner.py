@@ -9,7 +9,7 @@ class SpinnerPopup:
 
         # Load animated GIF
         self.frames = [ImageTk.PhotoImage(img) for img in ImageSequence.Iterator(Image.open(
-            "./assets/load-2765_128.gif"))]
+            "./assets/process.gif"))]
         self.imgview = self.parent.create_image(width//2, height//2, image=self.frames[0],
                                                 anchor="center")
 
