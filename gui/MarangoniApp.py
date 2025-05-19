@@ -114,49 +114,7 @@ class MarangoniApp(App):
         def incircle(event):
             ex = (event.x-self.fx)
             ey = (event.y-self.fy)
-
-            # radx = 2*abs(ex - self.ccoords[0])
-            # rady = 2*abs(ey - self.ccoords[1])
             
-            # circ, matte = circilize(radx, rady)
-            
-            # height, width = self._frame.shape[:2]
-            # cx, cy = self.ccoords
-            # frame = self._frame.copy()
-
-            # cysrt = cy-floor(rady/2)
-            # cyend = cy+ceil(rady/2)
-            # cxsrt = cx-floor(radx/2)
-            # cxend = cx+ceil(radx/2)
-
-            # if cxsrt < 0:
-            #     circ = circ[:,-cxsrt:]
-            #     matte = matte[:,-cxsrt:]
-            #     cxsrt = 0
-
-            # if cxend > width:
-            #     cxend = width
-            #     circ = circ[:,:cxend-cxsrt]
-            #     matte = matte[:,:cxend-cxsrt]
-
-            # if cysrt < 0:
-            #     circ = circ[-cysrt:,:]
-            #     matte = matte[-cysrt:,:]
-            #     cysrt = 0
-
-            # if cyend > height:
-            #     cyend = height
-            #     circ = circ[:cyend-cysrt, :radx]
-            #     matte = matte[:cyend-cysrt, :radx]
-
-            # frame_crop = frame[cysrt:cyend, cxsrt:cxend]
-
-            # frame_cropbd = cv2.addWeighted(frame_crop, 0.6, circ, 0.4, 0)
-            # frame_cropbd[matte < 150] = frame_crop[matte < 150]
-            
-            # matte_frame = np.zeros((height, width), np.uint8)
-            # matte_frame[cysrt:cyend, cxsrt:cxend] = matte
-            # frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
             frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
 
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
