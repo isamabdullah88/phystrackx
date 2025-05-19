@@ -10,7 +10,7 @@ class Experiment:
         self._vidreader = None
         self.frame_width = None
         self.frame_height = None
-        self.frame_count = 0
+        self.fcount = 0
         
         self.active_duration = []
         self.tracked_pts = []
@@ -21,12 +21,16 @@ class Experiment:
         self._vidreader = VideoReader(video_path)
         self.frame_width = self._vidreader.width
         self.frame_height = self._vidreader.height
-        self.frame_count = self._vidreader.frame_count
+        self.fcount = self._vidreader.fcount
+        print('frame count: ', self.fcount)
 
 
     def frame(self, index=None):
-        if (index is None) or (self.active_duration is None):
-            f = self._vidreader.read()
+        if (index is None):
+            return self._vidreader.read()
+        
+        if (len(self.active_duration) == 0):
+            f = self._vidreader.read(index)
         else:
             f = self._vidreader.read(self.active_duration[index])
 
@@ -41,7 +45,7 @@ class Experiment:
         
         motion_scores = []
 
-        for i in  range(self.frame_count):
+        for i in  range(self.fcount):
             frame = self._vidreader.read()
 
             mask = self.bg_subtractor.apply(frame)
@@ -59,7 +63,7 @@ class Experiment:
         win_len = 15
 
         scores_bin = []
-        for i in range(1, self.frame_count+1):
+        for i in range(1, self.fcount+1):
             idx = i-win_len
             if idx < 0: idx = 0
 
@@ -87,8 +91,8 @@ class Experiment:
         start, end = groups[0]
         
         start = max(start-20, 0)
-        end = min(end+20, self._vidreader.frame_count)
+        end = min(end+20, self._vidreader.fcount)
 
         self.active_duration = list(range(start, end, 1))
 
-        self.frame_count = len(self.active_duration)
+        self.fcount = len(self.active_duration)

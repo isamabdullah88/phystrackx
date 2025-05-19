@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 from .Experiments import Experiments
+from .NonRigid import NonRigid
 
 class MenuScreen:
     def __init__(self, master, restart=None):
@@ -52,10 +53,8 @@ class MenuScreen:
 
     def on_non_rigid(self):
         self.master.destroy()
-        root = tk.Tk()
-        root.geometry("960x640")
-        app = VideoApp2(root)
-        root.mainloop()
+        
+        NonRigid()
 
     def on_auto(self):
         self.master.destroy()

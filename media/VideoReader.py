@@ -7,7 +7,7 @@ class VideoReader():
         if not self._reader.isOpened():
             print("Video unable to open!")
 
-        self.frame_count = int(self._reader.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fcount = int(self._reader.get(cv2.CAP_PROP_FRAME_COUNT))
         self.width = int(self._reader.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self._reader.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._start_idx = 0

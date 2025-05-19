@@ -1,56 +1,82 @@
-
+import os
 import cv2
-# import tkinter as tk
+import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
 from tkinter import messagebox
-from video_processing import VideoProcessor
 from math import floor
 
 from .App import App
 from experiments.Marangoni import Marangoni
+from .Core import circilize, fcrop_coords
+from .components.Spinner import SpinnerPopup
+from .components.Seekbar import CutSeekBar
 
 class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
-        self.processor = VideoProcessor()
-        self.marangoni = Marangoni()
 
-    def load_video(self):
-        self.marangoni.add_video(self.processor.video_path)
-        self.marangoni.crop_intime()
+        sfimg = Image.open("assets/boundary.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.boundary = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                      image=sfimg, command=self.drawcircle)
+        self.boundary.pack(pady=10)
+        self._idx = 0
+
+        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
+
+        self.ccoords = (0, 0)
+
+        # mask from user for tracking
+        self._mask = None
+
+        tempdir = './temp'
+        if not os.path.exists(tempdir):
+            os.makedirs(tempdir)
+
+        self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+
+        self.marangoni = Marangoni(trackpath=self._trackpath)
+
+
+
+    def load_video(self, videopath):
+        self.marangoni.add_video(videopath)
+        
+        self.seekbar.pack(pady=10)
+        self.seekbar.setcount(self.marangoni.fcount)
 
         frame1 = self.marangoni.frame(0)
         self.display_first_frame(frame1)
 
-    def display_first_frame(self, frame=None):
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        photo = ImageTk.PhotoImage(image=img)
+    def display_first_frame(self, frame):
+        fwidth = self.marangoni.frame_width
+        fheight = self.marangoni.frame_height
+        frame = self.resize_frame(frame, fwidth, fheight)
 
-        self.fx = floor(self.canvas_width/2 - self.marangoni.frame_width/2)
-        self.fy = floor(self.canvas_height/2 - self.marangoni.frame_height/2)
+        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=img)
+        self._frame = frame
 
-        # print('frame ox: ', self.frame_ox)
-        self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
+        self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
 
-        self.slider.configure(from_=0, to=self.marangoni.frame_count - 1)
-        self.slider.set(0)
+        self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        
+    def update_frame(self):
+        
+        frame = self.marangoni.frame(index=self.seekbar.idx)
+        fwidth = self.marangoni.frame_width
+        fheight = self.marangoni.frame_height
 
-    def update_frame(self, event):
-        frame_idx = int(self.slider.get())
+        frame = self.resize_frame(frame, fwidth, fheight)
 
-        frame = self.marangoni.frame(index=frame_idx)
+        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=img)
+        self._frame = frame
 
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        photo = ImageTk.PhotoImage(image=img)
-
-        # x = floor(self.canvas_width/2 - self.marangoni.frame_width/2)
-        # y = floor(self.canvas_height/2 - self.marangoni.frame_height/2)
-        # self.video_view.delete('all')
-        self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        self.video_view.itemconfig(self.imgview, image=self.photo)
 
     def mark_axes(self):
 
@@ -66,47 +92,69 @@ class MarangoniApp(App):
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
-            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
+
             self.video_view.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            # print(self._ref_frame)
             self.video_view.unbind("<Motion>")
             self.video_view.unbind("<Button>")
 
         self.video_view.bind("<Motion>", update_axes)
         self.video_view.bind("<Button>", store_click)
 
-    def start_bbox(self, event):
-        self.start_x, self.start_y = event.x, event.y
-        self.current_bbox = self.video_view.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
-        self.video_view.bind("<B1-Motion>", self.draw_bbox)
-        self.video_view.bind("<ButtonRelease-1>", self.finish_bbox)
+    def drawcircle(self):
+        
+        def ondown(event):
+            self.ccoords = (event.x-self.fx, event.y-self.fy)
+            
+            self.photo = ImageTk.PhotoImage(circilize(10, 10))
+            
+            self.video_view.itemconfig(self.imgview, image=self.photo)
+            
+        def incircle(event):
+            ex = (event.x-self.fx)
+            ey = (event.y-self.fy)
 
-    def draw_bbox(self, event):
-        self.video_view.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
+            frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
 
-    def finish_bbox(self, event):
-        self.video_view.unbind("<B1-Motion>")
-        self.video_view.unbind("<ButtonRelease-1>")
-        bbox_coords = (self.start_x, self.start_y, event.x, event.y)
-        # self.bboxes_to_track.append(bbox_coords)
-        cx = (bbox_coords[0] + bbox_coords[2]) / 2
-        cy = (bbox_coords[1] + bbox_coords[3]) / 2
+            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            self.photo = ImageTk.PhotoImage(image=img)
+            self._mask = mask
 
-        self.video_view.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="red")
+            self.video_view.itemconfig(self.imgview, image=self.photo)
+            
 
-        # frame_ox, frame_oy = self._ref_frame
+        self.video_view.bind("<Button-1>", ondown)
+        self.video_view.bind("<B1-Motion>", incircle)
 
-        cx -= self.fx
-        cy -= self.fy
-        self.processor.points_to_track.append((cx, cy))
+
+    def start_tracking(self):
+        """
+        Detects and tracks radius for the main marangoni circle using classical techniques.
+        """
+
+        self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
+
+        def trackbg(popup):
+            startidx = self.seekbar.startidx
+            endidx = self.seekbar.endidx
+            self.marangoni.track(self._mask, startidx, endidx)
+            
+            self.root.after(0, popup.destroy())
+
+            self.load_video(self._trackpath)
+
+            self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
+
+        threading.Thread(target=trackbg, args=(self.popup,)).start()
+
+
+
+
 
     def plot_distances(self):
         if len(self.marangoni.tracked_pts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
-
-        # ox, oy = self._ref_frame
 
         num_tracks = len(self.marangoni.tracked_pts)
         _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
@@ -120,20 +168,6 @@ class MarangoniApp(App):
             axes[i][0].set_title("x coordinates")
             axes[i][1].plot(ycoords)
             axes[i][1].set_title("y coordinates")
+
         plt.tight_layout()
         plt.show()
-
-
-    def start_tracking(self):
-        """
-        Implements Lucas-Kanade optical flow tracking for marked points across video frames.
-        This method processes the entire video sequence and tracks the motion of selected points.
-        """
-        # Input validation: ensure points have been marked for tracking
-        if not self.processor.points_to_track:
-            messagebox.showerror("Error", "Please mark points to track first.")
-            return
-
-        self.marangoni.track(self.processor.points_to_track)
-
-        self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button

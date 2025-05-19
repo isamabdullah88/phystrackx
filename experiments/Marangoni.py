@@ -1,51 +1,52 @@
 
-# import matplotlib.pyplot as plt
-# import trackpy as tp
-# from math import floor
 # from stardist.models import StarDist2D
 # from stardist.plot import render_label
 # from csbdeep.utils import normalize
-from itertools import groupby
 from math import floor
 import cv2
 import numpy as np
 from tqdm import tqdm
 
 from .Experiment import Experiment
-from media import VideoReader
 from filters import Smoothen
 
 class Marangoni(Experiment):
-    def __init__(self):
+    def __init__(self, trackpath):
         super().__init__()
 
+        self._trackpath = trackpath
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
-    def track(self):
+    def track(self, mask, startidx=0, endidx=0):
+        """Tracks the radius in marangoni effect
 
-        self._vidreader.seek(250)
+        Args:
+            mask (np.ndarray): A mask that specifies diameter inside which the experiment is
+            happening. It has size of gui canvas.
+        """
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
 
-        import os
+        mask = cv2.resize(mask, (self.frame_width, self.frame_height))
 
-        tempdir =  "./tempdir"
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
+        self._vidreader.seek(startidx)
+        
+        if endidx == 0:
+            fcount = self._vidreader.fcount - startidx
+        else:
+            fcount = endidx - startidx
 
-        crop = (200, 1750, 0, 1080)
-
+        # Filters for trajectory smoothing
         smoothenx = Smoothen(tol=50)
         smootheny = Smoothen(tol=50)
         smoothenr = Smoothen(tol=100)
-        
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        videowriter = cv2.VideoWriter(os.path.join(tempdir, "TMP.MP4"), fourcc, 24, (1750-200, 1080))
 
-        self._vidreader.seek(200)
 
-        for i in tqdm(range(480), desc="Marangoni", total=480):
+        for i in tqdm(range(fcount), desc="Marangoni", total=fcount):
 
             frame = self._vidreader.read()
-            frame = frame[:, 200:1750]
+
+            frame[mask < 150] = 0
             
             gray = np.sum(frame.copy(), axis=2)
             gray = 1-gray/np.max(gray)
@@ -83,21 +84,12 @@ class Marangoni(Experiment):
             y = floor(smootheny.smoothen(y))
             r = floor(smoothenr.smoothen(r))
 
-            # for contour in contours:
-            #     (x, y), r = cv2.minEnclosingCircle(contour)
-            #     center = (int(x), int(y))
-            #     r = int(r)
-
-                # Draw the circle
+            # Draw the circle
             cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
 
-            videowriter.write(frame)
+            self._videowriter.write(frame)
 
-            # if i%10==0:
-            #     print('Processed: ', i)
-
-        # cv2.destroyAllWindows()
-        videowriter.release()
+        self._videowriter.release()
 
         # Store tracked points for later analysis
         # self.processor.points_tracked = points_tracked
@@ -106,7 +98,7 @@ class Marangoni(Experiment):
 
 if __name__ == '__main__':
     marangoni = Marangoni()
-    marangoni.add_video("../Dataset/Marangoni/Green_Marangoni_Bursting_1.MOV")
+    marangoni.add_video("../Dataset/Marangoni/Green_Marangoni_Bursting_1.mov")
 
     # marangoni.crop_intime()
     marangoni.track()
