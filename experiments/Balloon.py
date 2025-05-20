@@ -26,12 +26,16 @@ class Balloon(Experiment):
         Args:
             mask (np.ndarray): A mask that specifies diameter inside which the experiment is
             happening. It has size of gui canvas.
+
+        It first establishes a base ellipse model for the balloon, using preprocessing and then 
+        applying ransac on sampled data to fit the model on outlier-free subset of data.
+        It then tracks the ellipse in time to detect time evolving ellipse.
         """
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         # print('Before video writer')
         self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
 
-        # mask = cv2.resize(mask, (self.frame_width, self.frame_height))
+        mask = cv2.resize(mask, (self.frame_width, self.frame_height))
         # print('Before video reader seek')
         self._vidreader.seek(startidx)
         
@@ -46,23 +50,31 @@ class Balloon(Experiment):
         # smoothenx = Smoothen(tol=50)
         # smootheny = Smoothen(tol=50)
         # smoothenr = Smoothen(tol=100)
+        # mask = np.zeros((self.frame_height, self.frame_width))
+        # mask[300:700, 420:800] = 255
+
+        points = cv2.findNonZero(mask)
+
+        # Get bounding rectangle
+        x, y, w, h = cv2.boundingRect(points)
 
         # print('before loop')
         for i in tqdm(range(fcount), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
-            frame = frame[300:700, 420:800]
+            frame[mask < 150] = 0
+            frame = frame[y:y+h, x:x+w]
             # frame = cv2.resize(frame, (640, 360))
 
             framep = frame.copy()
 
             gray = cv2.cvtColor(framep, cv2.COLOR_BGR2GRAY)
-            # cv2.imwrite(f"gray-plain-{i}.png", gray)
+            cv2.imwrite(f"gray-plain-{i}.png", gray)
             clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
             gray = clahe.apply(gray)
-            # cv2.imwrite(f"gray-enhanced-{i}.png", gray)
+            cv2.imwrite(f"gray-enhanced-{i}.png", gray)
             edges = cv2.Canny(gray, 50, 150)
-            # cv2.imwrite(f"edges-enhanced-{i}.png", edges)
+            cv2.imwrite(f"edges-enhanced-{i}.png", edges)
             # edgesp = edges.copy()*0
             # edgesp[300:750, 420:800] = edges[300:750, 420:800]
 
@@ -71,13 +83,13 @@ class Balloon(Experiment):
             # contours = sorted(contours, key=cv2.contourArea, reverse=True)
             
             cv2.drawContours(gray, contours, -1, (0, 0, 0), thickness=5)
-            # cv2.imwrite(f"gray-contour-{i}.png", gray)
+            cv2.imwrite(f"gray-contour-{i}.png", gray)
             # clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
             # gray = clahe.apply(gray)
             # cv2.imwrite(f'gray-cont-enhanced{i}.png', gray)
             
             edges = cv2.Canny(gray, 50, 150)
-            # cv2.imwrite(f"edges-cont-{i}.png", edges)
+            cv2.imwrite(f"edges-cont-{i}.png", edges)
             # edgesp[300:750, 420:800] = edges[300:750, 420:800]
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]

@@ -8,7 +8,7 @@ from tkinter import messagebox
 from math import floor
 
 from .App import App
-from experiments.Marangoni import Marangoni
+from experiments.Balloon import Balloon
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
@@ -37,22 +37,22 @@ class BalloonApp(App):
 
         self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
 
-        self.marangoni = Marangoni(trackpath=self._trackpath)
+        self.balloon = Balloon(trackpath=self._trackpath)
 
 
 
     def load_video(self, videopath):
-        self.marangoni.add_video(videopath)
+        self.balloon.add_video(videopath)
         
         self.seekbar.pack(pady=10)
-        self.seekbar.setcount(self.marangoni.fcount)
+        self.seekbar.setcount(self.balloon.fcount)
 
-        frame1 = self.marangoni.frame(0)
+        frame1 = self.balloon.frame(0)
         self.display_first_frame(frame1)
 
     def display_first_frame(self, frame):
-        fwidth = self.marangoni.frame_width
-        fheight = self.marangoni.frame_height
+        fwidth = self.balloon.frame_width
+        fheight = self.balloon.frame_height
         frame = self.resize_frame(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
@@ -66,9 +66,9 @@ class BalloonApp(App):
         
     def update_frame(self):
         
-        frame = self.marangoni.frame(index=self.seekbar.idx)
-        fwidth = self.marangoni.frame_width
-        fheight = self.marangoni.frame_height
+        frame = self.balloon.frame(index=self.seekbar.idx)
+        fwidth = self.balloon.frame_width
+        fheight = self.balloon.frame_height
 
         frame = self.resize_frame(frame, fwidth, fheight)
 
@@ -129,7 +129,7 @@ class BalloonApp(App):
 
     def start_tracking(self):
         """
-        Detects and tracks radius for the main marangoni circle using classical techniques.
+        Detects and tracks radius for the main balloon circle using classical techniques.
         """
 
         self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
@@ -137,7 +137,7 @@ class BalloonApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.marangoni.track(self._mask, startidx, endidx)
+            self.balloon.track(self._mask, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
@@ -152,15 +152,15 @@ class BalloonApp(App):
 
 
     def plot_distances(self):
-        if len(self.marangoni.tracked_pts) < 1:
+        if len(self.balloon.tracked_pts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        num_tracks = len(self.marangoni.tracked_pts)
+        num_tracks = len(self.balloon.tracked_pts)
         _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
 
         for i in range(num_tracks):
-            tracked_pts = self.marangoni.tracked_pts[i]
+            tracked_pts = self.balloon.tracked_pts[i]
             xcoords = tracked_pts[0, :] - self.fx
             ycoords = tracked_pts[1, :] - self.fy
 
