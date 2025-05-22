@@ -29,7 +29,7 @@ class Balloon(Experiment):
         self.frame_height = 360
         self.frame_width = floor(self.aspratio * self.frame_height)
 
-        return self.frame_width, self.frame_height
+        # return self.frame_width, self.frame_height
 
 
     def preprocess(self, frame):
@@ -50,7 +50,7 @@ class Balloon(Experiment):
         ellipse = cv2.fitEllipse(contour)
         (xc, yc), (a, b), angle = ellipse
 
-        return (yc, xc), (b/2, a/2), angle
+        return (xc, yc), (a, b), angle
 
 
     def track(self, mask, startidx=0, endidx=0):
@@ -66,6 +66,7 @@ class Balloon(Experiment):
         Note: Make sure that the first frame has almost perfectly accurate detection.
         """
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.resize()
         self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
         # self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (640, 360))
 
@@ -100,14 +101,16 @@ class Balloon(Experiment):
         initpts = ptsellpise(ellipse)
 
         # Run active contour on this frame
+        gray = self.preprocess(frame)
         snake = active_contour(gray, initpts)
+        # print('snake: ', snake.shape)
 
         # Fit ellipse on the data
         snakecont = snake.copy().astype(np.float32).reshape(-1, 1, 2)
-        ellipse = cv2.fitEllipse(snakecont[:,:,[1, 0]])
+        ellipse = cv2.fitEllipse(snakecont[:, :,[1, 0]])
         # cv2.ellipse(frame, balloon, (0, 255, 0), 2)
-        print('snake: ', snake.shape)
-        print('ellipse: ', ellipse)
+        # print('snake: ', snake.shape)
+        # print('ellipse: ', ellipse)
 
         # snakelvl = np.zeros_like(gray)
         # snakelvl[snake] = 1
@@ -139,12 +142,12 @@ class Balloon(Experiment):
             # scale = 1.1  # Expand by 10%
             # snakecont = (snakecont - center) * scale + center
             # snakecont = np.round(snakecont).astype(np.int32)
-            (cx, cy), (a, b), angle = ellipse
+            # (cx, cy), (a, b), angle = ellipse
             # a = a*0.9
             # b = b*0.9
-            ellipse = (cx, cy), (a, b), angle
+            # ellipse = (cx, cy), (a, b), angle
             # print('reduced ellipse: ', ellipse)
-            initpts = ptsellpise(ellipse, snake.shape[0])[:, [1, 0]]
+            initpts = ptsellpise(ellipse, snake.shape[0])
 
             snakep = active_contour(gray, initpts, max_num_iter=100, gamma=0.5)
             snakecontp = snakep.copy().astype(np.float32).reshape(-1, 1, 2)
@@ -154,18 +157,21 @@ class Balloon(Experiment):
             
             # snakelvl = morphological_geodesic_active_contour(gimg, 50, snakelvl, balloon=1)
             # cv2.ellipse(frame, ellipse, (0, 255, 0), 1)
+            
+            # cv2.drawContour(frame, snakecontp[:,:,[1,0]].astype(np.int32), -1, (0, 255, 0), thickness=2)
+            cv2.polylines(frame, [snakecontp[:,:,[1,0]].astype(np.int32)], isClosed=True,
+                          color=(0, 255, 0), thickness=1)
+
             # fig, ax = plt.subplots(figsize=(7, 7))
             # ax.imshow(frame, cmap=plt.cm.gray)
             # ax.plot(snakecont[:,:, 1], snakecont[:,:, 0], '--r', lw=1)
-            # ax.plot(snakecontp[:,:, 1], snakecontp[:,:, 0], '-b', lw=1)
+            # # ax.plot(snakecontp[:,:, 1], snakecontp[:,:, 0], '-b', lw=1)
             # ax.plot(initpts[:, 1], initpts[:, 0], '-m', lw=1)
             # ax.set_xticks([]), ax.set_yticks([])
             # ax.axis([0, frame.shape[1], frame.shape[0], 0])
-
             # plt.show()
-            cv2.drawContours(frame, snakecontp[:,:,[1,0]].astype(np.int32), -1, (0, 255, 0), thickness=2)
-
             # snake = snakep
+            
             snakecont = snakecontp
             ellipse = ellipsep
 
@@ -181,7 +187,7 @@ class Balloon(Experiment):
 
 if __name__ == '__main__':
     balloon = Balloon("track.mp4")
-    balloon.add_video("../Dataset/Balloon/Balloon.mp4")
+    balloon.add_video("Balloon.mp4")
 
     # balloon.crop_intime()
-    balloon.track(None, 100, 1550)
+    balloon.track(None, 100, 500)
