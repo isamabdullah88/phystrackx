@@ -47,6 +47,41 @@ class Balloon(Experiment):
         return (xc, yc), (a, b), angle
 
 
+    def ocr(self, mask, startidx=0, endidx=0):
+        import pytesseract
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        self.resize()
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
+
+        self._vidreader.seek(startidx)
+        
+        if endidx == 0:
+            fcount = self._vidreader.fcount - startidx
+        else:
+            fcount = endidx - startidx
+            
+        for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
+
+            frame = self._vidreader.read()
+            frame = frame[270:320, 1820:1920]
+            # Convert to grayscale
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Optional: thresholding to improve contrast
+            plt.imshow(gray)
+            _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
+            plt.figure()
+            plt.imshow(thresh)
+            plt.show()
+            
+            custom_config = r'--oem 3 --psm 6 outputbase digits'
+            numbers = pytesseract.image_to_string(gray, config=custom_config)
+            print("Detected numbers:", numbers)
+
+
+
     def track(self, mask, startidx=0, endidx=0):
         """Tracks the radius in marangoni effect
 
@@ -121,5 +156,10 @@ if __name__ == '__main__':
     balloon = Balloon("track.mp4")
     balloon.add_video("Balloon.mp4")
 
-    mask = cv2.imread("mask-balloon.png", 0)
-    balloon.track(None, 100, 500)
+    # mask = cv2.imread("mask-balloon.png", 0)
+    # balloon.track(None, 100, 500)
+    
+    mask = cv2.imread("snap.png")
+    # plt.imshow(mask)
+    # plt.show()
+    balloon.ocr(mask, 100, 500)
