@@ -2,12 +2,8 @@ from math import floor
 import cv2
 import numpy as np
 from tqdm import tqdm
-from skimage.measure import EllipseModel, ransac
-from skimage.filters import gaussian
-from skimage.segmentation import (active_contour, morphological_geodesic_active_contour,
-                                  inverse_gaussian_gradient)
+from skimage.segmentation import active_contour
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
 from .Experiment import Experiment
 from filters import Smoothen
@@ -28,8 +24,6 @@ class Balloon(Experiment):
 
         self.frame_height = 360
         self.frame_width = floor(self.aspratio * self.frame_height)
-
-        # return self.frame_width, self.frame_height
 
 
     def preprocess(self, frame):
@@ -68,7 +62,6 @@ class Balloon(Experiment):
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         self.resize()
         self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
-        # self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (640, 360))
 
         self._vidreader.seek(startidx)
         
@@ -82,7 +75,6 @@ class Balloon(Experiment):
         # smootheny = Smoothen(tol=50)
         # smoothenr = Smoothen(tol=100)
 
-        mask = cv2.imread("mask-balloon.png", 0)
         mask = cv2.resize(mask, (self.frame_width, self.frame_height))
         
         ellipse = self.prepmask(mask)
@@ -90,87 +82,30 @@ class Balloon(Experiment):
         frame = self._vidreader.read()
         frame = cv2.resize(frame, (self.frame_width, self.frame_height))
 
-        # RANSAC based ellipse fitting -----------------
-        """
-        gray = self.preprocess(frame, 0)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
-        ellipse = self.fit_ransac(contours, x, y)
-        """
-        
         initpts = ptsellpise(ellipse)
 
         # Run active contour on this frame
         gray = self.preprocess(frame)
         snake = active_contour(gray, initpts)
-        # print('snake: ', snake.shape)
 
         # Fit ellipse on the data
         snakecont = snake.copy().astype(np.float32).reshape(-1, 1, 2)
         ellipse = cv2.fitEllipse(snakecont[:, :,[1, 0]])
-        # cv2.ellipse(frame, balloon, (0, 255, 0), 2)
-        # print('snake: ', snake.shape)
-        # print('ellipse: ', ellipse)
-
-        # snakelvl = np.zeros_like(gray)
-        # snakelvl[snake] = 1
-
-        # Draw snake
-        # fig, ax = plt.subplots(figsize=(7, 7))
-        # ax.imshow(frame, cmap=plt.cm.gray)
-        # ax.plot(initpts[:, 1], initpts[:, 0], '-r', lw=1)
-        # ax.plot(snake[:, 1], snake[:, 0], '-b', lw=1)
-        # ax.set_xticks([]), ax.set_yticks([])
-        # ax.axis([0, frame.shape[1], frame.shape[0], 0])
-
-        # plt.show()
 
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.frame_width, self.frame_height))
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
-            gray = clahe.apply(gray)
+            gray = self.preprocess(frame)
 
-            # M = cv2.moments(snakecont)
-            # cx = int(M["m10"] / M["m00"])
-            # cy = int(M["m01"] / M["m00"])
-            # center = np.array([cx, cy])
-
-            # Expand each point away from the center
-            # scale = 1.1  # Expand by 10%
-            # snakecont = (snakecont - center) * scale + center
-            # snakecont = np.round(snakecont).astype(np.int32)
-            # (cx, cy), (a, b), angle = ellipse
-            # a = a*0.9
-            # b = b*0.9
-            # ellipse = (cx, cy), (a, b), angle
-            # print('reduced ellipse: ', ellipse)
             initpts = ptsellpise(ellipse, snake.shape[0])
 
             snakep = active_contour(gray, initpts, max_num_iter=100, gamma=0.5)
             snakecontp = snakep.copy().astype(np.float32).reshape(-1, 1, 2)
             ellipsep = cv2.fitEllipse(snakecontp[:,:,[1,0]])
-            # gimg = inverse_gaussian_gradient(gray)
-            # cv2.imwrite('gimg.png', gimg)
-            
-            # snakelvl = morphological_geodesic_active_contour(gimg, 50, snakelvl, balloon=1)
-            # cv2.ellipse(frame, ellipse, (0, 255, 0), 1)
-            
-            # cv2.drawContour(frame, snakecontp[:,:,[1,0]].astype(np.int32), -1, (0, 255, 0), thickness=2)
+
             cv2.polylines(frame, [snakecontp[:,:,[1,0]].astype(np.int32)], isClosed=True,
                           color=(0, 255, 0), thickness=1)
-
-            # fig, ax = plt.subplots(figsize=(7, 7))
-            # ax.imshow(frame, cmap=plt.cm.gray)
-            # ax.plot(snakecont[:,:, 1], snakecont[:,:, 0], '--r', lw=1)
-            # # ax.plot(snakecontp[:,:, 1], snakecontp[:,:, 0], '-b', lw=1)
-            # ax.plot(initpts[:, 1], initpts[:, 0], '-m', lw=1)
-            # ax.set_xticks([]), ax.set_yticks([])
-            # ax.axis([0, frame.shape[1], frame.shape[0], 0])
-            # plt.show()
-            # snake = snakep
             
             snakecont = snakecontp
             ellipse = ellipsep
@@ -180,14 +115,11 @@ class Balloon(Experiment):
 
         self._videowriter.release()
 
-        # Store tracked points for later analysis
-        # self.processor.points_tracked = points_tracked
-
 
 
 if __name__ == '__main__':
     balloon = Balloon("track.mp4")
     balloon.add_video("Balloon.mp4")
 
-    # balloon.crop_intime()
+    mask = cv2.imread("mask-balloon.png", 0)
     balloon.track(None, 100, 500)
