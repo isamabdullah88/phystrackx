@@ -113,10 +113,10 @@ class App:
         self.video_frame = ctk.CTkFrame(self.root)
         self.video_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True, padx=10, pady=10)
         
-        self.canvas_width = 640
-        self.canvas_height = 480
-        self.video_view = ctk.CTkCanvas(self.video_frame, width=self.canvas_width,
-                                        height=self.canvas_height)
+        self.cwidth = 640
+        self.cheight = 480
+        self.video_view = ctk.CTkCanvas(self.video_frame, width=self.cwidth,
+                                        height=self.cheight)
         self.video_view.pack(pady=20, expand=True)
 
         # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
@@ -140,8 +140,8 @@ class App:
 
     def on_canvas_configure(self, event):
         # Resize inner frame's width to match canvas width
-        canvas_width = event.width
-        self.canvas.itemconfig(self.toolbar_window, width=canvas_width)
+        cwidth = event.width
+        self.canvas.itemconfig(self.toolbar_window, width=cwidth)
 
     def on_mousewheel(self, event):
         if event.num == 5 or event.delta == -120:
@@ -249,16 +249,16 @@ class App:
     #     self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
     def resize_frame(self, frame, fwidth, fheight):
-        if (fwidth > self.canvas_width):
+        if (fwidth > self.cwidth):
             ratio = fheight/fwidth
-            fwidth = self.canvas_width
+            fwidth = self.cwidth
             fheight = floor(fwidth * ratio)
             
             frame = cv2.resize(frame, (fwidth, fheight))
 
-        if (fheight > self.canvas_height):
+        if (fheight > self.cheight):
             ratio = fwidth/fheight
-            fheight = self.canvas_height
+            fheight = self.cheight
             fwidth = floor(fheight*ratio)
             
             frame = cv2.resize(frame, (fwidth, fheight))

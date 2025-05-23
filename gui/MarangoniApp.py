@@ -51,24 +51,24 @@ class MarangoniApp(App):
         self.display_first_frame(frame1)
 
     def display_first_frame(self, frame):
-        fwidth = self.marangoni.frame_width
-        fheight = self.marangoni.frame_height
+        fwidth = self.marangoni.fwidth
+        fheight = self.marangoni.fheight
         frame = self.resize_frame(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         self._frame = frame
 
-        self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
-        self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
+        self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
+        self.fy = floor(self.cheight/2 - frame.shape[0]/2)
 
         self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def update_frame(self):
         
         frame = self.marangoni.frame(index=self.seekbar.idx)
-        fwidth = self.marangoni.frame_width
-        fheight = self.marangoni.frame_height
+        fwidth = self.marangoni.fwidth
+        fheight = self.marangoni.fheight
 
         frame = self.resize_frame(frame, fwidth, fheight)
 
@@ -86,8 +86,8 @@ class MarangoniApp(App):
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.video_view.create_line(0, y, self.canvas_width, y, fill="red", width=2, tags="axes")  # X-axis
-            self.video_view.create_line(x, 0, x, self.canvas_height, fill="blue", width=2, tags="axes")  # Y-axis
+            self.video_view.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+            self.video_view.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
@@ -132,7 +132,7 @@ class MarangoniApp(App):
         Detects and tracks radius for the main marangoni circle using classical techniques.
         """
 
-        self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
+        self.popup = SpinnerPopup(self.video_view, self.cwidth, self.cheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

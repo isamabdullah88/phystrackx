@@ -12,17 +12,26 @@ from experiments.Balloon import Balloon
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
+from .components.Rect import NormalizedRect, PixelRect
 
 class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
 
-        sfimg = Image.open("assets/boundary.png").resize((80, 80), Image.Resampling.LANCZOS)
+        # For drawing ellipse over tracking area
+        sfimg = Image.open("assets/circlebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.boundary = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
                                       image=sfimg, command=self.drawcircle)
-        self.boundary.pack(pady=10)
-        self._idx = 0
+        self.circlebd.pack(pady=10)
+        
+        # For drawing rectangle over text area
+        sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                      image=sfimg, command=self.drawrect)
+        self.circlebd.pack(pady=10)
+        
 
         self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
 
@@ -30,6 +39,8 @@ class BalloonApp(App):
 
         # mask from user for tracking
         self._mask = None
+        # rect for text detection
+        self._rect = None
 
         tempdir = './temp'
         if not os.path.exists(tempdir):
@@ -51,24 +62,25 @@ class BalloonApp(App):
         self.display_first_frame(frame1)
 
     def display_first_frame(self, frame):
-        fwidth = self.balloon.frame_width
-        fheight = self.balloon.frame_height
+        fwidth = self.balloon.fwidth
+        fheight = self.balloon.fheight
         frame = self.resize_frame(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         self._frame = frame
+        self.fheight, self.fwidth = self._frame.shape[:2]
 
-        self.fx = floor(self.canvas_width/2 - frame.shape[1]/2)
-        self.fy = floor(self.canvas_height/2 - frame.shape[0]/2)
+        self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
+        self.fy = floor(self.cheight/2 - frame.shape[0]/2)
 
         self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def update_frame(self):
         
         frame = self.balloon.frame(index=self.seekbar.idx)
-        fwidth = self.balloon.frame_width
-        fheight = self.balloon.frame_height
+        fwidth = self.balloon.fwidth
+        fheight = self.balloon.fheight
 
         frame = self.resize_frame(frame, fwidth, fheight)
 
@@ -86,8 +98,8 @@ class BalloonApp(App):
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.video_view.create_line(0, y, self.canvas_width, y, fill="red", width=2, tags="axes")  # X-axis
-            self.video_view.create_line(x, 0, x, self.canvas_height, fill="blue", width=2, tags="axes")  # Y-axis
+            self.video_view.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+            self.video_view.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
@@ -102,6 +114,7 @@ class BalloonApp(App):
         self.video_view.bind("<Button>", store_click)
 
     def drawcircle(self):
+        """Draws circle with filled transparent image laid over region of interest"""
         
         def ondown(event):
             self.ccoords = (event.x-self.fx, event.y-self.fy)
@@ -126,18 +139,45 @@ class BalloonApp(App):
         self.video_view.bind("<Button-1>", ondown)
         self.video_view.bind("<B1-Motion>", incircle)
 
+    
+    def drawrect(self):
+        """Draws rectangle with simple lines"""
+        self.rbox = None
+        
+        def ondown(event):
+            if self.rbox is not None:
+                self.video_view.delete(self.rbox)
+            
+            self.rcoords = (event.x, event.y)
+            
+            self.rbox = self.video_view.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            
+        def inrect(event):
+            sx, sy = self.rcoords
+            ex, ey = (event.x, event.y)
+
+            print('Rect Orig: ', (sx, sy, ex, ey))
+
+            self.video_view.coords(self.rbox, sx, sy, event.x, event.y)
+
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
+            print('Rect tr: ', self._rect.totuple())
+
+        self.video_view.bind("<Button-1>", ondown)
+        self.video_view.bind("<B1-Motion>", inrect)
+
 
     def start_tracking(self):
         """
         Detects and tracks radius for the main balloon circle using classical techniques.
         """
 
-        self.popup = SpinnerPopup(self.video_view, self.canvas_width, self.canvas_height)
+        self.popup = SpinnerPopup(self.video_view, self.cwidth, self.cheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.balloon.track(self._mask, startidx, endidx)
+            self.balloon.track(self._mask, self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 

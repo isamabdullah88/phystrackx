@@ -28,8 +28,8 @@ class SlidingFrictionApp(App):
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        self.fx = floor(self.canvas_width/2 - self.sliding_friction.frame_width/2)
-        self.fy = floor(self.canvas_height/2 - self.sliding_friction.frame_height/2)
+        self.fx = floor(self.cwidth/2 - self.sliding_friction.fwidth/2)
+        self.fy = floor(self.cheight/2 - self.sliding_friction.fheight/2)
 
         # print('frame ox: ', self.frame_ox)
         self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
@@ -46,8 +46,8 @@ class SlidingFrictionApp(App):
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        # x = floor(self.canvas_width/2 - self.sliding_friction.frame_width/2)
-        # y = floor(self.canvas_height/2 - self.sliding_friction.frame_height/2)
+        # x = floor(self.cwidth/2 - self.sliding_friction.fwidth/2)
+        # y = floor(self.cheight/2 - self.sliding_friction.fheight/2)
         # self.video_view.delete('all')
         self.video_view.create_image(self.fx, self.fy, image=photo, anchor='nw')
         self.video_view.photo = photo
@@ -60,8 +60,8 @@ class SlidingFrictionApp(App):
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.video_view.create_line(0, y, self.canvas_width, y, fill="red", width=2, tags="axes")  # X-axis
-            self.video_view.create_line(x, 0, x, self.canvas_height, fill="blue", width=2, tags="axes")  # Y-axis
+            self.video_view.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+            self.video_view.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """

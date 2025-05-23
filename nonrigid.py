@@ -921,18 +921,18 @@ class VideoApp2:
         collage_height = (num_snapshots + 3) // 4  # Number of rows
 
         # Get dimensions of a single frame
-        frame_height, frame_width, _ = snapshots[0].shape
+        fheight, fwidth, _ = snapshots[0].shape
 
         # Create an empty collage image
-        collage = np.zeros((collage_height * frame_height, collage_width * frame_width, 3), dtype=np.uint8)
+        collage = np.zeros((collage_height * fheight, collage_width * fwidth, 3), dtype=np.uint8)
 
         # Place snapshots into the collage
         for idx, snapshot in enumerate(snapshots):
             row = idx // collage_width
             col = idx % collage_width
-            start_y = row * frame_height
-            start_x = col * frame_width
-            collage[start_y:start_y + frame_height, start_x:start_x + frame_width] = snapshot
+            start_y = row * fheight
+            start_x = col * fwidth
+            collage[start_y:start_y + fheight, start_x:start_x + fwidth] = snapshot
 
         # Display the collage
         plt.imshow(cv2.cvtColor(collage, cv2.COLOR_BGR2RGB))
