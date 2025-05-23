@@ -11,8 +11,8 @@ from media import VideoReader
 class NonRigid():
     def __init__(self):
         self._vidreader = None
-        self.frame_width = None
-        self.frame_height = None
+        self.fwidth = None
+        self.fheight = None
         self.frame_count = 0
         # self._clip_start = 0
         
@@ -23,8 +23,8 @@ class NonRigid():
 
     def add_video(self, video_path):
         self._vidreader = VideoReader(video_path)
-        self.frame_width = self._vidreader.width
-        self.frame_height = self._vidreader.height
+        self.fwidth = self._vidreader.width
+        self.fheight = self._vidreader.height
         self.frame_count = self._vidreader.frame_count
         self._vidreader.seek(550)
 

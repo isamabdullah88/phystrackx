@@ -17,13 +17,13 @@ class Balloon(Experiment):
 
     def resize(self):
         """Resize frame shape to lower"""
-        if self.frame_height <= 360:
-            return self.frame_width, self.frame_height
+        if self.fheight <= 360:
+            return self.fwidth, self.fheight
         
-        self.aspratio = self.frame_width/self.frame_height
+        self.aspratio = self.fwidth/self.fheight
 
-        self.frame_height = 360
-        self.frame_width = floor(self.aspratio * self.frame_height)
+        self.fheight = 360
+        self.fwidth = floor(self.aspratio * self.fheight)
 
 
     def preprocess(self, frame):
@@ -47,13 +47,9 @@ class Balloon(Experiment):
         return (xc, yc), (a, b), angle
 
 
-    def ocr(self, mask, startidx=0, endidx=0):
+    def ocr(self, rect, startidx=0, endidx=0):
         import pytesseract
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
+        # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
         self._vidreader.seek(startidx)
         
@@ -61,29 +57,30 @@ class Balloon(Experiment):
             fcount = self._vidreader.fcount - startidx
         else:
             fcount = endidx - startidx
+
+        x, y, w, h = rect.totuple()
+        print('rect: ', rect.totuple())
+        print('fw, fh: ', (self.fwidth, self.fheight))
             
-        for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
+        for i in range(fcount):
 
             frame = self._vidreader.read()
-            frame = frame[270:320, 1820:1920]
+            frame = frame[y:y+h, x:x+w]
             # Convert to grayscale
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             # Optional: thresholding to improve contrast
-            plt.imshow(gray)
-            _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
-            plt.figure()
-            plt.imshow(thresh)
-            plt.show()
+            # plt.imshow(gray)
+            # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
             
             custom_config = r'--oem 3 --psm 6 outputbase digits'
             numbers = pytesseract.image_to_string(gray, config=custom_config)
-            print("Detected numbers:", numbers)
+            print("Number:", numbers)
 
 
 
-    def track(self, mask, startidx=0, endidx=0):
-        """Tracks the radius in marangoni effect
+    def track(self, mask, rect, startidx=0, endidx=0):
+        """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
             mask (np.ndarray): A mask that specifies diameter inside which the experiment is
@@ -94,9 +91,15 @@ class Balloon(Experiment):
         It then tracks the ellipse in time to detect time evolving ellipse.
         Note: Make sure that the first frame has almost perfectly accurate detection.
         """
+        # Do OCR detection
+        if rect is not None:
+            rectp = rect.normal2pixel(self.fwidth, self.fheight)
+            self.ocr(rectp, startidx=startidx, endidx=endidx)
+
+        # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.frame_width, self.frame_height))
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.fwidth, self.fheight))
 
         self._vidreader.seek(startidx)
         
@@ -110,12 +113,12 @@ class Balloon(Experiment):
         # smootheny = Smoothen(tol=50)
         # smoothenr = Smoothen(tol=100)
 
-        mask = cv2.resize(mask, (self.frame_width, self.frame_height))
+        mask = cv2.resize(mask, (self.fwidth, self.fheight))
         
         ellipse = self.prepmask(mask)
 
         frame = self._vidreader.read()
-        frame = cv2.resize(frame, (self.frame_width, self.frame_height))
+        frame = cv2.resize(frame, (self.fwidth, self.fheight))
 
         initpts = ptsellpise(ellipse)
 
@@ -130,7 +133,7 @@ class Balloon(Experiment):
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
-            frame = cv2.resize(frame, (self.frame_width, self.frame_height))
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
             gray = self.preprocess(frame)
 
             initpts = ptsellpise(ellipse, snake.shape[0])
@@ -149,6 +152,7 @@ class Balloon(Experiment):
 
 
         self._videowriter.release()
+
 
 
 

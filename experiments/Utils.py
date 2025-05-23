@@ -1,6 +1,7 @@
 import numpy as np
 
 def ptsellpise(ellipse, num_points=100):
+    """Samples points from ellipses"""
     (cx, cy), (a, b), angle = ellipse
     theta = np.radians(angle)
     t = np.linspace(0, 2 * np.pi, num_points)
