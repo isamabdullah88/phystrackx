@@ -46,7 +46,7 @@ class BalloonApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
 
-        self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+        self._trackpath = os.path.join(tempdir, 'track-balloon.mp4')
 
         self.balloon = Balloon(trackpath=self._trackpath)
 
