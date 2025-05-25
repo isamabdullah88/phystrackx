@@ -50,8 +50,8 @@ class Balloon(Experiment):
             edges = cv2.bitwise_and(edges, edges, mask=mask)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         # contour = max(contours, key=cv2.contourArea) if contours else None
-        if len(contours) > 0:
-            cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
+        # if len(contours) > 0:
+        #     cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
         
         # plt.imshow(edges, cmap='gray')
         # plt.imshow(gray, cmap='gray')
