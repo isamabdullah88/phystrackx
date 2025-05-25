@@ -154,15 +154,16 @@ class Balloon(Experiment):
 
         initpts = ptsellpise(ellipse)
 
-        alpha = 0.1
+        alpha = 0.01
         beta = 5
         gamma = 0.01
         w_edge = 50
         w_line = 0
+        maxiters = 1000
         # Run active contour on this frame
         gray = self.preprocess(frame, mask)
         gray = gaussian(gray, 3)
-        snake = active_contour(gray, initpts, max_num_iter=2000, alpha=alpha, beta=beta,
+        snake = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
                                     gamma=gamma, w_edge=w_edge, w_line=w_line)
         # snake = active_contour(gray, initpts)
 
@@ -207,7 +208,7 @@ class Balloon(Experiment):
             
             # initpts = ptsellpise(ellipse, 100)
 
-            snakep = active_contour(gray, initpts, max_num_iter=2000, alpha=alpha, beta=beta,
+            snakep = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
                                     gamma=gamma, w_edge=w_edge, w_line=w_line)
             
             # snakep = active_contour(gray, initpts)
@@ -238,12 +239,12 @@ class Balloon(Experiment):
 
 
 if __name__ == '__main__':
-    balloon = Balloon("balloon-track.mp4")
-    balloon.add_video("Balloon.mp4")
-    mask = cv2.imread("mask-balloon.png", 0)
-    balloon.track(mask, None, 100, 500)
+    # balloon = Balloon("balloon-track.mp4")
+    # balloon.add_video("Balloon.mp4")
+    # mask = cv2.imread("mask-balloon.png", 0)
+    # balloon.track(mask, None, 100, 500)
     
-    # balloon = Balloon("bubble-track.mp4")
-    # balloon.add_video("Bubble-Laplace-Pressure.mp4")
-    # mask = cv2.imread("bubble-mask.png", 0)
-    # balloon.track(mask, None, 925, 3254)
+    balloon = Balloon("bubble-track.mp4")
+    balloon.add_video("Bubble-Laplace-Pressure.mp4")
+    mask = cv2.imread("bubble-mask.png", 0)
+    balloon.track(mask, None, 925, 3254)
