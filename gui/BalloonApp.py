@@ -12,7 +12,7 @@ from experiments.Balloon import Balloon
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
-from .components.Rect import NormalizedRect, PixelRect
+from ..core.Rect import NormalizedRect, PixelRect
 
 class BalloonApp(App):
     def __init__(self, root):
