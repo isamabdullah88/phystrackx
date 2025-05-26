@@ -15,6 +15,7 @@ from tqdm import tqdm
 from skimage.segmentation import active_contour
 from skimage.filters import gaussian
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 
 from .Experiment import Experiment
 from filters import Smoothen
@@ -47,12 +48,12 @@ class Balloon(Experiment):
         
         edges = cv2.Canny(gray, 100, 150)
         # Apply mask to the edges
-        if mask is None:
+        if mask is not None:
             edges = cv2.bitwise_and(edges, edges, mask=mask)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         # contour = max(contours, key=cv2.contourArea) if contours else None
-        if len(contours) > 0:
-            cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
+        # if len(contours) > 0:
+        #     cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
         
         # plt.imshow(edges, cmap='gray')
         # plt.imshow(gray, cmap='gray')
@@ -72,7 +73,7 @@ class Balloon(Experiment):
         return (xc, yc), (a, b), angle
     
 
-    def offset(self, initpts, rect: PixelRect):
+    def offset(self, initpts, rect: PixelRect, val: int):
         xmin = max(0, floor(np.min(initpts[:, 1])))
         xmax = floor(np.max(initpts[:, 1]))
         ymin = max(0, floor(np.min(initpts[:, 0])))
@@ -80,18 +81,43 @@ class Balloon(Experiment):
         
         x, y, w, h = rect.totuple()
 
-        if xmin < 100:
-            x = x-100
-            initpts[:, 1] = initpts[:, 1] + 100
-        if ymin < 100:
-            y = y-100
-            initpts[:, 0] = initpts[:, 0] + 100
-        if xmax+100 > w:
-            w += 100
-        if ymax + 100 > h:
-            h += 100
+        if xmin < val:
+            x = x-val
+            initpts[:, 1] = initpts[:, 1] + val
+        if ymin < val:
+            y = y-val
+            initpts[:, 0] = initpts[:, 0] + val
+        if xmax+val > w:
+            w += val
+        if ymax + val > h:
+            h += val        
 
         return PixelRect(x, y, w, h)
+    
+    def offellipse(self, ellipse, rect: PixelRect, val: int):
+        (cx, cy), (a, b), angle = ellipse
+        
+        x, y, w, h = rect.totuple()
+
+        if cx-a/2 < val:
+            x = x-val
+            cx += val
+            w += val
+
+        if cy-b/2 < val:
+            y = y-val
+            cy += val
+            h += val
+
+        if a+val > w-val:
+            w += val
+
+        if b+val > h-val:
+            h += val
+
+        ellipse = (cx, cy), (a, b), angle
+
+        return PixelRect(x, y, w, h), ellipse
     
 
     def mask2rect(self, mask):
@@ -170,51 +196,116 @@ class Balloon(Experiment):
         mask = mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
         ellipse = self.prepmask(mask)
 
-        initpts = ptsellpise(ellipse)
+        # initpts = ptsellpise(ellipse)
 
-        alpha = 0.001
+        alpha = 0.01
         beta = 1
         gamma = 0.01
-        w_edge = 10
+        w_edge = 50
         w_line = 0
         maxiters = 1000
 
+        asp = []
+        bs = []
+        angles = []
+        # Filters for trajectory smoothing
+        # smoothenx = Smoothen(tol=50, winlen=1)
+        # smootheny = Smoothen(tol=50, winlen=1)
+        smoothena = Smoothen(tol=50, winlen=5)
+        smoothenb = Smoothen(tol=50, winlen=5)
+        # smoothenang = Smoothen(tol=5, winlen=30)
+
+        startrect = rect
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
+
+            rectp, ellipse = self.offellipse(ellipse, rect, 100)
+            initpts = ptsellpise(ellipse, 100)
+
+
+            # rect = self.offset(initpts, rect, 100)
             
-            rect = self.offset(initpts, rect)
-            # print('x, y, w, h: ', x, y, w, h)
-            framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
+            framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
 
-            # (cx, cy), (a, b), angle = ellipse
-            # ellipse = (cx, cy), (a*0.8, b*0.8), angle
-            
-            # initpts = ptsellpise(ellipse, 100)
-
             initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
                                     gamma=gamma, w_edge=w_edge, w_line=w_line)
             
-            
-            # initpts = active_contour(gray, initpts)
-            
-            # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
-            # ellipse = cv2.fitEllipse(snakecontp[:,:,[1,0]])
 
+            (cx, cy), (a, b), angle = ellipse
+            # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
+            ellipse = cv2.fitEllipse(initpts.copy()[:,[1,0]].reshape(-1, 1, 2).astype(np.float32))
+
+            # if i > 5:
+            #     (cxp, cyp), (ap, bp), anglep = ellipse
+            #     if ap < a:
+            #         ap = a
+                
+            #     if bp < b:
+            #         bp = b
+
+            #     ellipse = (cx, cy), (ap, bp), anglep
+
+            # print('Inverse transform: ', ellipse)
+            (cx, cy), (a, b), angle = ellipse
+            print('a, b angle => ', (a,b, angle))
+
+            asp.append(a)
+            bs.append(b)
+            angles.append(angle)
+
+            if startrect.xmin != rectp.xmin:
+                cx -= (startrect.xmin - rectp.xmin)
+            if startrect.ymin != rectp.ymin:
+                cy -= (startrect.ymin-rectp.ymin)
+                # _, ellipse = self.offellipse(ellipse, rectp, -100)
+            ellipse = (cx, cy), (a, b), angle
             
+            # print('before: ', ellipse)
+            # cx = smoothenx.smoothen(cx)
+            # cy = smootheny.smoothen(cy)
+            a = smoothena.smoothen(a)
+            b = smoothenb.smoothen(b)
+            # angle = smoothenang.smoothen(angle)
+            ellipse = (cx, cy), (a, b), angle
+            # print('after: ', ellipse)
+
+            # print('transform again: ')
+            # _, ellipse = self.offellipse(ellipse, rect, 100)
+
+            (cx, cy), (a, b), angle = ellipse
+            if startrect.xmin != rectp.xmin:
+                cx += (startrect.xmin - rectp.xmin)
+            if startrect.ymin != rectp.ymin:
+                cy += (startrect.ymin-rectp.ymin)
+                # _, ellipse = self.offellipse(ellipse, rectp, -100)
+            ellipse = (cx, cy), (a, b), angle
+            # print('After Ellipse: ', ellipse)
+
+            rect = rectp
             snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
             snakecont[:, :, 0] += rect.xmin
             snakecont[:, :, 1] += rect.ymin
-            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 0, 255), thickness=1)
+            (cx, cy), (a, b), angle = ellipse
+            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
+            cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
+                        endAngle=360, thickness=2)
             
 
             # plt.figure(figsize=(12, 8))
-            # plt.imshow(framep)
-            # plt.plot(initpts[:,1], initpts[:,0], '--b')
+            # (cx, cy), (a, b), angle = ellipse
+            # if i > 200:
+            #     _, ax = plt.subplots()
+            #     ax.imshow(gray, cmap='gray')
+            #     ax.plot(initpts[:,1], initpts[:,0], '--g', lw=3)
+            #     # plt.plot(initpts[:,1], initpts[:,0], '--b')
+            #     ax.add_patch(Ellipse((cx, cy), width=a, height=b, angle=angle, edgecolor='red', facecolor='cyan', alpha=0.3))
+            #     plt.show()
+            # plt.imshow(frame)
             # plt.show()
 
             # ellipse = ellipsep
@@ -223,6 +314,13 @@ class Balloon(Experiment):
 
             self._videowriter.write(frame)
 
+        plt.figure()
+        plt.plot(asp)
+        plt.plot(bs)
+        plt.figure()
+        plt.plot(angles)
+        plt.show()
+
 
         self._videowriter.release()
 
@@ -230,12 +328,12 @@ class Balloon(Experiment):
 
 
 if __name__ == '__main__':
-    # balloon = Balloon("balloon-track.mp4")
-    # balloon.add_video("Balloon.mp4")
-    # mask = cv2.imread("mask-balloon.png", 0)
-    # balloon.track(mask, None, 100, 500)
+    balloon = Balloon("balloon-track.mp4")
+    balloon.add_video("Balloon.mp4")
+    mask = cv2.imread("mask-balloon.png", 0)
+    balloon.track(mask, None, 100, 500)
     
     balloon = Balloon("bubble-track.mp4")
     balloon.add_video("Bubble-Laplace-Pressure.mp4")
     mask = cv2.imread("bubble-mask.png", 0)
-    balloon.track(mask, None, 925, 3254)
+    balloon.track(mask, None, 925, 3200)
