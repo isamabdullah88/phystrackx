@@ -168,13 +168,13 @@ class Balloon(Experiment):
         # snake = active_contour(gray, initpts)
 
         # Fit ellipse on the data
-        snakecont = snake.copy().astype(np.float32).reshape(-1, 1, 2)
-        ellipse = cv2.fitEllipse(snakecont[:, :,[1, 0]])
+        # snakecont = snake.copy().astype(np.float32).reshape(-1, 1, 2)
+        # ellipse = cv2.fitEllipse(snakecont[:, :,[1, 0]])
 
-        plt.imshow(gray, cmap='gray')
-        plt.plot(snakecont[:,:,1], snakecont[:,:,0], '--b')
-        plt.plot(initpts[:,1], initpts[:,0], '--r')
-        plt.show()
+        # plt.imshow(gray, cmap='gray')
+        # plt.plot(snakecont[:,:,1], snakecont[:,:,0], '--b')
+        # plt.plot(initpts[:,1], initpts[:,0], '--r')
+        # plt.show()
 
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
@@ -197,38 +197,41 @@ class Balloon(Experiment):
             if ymax + 100 > h:
                 h += 100
             
-            print('x, y, w, h: ', x, y, w, h)
-            frame = frame[y:y+h, x:x+w]
+            # print('x, y, w, h: ', x, y, w, h)
+            framep = frame.copy()[y:y+h, x:x+w]
             
-            gray = self.preprocess(frame, None)
+            gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
 
-            (cx, cy), (a, b), angle = ellipse
-            ellipse = (cx, cy), (a*0.8, b*0.8), angle
+            # (cx, cy), (a, b), angle = ellipse
+            # ellipse = (cx, cy), (a*0.8, b*0.8), angle
             
             # initpts = ptsellpise(ellipse, 100)
 
             snakep = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
                                     gamma=gamma, w_edge=w_edge, w_line=w_line)
             
+            
             # snakep = active_contour(gray, initpts)
             
-            snakecontp = snakep.copy().astype(np.float32).reshape(-1, 1, 2)
-            ellipse = cv2.fitEllipse(snakecontp[:,:,[1,0]])
+            # snakecontp = snakep.copy().astype(np.float32).reshape(-1, 1, 2)
+            # ellipse = cv2.fitEllipse(snakecontp[:,:,[1,0]])
 
-            cv2.polylines(frame, [snakecontp[:,:,[1,0]].astype(np.int32)], isClosed=True,
-                          color=(0, 255, 0), thickness=1)
+            
+            snakecont = snakep.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
+            snakecont[:, :, 0] += x
+            snakecont[:, :, 1] += y
+            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
             
 
-            plt.figure(figsize=(12, 8))
-            plt.imshow(gray, cmap='gray')
-            plt.plot(initpts[:,1], initpts[:,0], '--b')
-            plt.plot(snakecontp[:,:,1], snakecontp[:,:,0], 'g')
-            plt.show()
+            # plt.figure(figsize=(12, 8))
+            # plt.imshow(frame)
+            # plt.plot(initpts[:,1], initpts[:,0], '--b')
+            # plt.show()
 
             # ellipse = ellipsep
             initpts = snakep
-            snakecont = snakecontp
+            # snakecont = snakecontp
 
             self._videowriter.write(frame)
 
@@ -239,12 +242,12 @@ class Balloon(Experiment):
 
 
 if __name__ == '__main__':
-    # balloon = Balloon("balloon-track.mp4")
-    # balloon.add_video("Balloon.mp4")
-    # mask = cv2.imread("mask-balloon.png", 0)
-    # balloon.track(mask, None, 100, 500)
+    balloon = Balloon("balloon-track.mp4")
+    balloon.add_video("Balloon.mp4")
+    mask = cv2.imread("mask-balloon.png", 0)
+    balloon.track(mask, None, 100, 500)
     
-    balloon = Balloon("bubble-track.mp4")
-    balloon.add_video("Bubble-Laplace-Pressure.mp4")
-    mask = cv2.imread("bubble-mask.png", 0)
-    balloon.track(mask, None, 925, 3254)
+    # balloon = Balloon("bubble-track.mp4")
+    # balloon.add_video("Bubble-Laplace-Pressure.mp4")
+    # mask = cv2.imread("bubble-mask.png", 0)
+    # balloon.track(mask, None, 925, 3254)
