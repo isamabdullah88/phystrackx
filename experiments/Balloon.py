@@ -45,14 +45,14 @@ class Balloon(Experiment):
         clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
         gray = clahe.apply(gray)
         
-        # edges = cv2.Canny(gray, 100, 150)
+        edges = cv2.Canny(gray, 100, 150)
         # Apply mask to the edges
-        # if mask is None:
-        #     edges = cv2.bitwise_and(edges, edges, mask=mask)
-        # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if mask is None:
+            edges = cv2.bitwise_and(edges, edges, mask=mask)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         # contour = max(contours, key=cv2.contourArea) if contours else None
-        # if len(contours) > 0:
-        #     cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
+        if len(contours) > 0:
+            cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
         
         # plt.imshow(edges, cmap='gray')
         # plt.imshow(gray, cmap='gray')
@@ -172,10 +172,10 @@ class Balloon(Experiment):
 
         initpts = ptsellpise(ellipse)
 
-        alpha = 0.01
-        beta = 5
+        alpha = 0.001
+        beta = 1
         gamma = 0.01
-        w_edge = 50
+        w_edge = 10
         w_line = 0
         maxiters = 1000
 
@@ -184,7 +184,7 @@ class Balloon(Experiment):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             
-            
+            rect = self.offset(initpts, rect)
             # print('x, y, w, h: ', x, y, w, h)
             framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
             
@@ -209,11 +209,11 @@ class Balloon(Experiment):
             snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
             snakecont[:, :, 0] += rect.xmin
             snakecont[:, :, 1] += rect.ymin
-            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
+            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 0, 255), thickness=1)
             
 
             # plt.figure(figsize=(12, 8))
-            # plt.imshow(frame)
+            # plt.imshow(framep)
             # plt.plot(initpts[:,1], initpts[:,0], '--b')
             # plt.show()
 
