@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from .Experiment import Experiment
 from filters import Smoothen
 from .Utils import ptsellpise
+from core import PixelRect
 
 class Balloon(Experiment):
     def __init__(self, trackpath):
@@ -44,11 +45,11 @@ class Balloon(Experiment):
         clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
         gray = clahe.apply(gray)
         
-        edges = cv2.Canny(gray, 100, 150)
+        # edges = cv2.Canny(gray, 100, 150)
         # Apply mask to the edges
-        if mask is None:
-            edges = cv2.bitwise_and(edges, edges, mask=mask)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        # if mask is None:
+        #     edges = cv2.bitwise_and(edges, edges, mask=mask)
+        # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         # contour = max(contours, key=cv2.contourArea) if contours else None
         # if len(contours) > 0:
         #     cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
@@ -69,6 +70,37 @@ class Balloon(Experiment):
         (xc, yc), (a, b), angle = ellipse
 
         return (xc, yc), (a, b), angle
+    
+
+    def offset(self, initpts, rect: PixelRect):
+        xmin = max(0, floor(np.min(initpts[:, 1])))
+        xmax = floor(np.max(initpts[:, 1]))
+        ymin = max(0, floor(np.min(initpts[:, 0])))
+        ymax = floor(np.max(initpts[:, 0]))
+        
+        x, y, w, h = rect.totuple()
+
+        if xmin < 100:
+            x = x-100
+            initpts[:, 1] = initpts[:, 1] + 100
+        if ymin < 100:
+            y = y-100
+            initpts[:, 0] = initpts[:, 0] + 100
+        if xmax+100 > w:
+            w += 100
+        if ymax + 100 > h:
+            h += 100
+
+        return PixelRect(x, y, w, h)
+    
+
+    def mask2rect(self, mask):
+
+        coords = cv2.findNonZero(mask)
+        # Get bounding rectangle
+        x, y, w, h = cv2.boundingRect(coords)
+
+        return PixelRect(x, y, w, h)
 
 
     def ocr(self, rect, startidx=0, endidx=0):
@@ -132,25 +164,11 @@ class Balloon(Experiment):
         else:
             fcount = endidx - startidx
 
-        # Filters for trajectory smoothing
-        # smoothenx = Smoothen(tol=50)
-        # smootheny = Smoothen(tol=50)
-        # smoothenr = Smoothen(tol=100)
-
         mask = cv2.resize(mask, (self.fwidth, self.fheight))
-        # cv2.imwrite("bubble-mask.png", mask)
         
-        coords = cv2.findNonZero(mask)
-        # Get bounding rectangle
-        x, y, w, h = cv2.boundingRect(coords)
-        mask = mask[y:y+h, x:x+w]
-        
+        rect = self.mask2rect(mask)
+        mask = mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
         ellipse = self.prepmask(mask)
-
-        # frame = self._vidreader.read()
-        # frame = cv2.resize(frame, (self.fwidth, self.fheight))
-
-        # frame = frame[y:y+h, x:x+w]
 
         initpts = ptsellpise(ellipse)
 
@@ -160,45 +178,15 @@ class Balloon(Experiment):
         w_edge = 50
         w_line = 0
         maxiters = 1000
-        # Run active contour on this frame
-        # gray = self.preprocess(frame, mask)
-        # gray = gaussian(gray, 3)
-        # snake = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-        #                             gamma=gamma, w_edge=w_edge, w_line=w_line)
-        # snake = active_contour(gray, initpts)
-
-        # Fit ellipse on the data
-        # snakecont = snake.copy().astype(np.float32).reshape(-1, 1, 2)
-        # ellipse = cv2.fitEllipse(snakecont[:, :,[1, 0]])
-
-        # plt.imshow(gray, cmap='gray')
-        # plt.plot(snakecont[:,:,1], snakecont[:,:,0], '--b')
-        # plt.plot(initpts[:,1], initpts[:,0], '--r')
-        # plt.show()
 
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
-            xmin = max(0, floor(np.min(initpts[:, 1])))
-            xmax = floor(np.max(initpts[:, 1]))
-            ymin = max(0, floor(np.min(initpts[:, 0])))
-            ymax = floor(np.max(initpts[:, 0]))
-            # print('xmin, xmax, ymin, ymax: ', xmin, xmax, ymin, ymax)
-            # frame = frame[ymin+y:y+ymax, x+xmin:x+xmax]
-            if xmin < 100:
-                x = x-100
-                initpts[:, 1] = initpts[:, 1] + 100
-            if ymin < 100:
-                y = y-100
-                initpts[:, 0] = initpts[:, 0] + 100
-            if xmax+100 > w:
-                w += 100
-            if ymax + 100 > h:
-                h += 100
+            
             
             # print('x, y, w, h: ', x, y, w, h)
-            framep = frame.copy()[y:y+h, x:x+w]
+            framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
@@ -219,8 +207,8 @@ class Balloon(Experiment):
 
             
             snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
-            snakecont[:, :, 0] += x
-            snakecont[:, :, 1] += y
+            snakecont[:, :, 0] += rect.xmin
+            snakecont[:, :, 1] += rect.ymin
             cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
             
 
