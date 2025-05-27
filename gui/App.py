@@ -115,9 +115,9 @@ class App:
         
         self.cwidth = 640
         self.cheight = 480
-        self.video_view = ctk.CTkCanvas(self.video_frame, width=self.cwidth,
+        self.videoview = ctk.CTkCanvas(self.video_frame, width=self.cwidth,
                                         height=self.cheight)
-        self.video_view.pack(pady=20, expand=True)
+        self.videoview.pack(pady=20, expand=True)
 
         # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
         #                             width=400, fg_color="red", progress_color="green",
@@ -177,7 +177,7 @@ class App:
         if len(self.processor.line_coords) < 2:
             self.processor.line_coords.append((event.x, event.y))
             if len(self.processor.line_coords) == 2:
-                self.video_view.create_line(self.processor.line_coords[0],
+                self.videoview.create_line(self.processor.line_coords[0],
                                             self.processor.line_coords[1], fill="red", width=2)
                 self.processor.ref_distance = simpledialog.askfloat("Reference Distance",
                                             "Enter the reference distance in your chosen unit:")
@@ -191,11 +191,11 @@ class App:
     def mark_points_to_track(self):
         self.processor.points_to_track = []
         messagebox.showinfo("Instruction", "Please click points on the video to mark them for tracking.")
-        self.video_view.bind("<Button-1>", self.mark_point)
+        self.videoview.bind("<Button-1>", self.mark_point)
     
     def mark_point(self, event):
         self.processor.points_to_track.append((event.x, event.y))
-        self.video_view.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="red")
+        self.videoview.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="red")
 
     def choose_tracking_method(self):
         self.tracking_method = ctk.StringVar()
@@ -224,20 +224,20 @@ class App:
     def mark_bboxes_to_track(self):
         # self.bboxes_to_track = []
         messagebox.showinfo("Instruction", "Please draw bounding boxes around the objects to track. Draw multiple bounding boxes if needed.")
-        self.video_view.bind("<Button-1>", self.start_bbox)
+        self.videoview.bind("<Button-1>", self.start_bbox)
 
     # def start_bbox(self, event):
     #     self.start_x, self.start_y = event.x, event.y
-    #     self.current_bbox = self.video_view.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
-    #     self.video_view.bind("<B1-Motion>", self.draw_bbox)
-    #     self.video_view.bind("<ButtonRelease-1>", self.finish_bbox)
+    #     self.current_bbox = self.videoview.create_rectangle(self.start_x, self.start_y, event.x, event.y, outline="red")
+    #     self.videoview.bind("<B1-Motion>", self.draw_bbox)
+    #     self.videoview.bind("<ButtonRelease-1>", self.finish_bbox)
 
     # def draw_bbox(self, event):
-    #     self.video_view.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
+    #     self.videoview.coords(self.current_bbox, self.start_x, self.start_y, event.x, event.y)
 
     # def finish_bbox(self, event):
-    #     self.video_view.unbind("<B1-Motion>")
-    #     self.video_view.unbind("<ButtonRelease-1>")
+    #     self.videoview.unbind("<B1-Motion>")
+    #     self.videoview.unbind("<ButtonRelease-1>")
     #     bbox_coords = (self.start_x, self.start_y, event.x, event.y)
     #     self.bboxes_to_track.append(bbox_coords)
 
@@ -246,7 +246,7 @@ class App:
     #     centroid_x = (bbox_coords[0] + bbox_coords[2]) / 2 - frame_ox
     #     centroid_y = (bbox_coords[1] + bbox_coords[3]) / 2 - frame_oy
     #     self.processor.points_to_track.append((centroid_x, centroid_y))
-    #     self.video_view.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
+    #     self.videoview.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
     def resize_frame(self, frame, fwidth, fheight):
         if (fwidth > self.cwidth):

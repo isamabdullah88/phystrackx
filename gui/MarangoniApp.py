@@ -62,7 +62,7 @@ class MarangoniApp(App):
         self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
         self.fy = floor(self.cheight/2 - frame.shape[0]/2)
 
-        self.imgview = self.video_view.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def update_frame(self):
         
@@ -76,30 +76,30 @@ class MarangoniApp(App):
         self.photo = ImageTk.PhotoImage(image=img)
         self._frame = frame
 
-        self.video_view.itemconfig(self.imgview, image=self.photo)
+        self.videoview.itemconfig(self.imgview, image=self.photo)
 
     def mark_axes(self):
 
         def update_axes(event):
             """ Update the axes to follow the mouse cursor. """
-            self.video_view.delete("axes")  # Remove old axes
+            self.videoview.delete("axes")  # Remove old axes
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.video_view.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-            self.video_view.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
+            self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+            self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
 
-            self.video_view.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            self.video_view.unbind("<Motion>")
-            self.video_view.unbind("<Button>")
+            self.videoview.unbind("<Motion>")
+            self.videoview.unbind("<Button>")
 
-        self.video_view.bind("<Motion>", update_axes)
-        self.video_view.bind("<Button>", store_click)
+        self.videoview.bind("<Motion>", update_axes)
+        self.videoview.bind("<Button>", store_click)
 
     def drawcircle(self):
         
@@ -108,7 +108,7 @@ class MarangoniApp(App):
             
             self.photo = ImageTk.PhotoImage(circilize(10, 10))
             
-            self.video_view.itemconfig(self.imgview, image=self.photo)
+            self.videoview.itemconfig(self.imgview, image=self.photo)
             
         def incircle(event):
             ex = (event.x-self.fx)
@@ -120,11 +120,11 @@ class MarangoniApp(App):
             self.photo = ImageTk.PhotoImage(image=img)
             self._mask = mask
 
-            self.video_view.itemconfig(self.imgview, image=self.photo)
+            self.videoview.itemconfig(self.imgview, image=self.photo)
             
 
-        self.video_view.bind("<Button-1>", ondown)
-        self.video_view.bind("<B1-Motion>", incircle)
+        self.videoview.bind("<Button-1>", ondown)
+        self.videoview.bind("<B1-Motion>", incircle)
 
 
     def start_tracking(self):
@@ -132,7 +132,7 @@ class MarangoniApp(App):
         Detects and tracks radius for the main marangoni circle using classical techniques.
         """
 
-        self.popup = SpinnerPopup(self.video_view, self.cwidth, self.cheight)
+        self.popup = SpinnerPopup(self.videoview, self.cwidth, self.cheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

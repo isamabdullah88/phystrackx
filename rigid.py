@@ -144,8 +144,8 @@ from PIL import ImageSequence
 #             self.video_frame = tk.Frame(self.root)
 #             self.video_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
             
-#             self.video_view = tk.Canvas(self.video_frame, width=640, height=480)
-#             self.video_view.pack(pady=20, expand=True)
+#             self.videoview = tk.Canvas(self.video_frame, width=640, height=480)
+#             self.videoview.pack(pady=20, expand=True)
             
 #             self.slider = tk.Scale(self.video_frame, from_=0, to=100, orient=tk.HORIZONTAL, length=400, resolution=1, command=self.update_frame)
 #             self.slider.pack(pady=10)
@@ -270,7 +270,7 @@ from PIL import ImageSequence
 #         frame = self.processor.frames[0]
 #         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 #         photo = ImageTk.PhotoImage(image=img)
-#         self.video_view.create_image(0, 0, image=photo, anchor='nw')
+#         self.videoview.create_image(0, 0, image=photo, anchor='nw')
 #         self.photo = photo
 #         self.slider['to'] = len(self.processor.frames) - 1
 
@@ -284,8 +284,8 @@ from PIL import ImageSequence
 #         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 #         photo = ImageTk.PhotoImage(image=img)
 
-#         self.video_view.delete('all')
-#         self.video_view.create_image(0, 0, image=photo, anchor='nw')
+#         self.videoview.delete('all')
+#         self.videoview.create_image(0, 0, image=photo, anchor='nw')
 #         self.photo = photo
 
 #     def select_frames(self):
@@ -297,13 +297,13 @@ from PIL import ImageSequence
 #     def set_reference_distance(self):
 #         self.processor.line_coords = []
 #         messagebox.showinfo("Instruction", "Please click two points on the video to set the reference distance.")
-#         self.video_view.bind("<Button-1>", self.mark_line)
+#         self.videoview.bind("<Button-1>", self.mark_line)
     
 #     def mark_line(self, event):
 #         if len(self.processor.line_coords) < 2:
 #             self.processor.line_coords.append((event.x, event.y))
 #             if len(self.processor.line_coords) == 2:
-#                 self.video_view.create_line(self.processor.line_coords[0], self.processor.line_coords[1], fill="red", width=2)
+#                 self.videoview.create_line(self.processor.line_coords[0], self.processor.line_coords[1], fill="red", width=2)
 #                 self.processor.ref_distance = simpledialog.askfloat("Reference Distance", "Enter the reference distance in your chosen unit:")
 #                 self.info_label.config(text=f"Reference Distance: {self.processor.ref_distance} units")
     
@@ -331,8 +331,8 @@ from PIL import ImageSequence
 #                 frame = self.processor.frames[frame_index]  # Use frames directly
 #             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 #             photo = ImageTk.PhotoImage(image=img)
-#             self.video_view.delete('all')
-#             self.video_view.create_image(0, 0, image=photo, anchor='nw')
+#             self.videoview.delete('all')
+#             self.videoview.create_image(0, 0, image=photo, anchor='nw')
 #             self.photo = photo
 
 #         self.slider['to'] = len(self.processor.frames) - 1  # Use frames directly
@@ -348,21 +348,21 @@ from PIL import ImageSequence
 #     def mark_axes(self):
 #         self.processor.axis_coords = []
 #         messagebox.showinfo("Instruction", "Please click to set the origin of the axes.")
-#         self.video_view.bind("<Button-1>", self.set_origin)
+#         self.videoview.bind("<Button-1>", self.set_origin)
 
 #     def set_origin(self, event):
 #         self.processor.axis_coords = [(event.x, event.y)]  # Origin point
-#         self.video_view.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="blue", width=2)
-#         self.video_view.unbind("<Button-1>")
+#         self.videoview.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="blue", width=2)
+#         self.videoview.unbind("<Button-1>")
 #         messagebox.showinfo("Instruction", "Click Again To Finalize The Axes")
-#         self.video_view.bind("<Motion>", self.update_axes_image)
-#         self.video_view.bind("<Button-1>", self.drop_axes)
+#         self.videoview.bind("<Motion>", self.update_axes_image)
+#         self.videoview.bind("<Button-1>", self.drop_axes)
 
 #     def update_axes_image(self, event):
 #         if len(self.processor.axis_coords) == 1:
 #             origin = self.processor.axis_coords[0]
 #             if self.processor.axis_image_id:
-#                 self.video_view.delete(self.processor.axis_image_id)
+#                 self.videoview.delete(self.processor.axis_image_id)
             
 #             img = Image.new('RGBA', (640, 480), (0, 0, 0, 0))
 #             draw = ImageDraw.Draw(img)
@@ -374,7 +374,7 @@ from PIL import ImageSequence
 #             draw.line([(origin[0], 0), (origin[0], 480)], fill="green", width=2)
             
 #             self.processor.axis_image = ImageTk.PhotoImage(img)
-#             self.processor.axis_image_id = self.video_view.create_image(0, 0, image=self.processor.axis_image, anchor='nw')
+#             self.processor.axis_image_id = self.videoview.create_image(0, 0, image=self.processor.axis_image, anchor='nw')
 
 #     def drop_axes(self, event):
 #         if len(self.processor.axis_coords) == 1:
@@ -385,11 +385,11 @@ from PIL import ImageSequence
 #             self.processor.axis_coords.append((origin[0], 0))    # Negative Y-axis end point
 
 #             # Draw axes to the borders of the image/frame
-#             self.video_view.create_line(0, origin[1], 640, origin[1], fill="blue", width=2)  # X-axis
-#             self.video_view.create_line(origin[0], 0, origin[0], 480, fill="green", width=2)  # Y-axis
+#             self.videoview.create_line(0, origin[1], 640, origin[1], fill="blue", width=2)  # X-axis
+#             self.videoview.create_line(origin[0], 0, origin[0], 480, fill="green", width=2)  # Y-axis
             
-#             self.video_view.unbind("<Motion>")
-#             self.video_view.unbind("<Button-1>")
+#             self.videoview.unbind("<Motion>")
+#             self.videoview.unbind("<Button-1>")
 
 #     def translate_to_real_coordinates(self, points):
 #         origin = self.processor.axis_coords[0]
@@ -407,10 +407,10 @@ from PIL import ImageSequence
 #     def mark_points_to_track(self):
 #         self.processor.points_to_track = []
 #         messagebox.showinfo("Instruction", "Please click points on the video to mark them for tracking.")
-#         self.video_view.bind("<Button-1>", self.mark_point)
+#         self.videoview.bind("<Button-1>", self.mark_point)
     
 #     def mark_point(self, event):
 #         self.processor.points_to_track.append((event.x, event.y))
-#         self.video_view.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="red")
+#         self.videoview.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="red")
     
 

@@ -8,29 +8,29 @@ from tkinter import messagebox
 from math import floor
 
 from .App import App
-from experiments.Balloon import Balloon
+from experiments.Interface import Interface
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
 from core.Rect import NormalizedRect, PixelRect
 
-class BalloonApp(App):
+class InterfaceApp(App):
     def __init__(self, root):
         super().__init__(root)
 
         # For drawing ellipse over tracking area
-        sfimg = Image.open("assets/circlebd.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = Image.open("assets/line.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
-                                      image=sfimg, command=self.drawcircle)
-        self.circlebd.pack(pady=10)
+        self.linebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+                                      image=sfimg, command=self.drawline)
+        self.linebd.pack(pady=10)
         
         # For drawing rectangle over text area
         sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.rectbd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
                                       image=sfimg, command=self.drawrect)
-        self.circlebd.pack(pady=10)
+        self.rectbd.pack(pady=10)
         
 
         self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
@@ -38,7 +38,7 @@ class BalloonApp(App):
         self.ccoords = (0, 0)
 
         # mask from user for tracking
-        self._mask = None
+        self._line = None
         # rect for text detection
         self._rect = None
 
@@ -46,24 +46,24 @@ class BalloonApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
 
-        self._trackpath = os.path.join(tempdir, 'track-balloon.mp4')
+        self._trackpath = os.path.join(tempdir, 'track-interface.mp4')
 
-        self.balloon = Balloon(trackpath=self._trackpath)
+        self.interface = Interface(trackpath=self._trackpath)
 
 
 
     def load_video(self, videopath):
-        self.balloon.add_video(videopath)
+        self.interface.add_video(videopath)
         
         self.seekbar.pack(pady=10)
-        self.seekbar.setcount(self.balloon.fcount)
+        self.seekbar.setcount(self.interface.fcount)
 
-        frame1 = self.balloon.frame(0)
+        frame1 = self.interface.frame(0)
         self.display_first_frame(frame1)
 
     def display_first_frame(self, frame):
-        fwidth = self.balloon.fwidth
-        fheight = self.balloon.fheight
+        fwidth = self.interface.fwidth
+        fheight = self.interface.fheight
         frame = self.resize_frame(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
@@ -78,9 +78,9 @@ class BalloonApp(App):
         
     def update_frame(self):
         
-        frame = self.balloon.frame(index=self.seekbar.idx)
-        fwidth = self.balloon.fwidth
-        fheight = self.balloon.fheight
+        frame = self.interface.frame(index=self.seekbar.idx)
+        fwidth = self.interface.fwidth
+        fheight = self.interface.fheight
 
         frame = self.resize_frame(frame, fwidth, fheight)
 
@@ -113,52 +113,53 @@ class BalloonApp(App):
         self.videoview.bind("<Motion>", update_axes)
         self.videoview.bind("<Button>", store_click)
 
-    def drawcircle(self):
-        """Draws circle with filled transparent image laid over region of interest"""
-        
+    def drawline(self):
+        """Draws line with filled transparent image laid over region of interest"""
+        self._ctkline = None
+
         def ondown(event):
-            self.ccoords = (event.x-self.fx, event.y-self.fy)
+            if self._ctkline is not None:
+                self.videoview.delete(self._ctkline)
             
-            self.photo = ImageTk.PhotoImage(circilize(10, 10))
+            self._lcoords = (event.x, event.y)
             
-            self.videoview.itemconfig(self.imgview, image=self.photo)
+            self._ctkline = self.videoview.create_line(event.x, event.y, event.x, event.y, fill="magenta", width=3)
             
-        def incircle(event):
-            ex = (event.x-self.fx)
-            ey = (event.y-self.fy)
+            
+        def inline(event):
+            sx, sy = self._lcoords
+            ex, ey = (event.x, event.y)
 
-            frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
+            self.videoview.coords(self._ctkline, sx, sy, event.x, event.y)
 
-            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            self.photo = ImageTk.PhotoImage(image=img)
-            self._mask = mask
-
-            self.videoview.itemconfig(self.imgview, image=self.photo)
+            self._line = ((sx-self.fx)/self.fwidth, (sy-self.fy)/self.fheight), \
+                ((ex-self.fx)/self.fwidth, (ey-self.fy)/self.fheight)
             
+            print('Rect tr: ', self._line)
 
         self.videoview.bind("<Button-1>", ondown)
-        self.videoview.bind("<B1-Motion>", incircle)
+        self.videoview.bind("<B1-Motion>", inline)
 
     
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        self.rbox = None
+        self._ctkbox = None
         
         def ondown(event):
-            if self.rbox is not None:
-                self.videoview.delete(self.rbox)
+            if self._ctkbox is not None:
+                self.videoview.delete(self._ctkbox)
             
-            self.rcoords = (event.x, event.y)
+            self._rcoords = (event.x, event.y)
             
-            self.rbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
             
         def inrect(event):
-            sx, sy = self.rcoords
+            sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
 
             print('Rect Orig: ', (sx, sy, ex, ey))
 
-            self.videoview.coords(self.rbox, sx, sy, event.x, event.y)
+            self.videoview.coords(self._ctkbox, sx, sy, event.x, event.y)
 
             self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
             print('Rect tr: ', self._rect.totuple())
@@ -169,7 +170,7 @@ class BalloonApp(App):
 
     def start_tracking(self):
         """
-        Detects and tracks radius for the main balloon circle using classical techniques.
+        Detects and tracks radius for the main interface circle using classical techniques.
         """
 
         self.popup = SpinnerPopup(self.videoview, self.cwidth, self.cheight)
@@ -177,7 +178,7 @@ class BalloonApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.balloon.track(self._mask, self._rect, startidx, endidx)
+            self.interface.track(self._line, self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
@@ -192,15 +193,15 @@ class BalloonApp(App):
 
 
     def plot_distances(self):
-        if len(self.balloon.tracked_pts) < 1:
+        if len(self.interface.tracked_pts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        num_tracks = len(self.balloon.tracked_pts)
+        num_tracks = len(self.interface.tracked_pts)
         _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
 
         for i in range(num_tracks):
-            tracked_pts = self.balloon.tracked_pts[i]
+            tracked_pts = self.interface.tracked_pts[i]
             xcoords = tracked_pts[0, :] - self.fx
             ycoords = tracked_pts[1, :] - self.fy
 

@@ -96,8 +96,8 @@ class App(ctk.CTk):
         self.geometry("800x500")
         self.title("Video Editor Cut Range")
 
-        self.video_view = ctk.CTkFrame(self, width=700, height=300, fg_color="#1a1a1a")
-        self.video_view.pack(pady=30)
+        self.videoview = ctk.CTkFrame(self, width=700, height=300, fg_color="#1a1a1a")
+        self.videoview.pack(pady=30)
 
         self.seekbar = CutSeekBar(self, fcount=200)
         self.seekbar.pack(pady=20)
