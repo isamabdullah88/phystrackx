@@ -20,7 +20,7 @@ from matplotlib.patches import Ellipse
 from .Experiment import Experiment
 from filters import Smoothen
 from .Utils import ptsline
-from core import PixelRect
+from core import PixelRect, Points
 
 class Interface(Experiment):
     def __init__(self, trackpath):
@@ -161,7 +161,7 @@ class Interface(Experiment):
 
 
 
-    def track(self, lcoords, rect, startidx=0, endidx=0):
+    def track(self, lcoords: Points, rect, startidx=0, endidx=0):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -175,7 +175,7 @@ class Interface(Experiment):
         """
         # Do OCR detection
         if rect is not None:
-            rectp = rect.normal2pixel(self.fwidth, self.fheight)
+            rectp = rect.norm2pix(self.fwidth, self.fheight)
             self.ocr(rectp, startidx=startidx, endidx=endidx)
 
         # Tracking
@@ -232,12 +232,10 @@ class Interface(Experiment):
 
         # line = (x0, y0), (x1, y1)
         
-        x0 = floor(min([coord[0] for coord in lcoords]))
-        y0 = floor(min([coord[1] for coord in lcoords]))
-        x1 = floor(max([coord[0] for coord in lcoords]))
-        y1 = floor(max([coord[1] for coord in lcoords]))
+        lcoords = lcoords.norm2pix(self.fwidth, self.fheight)
+        rect = lcoords.pts2rect()
         
-        initpts = ptsline(lcoords, numpts=100, xoff=x0, yoff=y0)
+        initpts = ptsline(lcoords, numpts=100, xoff=rect.xmin, yoff=rect.ymin)
 
         startrect = rect
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
@@ -252,7 +250,7 @@ class Interface(Experiment):
             
             # framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
             # framep = frame.copy()[383:690, 700:1080]
-            framep = frame.copy()[y0:y1, x0:x1]
+            framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
 
             # print('frame: ', framep.shape)
 
@@ -262,7 +260,7 @@ class Interface(Experiment):
 
             # initpts = active_contour(gray, initpts)
             initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-                                    gamma=gamma, w_edge=w_edge, w_line=w_line, boundary_condition='free-fixed')
+                                    gamma=gamma, w_edge=w_edge, w_line=w_line, boundary_condition='fixed')
             
 
             # (cx, cy), (a, b), angle = ellipse
@@ -348,18 +346,9 @@ class Interface(Experiment):
             # ellipse = ellipsep
             # initpts = snakep
             # snakecont = snakecontp
-            frame[y0:y1, x0:x1] = framep
-            
-            cv2.imwrite(f"frame-{i}.png", frame)
+            frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
 
             self._videowriter.write(frame)
-
-        plt.figure()
-        plt.plot(asp)
-        plt.plot(bs)
-        plt.figure()
-        plt.plot(angles)
-        plt.show()
 
 
         self._videowriter.release()

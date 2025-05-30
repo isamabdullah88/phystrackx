@@ -175,7 +175,7 @@ class Balloon(Experiment):
         """
         # Do OCR detection
         if rect is not None:
-            rectp = rect.normal2pixel(self.fwidth, self.fheight)
+            rectp = rect.norm2pix(self.fwidth, self.fheight)
             self.ocr(rectp, startidx=startidx, endidx=endidx)
 
         # Tracking
