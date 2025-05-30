@@ -1,1 +1,1 @@
-from .Rect import PixelRect, NormalizedRect
+from .Rect import PixelRect, NormalizedRect, Points
