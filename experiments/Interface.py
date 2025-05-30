@@ -161,11 +161,11 @@ class Interface(Experiment):
 
 
 
-    def track(self, line, rect, startidx=0, endidx=0):
+    def track(self, lcoords, rect, startidx=0, endidx=0):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
-            line (np.ndarray): A line that specifies diameter inside which the experiment is
+            lcoords (np.ndarray): Line coordinates that specifies diameter inside which the experiment is
             happening. It has size of gui canvas.
 
         It first establishes a base ellipse model for the balloon, using preprocessing and then 
@@ -191,7 +191,7 @@ class Interface(Experiment):
             fcount = endidx - startidx
 
         # print('line before: ', line)
-        line = ((1014, 450.0), (1017.0, 654.0))
+        # line = ((1014, 450.0), (1017.0, 654.0))
         # (x0, y0), (x1, y1) = line
         # x0 *= self.fwidth
         # x1 *= self.fwidth
@@ -224,14 +224,20 @@ class Interface(Experiment):
         smoothena = Smoothen(tol=50, winlen=5)
         smoothenb = Smoothen(tol=50, winlen=5)
         # smoothenang = Smoothen(tol=5, winlen=30)
-        (x0, y0), (x1, y1) = line
-        y0 -= 383
-        y1 -= 383
-        x0 -= 700
-        x1 -= 700
+        # (x0, y0), (x1, y1) = line
+        # y0 -= 383
+        # y1 -= 383
+        # x0 -= 700
+        # x1 -= 700
 
-        line = (x0, y0), (x1, y1)
-        initpts = ptsline(line, 100)
+        # line = (x0, y0), (x1, y1)
+        
+        x0 = floor(min([coord[0] for coord in lcoords]))
+        y0 = floor(min([coord[1] for coord in lcoords]))
+        x1 = floor(max([coord[0] for coord in lcoords]))
+        y1 = floor(max([coord[1] for coord in lcoords]))
+        
+        initpts = ptsline(lcoords, numpts=100, xoff=x0, yoff=y0)
 
         startrect = rect
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
@@ -245,7 +251,8 @@ class Interface(Experiment):
             # rect = self.offset(initpts, rect, 100)
             
             # framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
-            framep = frame.copy()[383:690, 700:1080]
+            # framep = frame.copy()[383:690, 700:1080]
+            framep = frame.copy()[y0:y1, x0:x1]
 
             # print('frame: ', framep.shape)
 
@@ -341,7 +348,9 @@ class Interface(Experiment):
             # ellipse = ellipsep
             # initpts = snakep
             # snakecont = snakecontp
-            frame[383:690, 700:1080] = framep
+            frame[y0:y1, x0:x1] = framep
+            
+            cv2.imwrite(f"frame-{i}.png", frame)
 
             self._videowriter.write(frame)
 
