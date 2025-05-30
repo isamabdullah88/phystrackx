@@ -12,11 +12,18 @@ def ptsellpise(ellipse, numpts=100):
     return np.stack((y, x), axis=1)  # shape (N, 2)
 
 
-def ptsline(line, numpts=100):
+def ptsline(lcoords, numpts=10, xoff=0, yoff=0):
     """Samples points from line"""
-    (x0, y0), (x1, y1) = line
+    linepts = []
+    
+    for i in range(len(lcoords)-1):
+        x0, y0 = lcoords[i]
+        x1, y1 = lcoords[i+1]
 
-    x = np.linspace(x0, x1, numpts)
-    y = np.linspace(y0, y1, numpts)
-
-    return np.stack((y, x), axis=1)
+        x = np.linspace(x0, x1, numpts) - xoff
+        y = np.linspace(y0, y1, numpts) - yoff
+        
+        l = np.stack((x, y), axis=1)
+        linepts.append(l)
+    
+    return np.array(linepts).reshape(-1, 2)  # shape (N, 2)
