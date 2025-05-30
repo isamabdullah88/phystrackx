@@ -28,12 +28,12 @@ class CollisionApp(App):
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        self.frame_ox = floor(self.canvas_width/2 - self.collision.frame_width/2)
-        self.frame_oy = floor(self.canvas_height/2 - self.collision.frame_height/2)
+        self.frame_ox = floor(self.cwidth/2 - self.collision.fwidth/2)
+        self.frame_oy = floor(self.cheight/2 - self.collision.fheight/2)
 
         print('frame ox: ', self.frame_ox)
-        self.video_view.create_image(self.frame_ox, self.frame_oy, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        self.videoview.create_image(self.frame_ox, self.frame_oy, image=photo, anchor='nw')
+        self.videoview.photo = photo
 
         self.slider.configure(from_=0, to=self.collision.frame_count - 1)
         self.slider.set(0)
@@ -46,35 +46,35 @@ class CollisionApp(App):
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)
 
-        x = floor(self.canvas_width/2 - self.collision.frame_width/2)
-        y = floor(self.canvas_height/2 - self.collision.frame_height/2)
-        # self.video_view.delete('all')
-        self.video_view.create_image(x, y, image=photo, anchor='nw')
-        self.video_view.photo = photo
+        x = floor(self.cwidth/2 - self.collision.fwidth/2)
+        y = floor(self.cheight/2 - self.collision.fheight/2)
+        # self.videoview.delete('all')
+        self.videoview.create_image(x, y, image=photo, anchor='nw')
+        self.videoview.photo = photo
 
     def mark_axes(self):
 
         def update_axes(event):
             """ Update the axes to follow the mouse cursor. """
-            self.video_view.delete("axes")  # Remove old axes
+            self.videoview.delete("axes")  # Remove old axes
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.video_view.create_line(0, y, self.canvas_width, y, fill="red", width=2, tags="axes")  # X-axis
-            self.video_view.create_line(x, 0, x, self.canvas_height, fill="blue", width=2, tags="axes")  # Y-axis
+            self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+            self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
             self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
-            self.video_view.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
             print(self._ref_frame)
-            self.video_view.unbind("<Motion>")
-            self.video_view.unbind("<Button>")
+            self.videoview.unbind("<Motion>")
+            self.videoview.unbind("<Button>")
 
-        self.video_view.bind("<Motion>", update_axes)
-        self.video_view.bind("<Button>", store_click)
+        self.videoview.bind("<Motion>", update_axes)
+        self.videoview.bind("<Button>", store_click)
 
     def plot_distances(self):
         if len(self.collision.tracked_pts) < 1:
