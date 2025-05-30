@@ -190,162 +190,35 @@ class Interface(Experiment):
         else:
             fcount = endidx - startidx
 
-        # print('line before: ', line)
-        # line = ((1014, 450.0), (1017.0, 654.0))
-        # (x0, y0), (x1, y1) = line
-        # x0 *= self.fwidth
-        # x1 *= self.fwidth
-        # y0 *= self.fheight
-        # y1 *= self.fheight
-
-        # line = (x0, y0), (x1, y1)
-        # print('line after: ', line)
-        # mask = cv2.resize(mask, (self.fwidth, self.fheight))
-        
-        # rect = self.mask2rect(mask)
-        # mask = mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
-        # ellipse = self.prepmask(mask)
-
-        # initpts = ptsellpise(ellipse)
-
         alpha = 1
         beta = 1
         gamma = 0.01
         w_edge = 5
         w_line = 15
         maxiters = 1000
-
-        asp = []
-        bs = []
-        angles = []
-        # Filters for trajectory smoothing
-        # smoothenx = Smoothen(tol=50, winlen=1)
-        # smootheny = Smoothen(tol=50, winlen=1)
-        smoothena = Smoothen(tol=50, winlen=5)
-        smoothenb = Smoothen(tol=50, winlen=5)
-        # smoothenang = Smoothen(tol=5, winlen=30)
-        # (x0, y0), (x1, y1) = line
-        # y0 -= 383
-        # y1 -= 383
-        # x0 -= 700
-        # x1 -= 700
-
-        # line = (x0, y0), (x1, y1)
         
         lcoords = lcoords.norm2pix(self.fwidth, self.fheight)
         rect = lcoords.pts2rect()
         
         initpts = ptsline(lcoords, numpts=100, xoff=rect.xmin, yoff=rect.ymin)
 
-        startrect = rect
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
 
-            # rectp, ellipse = self.offellipse(ellipse, rect, 100)
-
-
-            # rect = self.offset(initpts, rect, 100)
-            
-            # framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
-            # framep = frame.copy()[383:690, 700:1080]
             framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
-
-            # print('frame: ', framep.shape)
-
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
 
-            # initpts = active_contour(gray, initpts)
             initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-                                    gamma=gamma, w_edge=w_edge, w_line=w_line, boundary_condition='fixed')
+                                    gamma=gamma, w_edge=w_edge, w_line=w_line, 
+                                    boundary_condition='fixed')
             
+            cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False,
+                          color=(0, 255, 0), thickness=2)
 
-            # (cx, cy), (a, b), angle = ellipse
-            # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
-            # ellipse = cv2.fitEllipse(initpts.copy()[:,[1,0]].reshape(-1, 1, 2).astype(np.float32))
-
-            # if i > 5:
-            #     (cxp, cyp), (ap, bp), anglep = ellipse
-            #     if ap < a:
-            #         ap = a
-                
-            #     if bp < b:
-            #         bp = b
-
-            #     ellipse = (cx, cy), (ap, bp), anglep
-
-            # print('Inverse transform: ', ellipse)
-            # (cx, cy), (a, b), angle = ellipse
-            # print('a, b angle => ', (a,b, angle))
-
-            # asp.append(a)
-            # bs.append(b)
-            # angles.append(angle)
-
-            # if startrect.xmin != rectp.xmin:
-            #     cx -= (startrect.xmin - rectp.xmin)
-            # if startrect.ymin != rectp.ymin:
-            #     cy -= (startrect.ymin-rectp.ymin)
-                # _, ellipse = self.offellipse(ellipse, rectp, -100)
-            # ellipse = (cx, cy), (a, b), angle
-            
-            # print('before: ', ellipse)
-            # cx = smoothenx.smoothen(cx)
-            # cy = smootheny.smoothen(cy)
-            # a = smoothena.smoothen(a)
-            # b = smoothenb.smoothen(b)
-            # angle = smoothenang.smoothen(angle)
-            # ellipse = (cx, cy), (a, b), angle
-            # print('after: ', ellipse)
-
-            # print('transform again: ')
-            # _, ellipse = self.offellipse(ellipse, rect, 100)
-
-            # (cx, cy), (a, b), angle = ellipse
-            # if startrect.xmin != rectp.xmin:
-            #     cx += (startrect.xmin - rectp.xmin)
-            # if startrect.ymin != rectp.ymin:
-            #     cy += (startrect.ymin-rectp.ymin)
-            #     # _, ellipse = self.offellipse(ellipse, rectp, -100)
-            # ellipse = (cx, cy), (a, b), angle
-            # print('After Ellipse: ', ellipse)
-
-            # rect = rectp
-            # snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
-            # snakecont[:, :, 0] += rect.xmin
-            # snakecont[:, :, 1] += rect.ymin
-            # (cx, cy), (a, b), angle = ellipse
-            # cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
-            # cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
-            #             endAngle=360, thickness=2)
-            # x0 = floor(np.min(initpts[:, 1]))
-            # x1 = floor(np.max(initpts[:, 1]))
-            # y0 = floor(np.min(initpts[:, 0]))
-            # y1 = floor(np.max(initpts[:, 0]))
-            # cv2.line(framep, (x0, y0), (x1, y1), (0, 255, 0), thickness=2)
-            cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False, color=(0, 255, 0), thickness=2)
-
-            
-
-            # plt.figure(figsize=(12, 8))
-            # (cx, cy), (a, b), angle = ellipse
-            # if i > 200:
-            # _, ax = plt.subplots()
-            # ax.imshow(gray, cmap='gray')
-            # ax.imshow(framep)
-            # ax.plot(initpts[:,1], initpts[:,0], '--g', lw=3)
-            
-            # ax.plot([x0, x1], [y0, y1], '--b')
-            # plt.show()
-            # plt.imshow(frame)
-            # plt.show()
-
-            # ellipse = ellipsep
-            # initpts = snakep
-            # snakecont = snakecontp
             frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
 
             self._videowriter.write(frame)
