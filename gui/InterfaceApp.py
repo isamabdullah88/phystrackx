@@ -37,8 +37,8 @@ class InterfaceApp(App):
 
         self.ccoords = (0, 0)
 
-        # mask from user for tracking
-        self._line = None
+        # Line coordinates for tracking
+        self._lcoords = []
         # rect for text detection
         self._rect = None
 
@@ -117,28 +117,70 @@ class InterfaceApp(App):
         """Draws line with filled transparent image laid over region of interest"""
         self._ctkline = None
 
-        def ondown(event):
+        def onclick(event):
+            # if self._ctkline is not None:
+            #     self.videoview.delete(self._ctkline)
+            
+            self._lcoords.append([event.x-self.fx, event.y-self.fy])
+            
+            for i in range(len(self._lcoords)):
+                x0, y0 = self._lcoords[i]
+                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2, fill="red", outline="black")
+                
+                if i > len(self._lcoords) - 2:
+                    continue
+                x1, y1 = self._lcoords[i+1]
+                
+                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy, fill="magenta", width=3)
+            
+            # x, y = event.x, event.y
+            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
+            # self.videoview.create_oval(x-2, y-2, x+2, y+2, fill="red", outline="black")
+            
+            
+        def ondrag(event):
+            if len(self._lcoords) < 1:
+                return
+            
+            ex, ey = (event.x, event.y)
+            
+            if self._ctkline is None:
+                x0, y0 = self._lcoords[-1]
+                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx, ey+self.fy, fill="magenta", width=3)
+                return
+            
+
+            # for i in range(len(self._lcoords)):
+            #     x0, y0 = self._lcoords[i]
+            #     self.videoview.create_oval(x0-2, y0-2, x0+2, y0+2, fill="red", outline="black")
+                
+            #     if i > len(self._lcoords) - 2:
+            #         continue
+            #     x1, y1 = self._lcoords[i+1]
+                
+            #     self.videoview.create_line(x0, y0, x1, y1, fill="magenta", width=3)
+            
+            # if self._ctkline is not None:
+            #     self.videoview.delete(self._ctkline)
+            x1, y1 = self._lcoords[-1]
+            self.videoview.coords(self._ctkline, x1+self.fx, y1+self.fy, event.x, event.y)
+            # self.videoview.create_line(x1, y1, ex, ey, fill="magenta", width=3)
+            
+        def onescape(event):
+            """Escape key to clear the drawn line"""
             if self._ctkline is not None:
                 self.videoview.delete(self._ctkline)
+                self._ctkline = None
+                # self._lcoords = []
+                print('Line cleared')
             
-            self._lcoords = (event.x, event.y)
-            
-            self._ctkline = self.videoview.create_line(event.x, event.y, event.x, event.y, fill="magenta", width=3)
-            
-            
-        def inline(event):
-            sx, sy = self._lcoords
-            ex, ey = (event.x, event.y)
+            self.videoview.unbind("<Button>")
+            self.videoview.unbind("<Motion>")
+            self.videoview.unbind("<Escape>")
 
-            self.videoview.coords(self._ctkline, sx, sy, event.x, event.y)
-
-            self._line = ((sx-self.fx)/self.fwidth, (sy-self.fy)/self.fheight), \
-                ((ex-self.fx)/self.fwidth, (ey-self.fy)/self.fheight)
-            
-            print('Rect tr: ', self._line)
-
-        self.videoview.bind("<Button-1>", ondown)
-        self.videoview.bind("<B1-Motion>", inline)
+        self.videoview.bind("<Button>", onclick)
+        self.videoview.bind("<Motion>", ondrag)
+        self.root.bind("<Escape>", onescape)
 
     
     def drawrect(self):
@@ -178,7 +220,7 @@ class InterfaceApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.interface.track(self._line, self._rect, startidx, endidx)
+            self.interface.track(self._lcoords, self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
