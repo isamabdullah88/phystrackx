@@ -160,7 +160,7 @@ class BalloonApp(App):
 
             self.videoview.coords(self.rbox, sx, sy, event.x, event.y)
 
-            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
             print('Rect tr: ', self._rect.totuple())
 
         self.videoview.bind("<Button-1>", ondown)

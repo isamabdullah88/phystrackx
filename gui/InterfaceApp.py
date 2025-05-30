@@ -12,7 +12,7 @@ from experiments.Interface import Interface
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
-from core.Rect import NormalizedRect, PixelRect
+from core.Rect import NormalizedRect, PixelRect, Points
 
 class InterfaceApp(App):
     def __init__(self, root):
@@ -38,7 +38,7 @@ class InterfaceApp(App):
         self.ccoords = (0, 0)
 
         # Line coordinates for tracking
-        self._lcoords = []
+        self._lcoords = Points()
         # rect for text detection
         self._rect = None
 
@@ -121,7 +121,7 @@ class InterfaceApp(App):
             # if self._ctkline is not None:
             #     self.videoview.delete(self._ctkline)
             
-            self._lcoords.append([event.x-self.fx, event.y-self.fy])
+            self._lcoords.addpt(event.x-self.fx, event.y-self.fy)
             
             for i in range(len(self._lcoords)):
                 x0, y0 = self._lcoords[i]
@@ -203,7 +203,7 @@ class InterfaceApp(App):
 
             self.videoview.coords(self._ctkbox, sx, sy, event.x, event.y)
 
-            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
             print('Rect tr: ', self._rect.totuple())
 
         self.videoview.bind("<Button-1>", ondown)
@@ -220,7 +220,7 @@ class InterfaceApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.interface.track(self._lcoords, self._rect, startidx, endidx)
+            self.interface.track(self._lcoords.pix2norm(self.fwidth, self.fheight), self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
