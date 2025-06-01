@@ -26,7 +26,7 @@ class MenuScreen:
 
     def load_and_display_logo(self, master):
         # Load the image
-        image_path = "phys_track_logo.png"
+        image_path = "assets/phys_track_logo.png"
         image = Image.open(image_path)
 
         # Resize the image to fit the window width while maintaining aspect ratio

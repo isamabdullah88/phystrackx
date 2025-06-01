@@ -32,7 +32,7 @@ class WelcomeScreen:
 
     def load_and_display_image(self, master):
         # Load the image
-        image_path = "physlab_logo.png"
+        image_path = "assets/physlab_logo.png"
         image = Image.open(image_path)
         photo = ImageTk.PhotoImage(image)
 
