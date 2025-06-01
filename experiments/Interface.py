@@ -122,18 +122,22 @@ class Interface(Experiment):
             fcount = self._vidreader.fcount - startidx
         else:
             fcount = endidx - startidx
+            
+        print('star idx: ', startidx)
+        print('end idx: ', endidx)
+        print('lcoords: ', lcoords)
 
-        alpha = 1
-        beta = 1
+        alpha = 0.1
+        beta = 0.1
         gamma = 0.01
         w_edge = 5
         w_line = 15
         maxiters = 1000
         
         lcoords = lcoords.norm2pix(self.fwidth, self.fheight)
-        rect = lcoords.pts2rect()
+        rect = lcoords.pts2rect(xoff=100, yoff=100, fwidth=self.fwidth, fheight=self.fheight)
         
-        initpts = ptsline(lcoords, numpts=100, xoff=rect.xmin, yoff=rect.ymin)
+        initpts = ptsline(lcoords, numpts=10, xoff=rect.xmin, yoff=rect.ymin)
 
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
 
@@ -151,6 +155,11 @@ class Interface(Experiment):
             
             cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False,
                           color=(0, 255, 0), thickness=2)
+            
+            # plt.imshow(gray, cmap='gray')
+            # plt.figure()
+            # plt.imshow(framep)
+            # plt.show()
 
             frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
 
@@ -163,7 +172,13 @@ class Interface(Experiment):
 
 
 if __name__ == '__main__':
-    balloon = Interface("interface-track.mp4")
-    balloon.add_video("Candle1.mp4")
-    # mask = cv2.imread("mask-balloon.png", 0)
-    balloon.track(None, None, 100, 3500)
+    # candle = Interface("candle-track.mp4")
+    # candle.add_video("Candle1.mp4")
+    # points = Points([0.45, 0.4796875, 0.5015625, 0.51875, 0.525, 0.521875, 0.5109375, 0.478125, 0.45],
+    #                [0.41388888888888886, 0.41388888888888886, 0.41944444444444445, 0.4638888888888889, 0.5277777777777778, 0.5833333333333334, 0.6, 0.5972222222222222, 0.5944444444444444])
+    # candle.track(points, None, 787, 2700)
+    
+    interface = Interface("interface-track.mp4")
+    interface.add_video("Interface.mp4")
+    points =  Points(x=[0.4423791821561338, 0.48698884758364314], y=[0.6145833333333334, 0.6145833333333334])
+    interface.track(points, None, 165, 193)

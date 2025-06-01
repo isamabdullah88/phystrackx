@@ -118,24 +118,20 @@ class InterfaceApp(App):
         self._ctkline = None
 
         def onclick(event):
-            # if self._ctkline is not None:
-            #     self.videoview.delete(self._ctkline)
             
             self._lcoords.addpt(event.x-self.fx, event.y-self.fy)
             
             for i in range(len(self._lcoords)):
                 x0, y0 = self._lcoords[i]
-                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2, fill="red", outline="black")
+                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2,
+                                           fill="red", outline="black")
                 
                 if i > len(self._lcoords) - 2:
                     continue
                 x1, y1 = self._lcoords[i+1]
                 
-                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy, fill="magenta", width=3)
-            
-            # x, y = event.x, event.y
-            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
-            # self.videoview.create_oval(x-2, y-2, x+2, y+2, fill="red", outline="black")
+                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy,
+                                           fill="magenta", width=3)
             
             
         def ondrag(event):
@@ -146,25 +142,12 @@ class InterfaceApp(App):
             
             if self._ctkline is None:
                 x0, y0 = self._lcoords[-1]
-                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx, ey+self.fy, fill="magenta", width=3)
+                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx,
+                                                           ey+self.fy, fill="magenta", width=3)
                 return
             
-
-            # for i in range(len(self._lcoords)):
-            #     x0, y0 = self._lcoords[i]
-            #     self.videoview.create_oval(x0-2, y0-2, x0+2, y0+2, fill="red", outline="black")
-                
-            #     if i > len(self._lcoords) - 2:
-            #         continue
-            #     x1, y1 = self._lcoords[i+1]
-                
-            #     self.videoview.create_line(x0, y0, x1, y1, fill="magenta", width=3)
-            
-            # if self._ctkline is not None:
-            #     self.videoview.delete(self._ctkline)
             x1, y1 = self._lcoords[-1]
             self.videoview.coords(self._ctkline, x1+self.fx, y1+self.fy, event.x, event.y)
-            # self.videoview.create_line(x1, y1, ex, ey, fill="magenta", width=3)
             
         def onescape(event):
             """Escape key to clear the drawn line"""

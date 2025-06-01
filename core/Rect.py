@@ -60,7 +60,7 @@ class Points:
         
     def __getitem__(self, idx):
         """Get a point by index"""
-        if idx <= -len(self.x) or idx >= len(self.x):
+        if idx < -len(self.x) or idx >= len(self.x):
             raise IndexError("Index out of range")
         return (self.x[idx], self.y[idx])
         
@@ -77,19 +77,22 @@ class Points:
         
         return Points(x, y)
     
-    def pts2rect(self):
+    def pts2rect(self, xoff=0, yoff=0, fwidth=1, fheight=1):
         """Convert points to rectangle"""
         if len(self.x) == 0 or len(self.y) == 0:
             raise ValueError("No points to convert to rectangle")
         
-        xmin = min(self.x)
-        xmax = max(self.x)
-        ymin = min(self.y)
-        ymax = max(self.y)
+        xmin = max(0, min(self.x)-xoff)
+        xmax = min(max(self.x)+xoff, fwidth)
+        ymin = max(0, min(self.y)-yoff)
+        ymax = min(max(self.y)+yoff, fheight)
         
         return PixelRect(xmin, ymin, xmax - xmin, ymax - ymin)
         
     def __len__(self):
         """Length of points"""
         return len(self.x)
-        
+    
+    def __str__(self):
+        """String representation of points"""
+        return f"Points(x={self.x}, y={self.y})"        
