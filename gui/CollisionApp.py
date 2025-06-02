@@ -49,7 +49,7 @@ class CollisionApp(App):
     def dispframe(self, frame=None):
         fwidth = self.collision.fwidth
         fheight = self.collision.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -66,7 +66,7 @@ class CollisionApp(App):
         frame = self.collision.frame(index=self.seekbar.idx)
         fwidth = self.collision.fwidth
         fheight = self.collision.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -123,7 +123,6 @@ class CollisionApp(App):
             ex, ey = (event.x, event.y)
 
             rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
-            print('Rect tr: ', rect.totuple())
             self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
             
 

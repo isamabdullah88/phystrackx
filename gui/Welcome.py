@@ -1,15 +1,6 @@
-import tkinter as tk
-import customtkinter
+
+import customtkinter as ctk
 from PIL import ImageTk, Image
-# from video_processing import VideoProcessor
-# from utils import resize_frame
-# import cv2
-# import numpy as np
-# from tkinter import ttk
-# import csv
-# from nonrigid import VideoApp2
-# from rigid import VideoApp
-# from auto import VideoApp3
 
 class WelcomeScreen:
     def __init__(self, master):
@@ -18,11 +9,11 @@ class WelcomeScreen:
         self.master.geometry("960x640")
 
         # Title label
-        self.label = tk.Label(master, text="Welcome to PhysTrackX", font=("Helvetica", 24))
+        self.label = ctk.CTkLabel(master, text="Welcome to PhysTrackX", font=("Helvetica", 24))
         self.label.pack(pady=(20, 0))
 
         # Subtitle label
-        subtitle_label = tk.Label(master, text="A Project By", font=("Helvetica", 18))
+        subtitle_label = ctk.CTkLabel(master, text="A Project By", font=("Helvetica", 18))
         subtitle_label.pack(pady=(10, 0))
 
         # Load and display the image
@@ -37,7 +28,7 @@ class WelcomeScreen:
         photo = ImageTk.PhotoImage(image)
 
         # Create a label to display the image
-        image_label = tk.Label(master, image=photo)
+        image_label = ctk.CTkLabel(master, image=photo)
         image_label.image = photo  # Keep a reference, prevent GC
         image_label.pack(pady=(10, 20))
 

@@ -248,7 +248,7 @@ class App:
     #     self.processor.points_to_track.append((centroid_x, centroid_y))
     #     self.videoview.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
-    def resize_frame(self, frame, fwidth, fheight):
+    def resizeframe(self, frame, fwidth, fheight):
         if (fwidth > self.cwidth):
             ratio = fheight/fwidth
             fwidth = self.cwidth

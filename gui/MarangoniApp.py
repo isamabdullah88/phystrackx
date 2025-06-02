@@ -53,7 +53,7 @@ class MarangoniApp(App):
     def dispframe(self, frame):
         fwidth = self.marangoni.fwidth
         fheight = self.marangoni.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -70,7 +70,7 @@ class MarangoniApp(App):
         fwidth = self.marangoni.fwidth
         fheight = self.marangoni.fheight
 
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)

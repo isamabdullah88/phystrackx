@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import ImageTk, Image, ImageDraw
 from video_processing import VideoProcessor
-from utils import resize_frame
+from utils import resizeframe
 import cv2
 import numpy as np
 from tkinter import ttk
@@ -164,7 +164,7 @@ class VideoApp2:
             self.videoview = tk.Canvas(self.video_frame, width=640, height=480)
             self.videoview.pack(pady=20, expand=True)
             
-            self.slider = tk.Scale(self.video_frame, from_=0, to=100, orient=tk.HORIZONTAL, length=400, resolution=1, command=self.updateframe)
+            self.slider = tk.Scale(self.video_frame, from_=0, to=100, orient=tk.HORIZONTAL, length=400, resolution=1, command=self.update_frame)
             self.slider.pack(pady=10)
 
             self.menu_button = tk.Button(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
@@ -262,7 +262,7 @@ class VideoApp2:
             if self.crop_coords:
                 x1, y1, x2, y2 = self.crop_coords
                 frame = frame[min(y1, y2):max(y1, y2), min(x1, x2):max(x1, x2)]
-            frame = resize_frame(frame, 640, 480)
+            frame = resizeframe(frame, 640, 480)
             self.processor.frames.append(frame)
 
             frame_count += 1
@@ -282,7 +282,7 @@ class VideoApp2:
         self.photo = photo
         self.slider['to'] = len(self.processor.frames) - 1
 
-    def updateframe(self, event):
+    def update_frame(self, event):
         frame_number = int(self.slider.get())
         if self.processor.filtered_images is not None and len(self.processor.filtered_images) > frame_number:
             frame = self.processor.filtered_images[frame_number]
@@ -608,7 +608,7 @@ class VideoApp2:
 
         self.close_progress_bar()
         self.processor.frames = self.processor.filtered_images.copy()  # Ensure this line exists
-        self.updateframe(None)  # Refresh display to show filtered frames
+        self.update_frame(None)  # Refresh display to show filtered frames
 
 
     def undo_filter(self):
@@ -618,7 +618,7 @@ class VideoApp2:
         self.load_video()  # Ensure this method reloads the video frames correctly
 
         self.slider.set(0)
-        self.updateframe(None)
+        self.update_frame(None)
 
     def translate_to_real_coordinates(self, points):
         origin = self.processor.axis_coords[0]

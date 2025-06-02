@@ -64,7 +64,7 @@ class InterfaceApp(App):
     def dispframe(self, frame):
         fwidth = self.interface.fwidth
         fheight = self.interface.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -82,7 +82,7 @@ class InterfaceApp(App):
         fwidth = self.interface.fwidth
         fheight = self.interface.fheight
 
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -181,13 +181,9 @@ class InterfaceApp(App):
         def inrect(event):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
-
-            print('Rect Orig: ', (sx, sy, ex, ey))
-
             self.videoview.coords(self._ctkbox, sx, sy, event.x, event.y)
 
             self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
-            print('Rect tr: ', self._rect.totuple())
 
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", inrect)

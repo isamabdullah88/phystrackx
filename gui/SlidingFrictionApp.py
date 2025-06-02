@@ -38,7 +38,6 @@ class SlidingFrictionApp(App):
 
     def load_video(self, videopath):
         self.sfriction.add_video(videopath)
-        # self.sfriction.crop_intime()
         
         self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.sfriction.fcount)
@@ -49,7 +48,7 @@ class SlidingFrictionApp(App):
     def dispframe(self, frame=None):
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
@@ -59,12 +58,7 @@ class SlidingFrictionApp(App):
         self.fx = floor(self.cwidth/2 - self.sfriction.fwidth/2)
         self.fy = floor(self.cheight/2 - self.sfriction.fheight/2)
 
-        # print('frame ox: ', self.frame_ox)
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
-        # self.videoview.photo = photo
-
-        # self.slider.configure(from_=0, to=self.sfriction.frame_count - 1)
-        # self.slider.set(0)
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -72,7 +66,7 @@ class SlidingFrictionApp(App):
         frame = self.sfriction.frame(index=self.seekbar.idx)
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -120,8 +114,6 @@ class SlidingFrictionApp(App):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
 
-            # print('Rect Orig: ', (sx, sy, ex, ey))
-
             self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
             
         def onrelease(event):
@@ -129,7 +121,6 @@ class SlidingFrictionApp(App):
             ex, ey = (event.x, event.y)
 
             rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
-            print('Rect tr: ', rect.totuple())
             self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
             
 
