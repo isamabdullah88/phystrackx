@@ -21,14 +21,14 @@ class BalloonApp(App):
         # For drawing ellipse over tracking area
         sfimg = Image.open("assets/circlebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.circlebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawcircle)
         self.circlebd.pack(pady=10)
         
         # For drawing rectangle over text area
         sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.circlebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawrect)
         self.circlebd.pack(pady=10)
         
@@ -160,7 +160,7 @@ class BalloonApp(App):
 
             self.videoview.coords(self.rbox, sx, sy, event.x, event.y)
 
-            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
             print('Rect tr: ', self._rect.totuple())
 
         self.videoview.bind("<Button-1>", ondown)

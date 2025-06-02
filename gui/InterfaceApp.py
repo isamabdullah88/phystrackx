@@ -12,7 +12,7 @@ from experiments.Interface import Interface
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
-from core.Rect import NormalizedRect, PixelRect
+from core.Rect import PixelRect, Points
 
 class InterfaceApp(App):
     def __init__(self, root):
@@ -21,14 +21,14 @@ class InterfaceApp(App):
         # For drawing ellipse over tracking area
         sfimg = Image.open("assets/line.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.linebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.linebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawline)
         self.linebd.pack(pady=10)
         
         # For drawing rectangle over text area
         sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.rectbd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.rectbd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawrect)
         self.rectbd.pack(pady=10)
         
@@ -38,7 +38,7 @@ class InterfaceApp(App):
         self.ccoords = (0, 0)
 
         # Line coordinates for tracking
-        self._lcoords = []
+        self._lcoords = Points()
         # rect for text detection
         self._rect = None
 
@@ -118,24 +118,20 @@ class InterfaceApp(App):
         self._ctkline = None
 
         def onclick(event):
-            # if self._ctkline is not None:
-            #     self.videoview.delete(self._ctkline)
             
-            self._lcoords.append([event.x-self.fx, event.y-self.fy])
+            self._lcoords.addpt(event.x-self.fx, event.y-self.fy)
             
             for i in range(len(self._lcoords)):
                 x0, y0 = self._lcoords[i]
-                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2, fill="red", outline="black")
+                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2,
+                                           fill="red", outline="black")
                 
                 if i > len(self._lcoords) - 2:
                     continue
                 x1, y1 = self._lcoords[i+1]
                 
-                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy, fill="magenta", width=3)
-            
-            # x, y = event.x, event.y
-            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
-            # self.videoview.create_oval(x-2, y-2, x+2, y+2, fill="red", outline="black")
+                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy,
+                                           fill="magenta", width=3)
             
             
         def ondrag(event):
@@ -146,25 +142,12 @@ class InterfaceApp(App):
             
             if self._ctkline is None:
                 x0, y0 = self._lcoords[-1]
-                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx, ey+self.fy, fill="magenta", width=3)
+                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx,
+                                                           ey+self.fy, fill="magenta", width=3)
                 return
             
-
-            # for i in range(len(self._lcoords)):
-            #     x0, y0 = self._lcoords[i]
-            #     self.videoview.create_oval(x0-2, y0-2, x0+2, y0+2, fill="red", outline="black")
-                
-            #     if i > len(self._lcoords) - 2:
-            #         continue
-            #     x1, y1 = self._lcoords[i+1]
-                
-            #     self.videoview.create_line(x0, y0, x1, y1, fill="magenta", width=3)
-            
-            # if self._ctkline is not None:
-            #     self.videoview.delete(self._ctkline)
             x1, y1 = self._lcoords[-1]
             self.videoview.coords(self._ctkline, x1+self.fx, y1+self.fy, event.x, event.y)
-            # self.videoview.create_line(x1, y1, ex, ey, fill="magenta", width=3)
             
         def onescape(event):
             """Escape key to clear the drawn line"""
@@ -203,7 +186,7 @@ class InterfaceApp(App):
 
             self.videoview.coords(self._ctkbox, sx, sy, event.x, event.y)
 
-            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pixel2normal(self.fwidth, self.fheight)
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
             print('Rect tr: ', self._rect.totuple())
 
         self.videoview.bind("<Button-1>", ondown)
@@ -220,7 +203,7 @@ class InterfaceApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.interface.track(self._lcoords, self._rect, startidx, endidx)
+            self.interface.track(self._lcoords.pix2norm(self.fwidth, self.fheight), self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 

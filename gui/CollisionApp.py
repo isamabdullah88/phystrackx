@@ -5,7 +5,7 @@ import customtkinter as ctk
 from PIL import Image, ImageTk
 from matplotlib import pyplot as plt
 from tkinter import messagebox
-from video_processing import VideoProcessor
+# from video_processing import VideoProcessor
 from math import floor
 
 from .App import App
@@ -14,11 +14,11 @@ from experiments.Collision import Collision
 class CollisionApp(App):
     def __init__(self, root):
         super().__init__(root)
-        self.processor = VideoProcessor()
+        # self.processor = VideoProcessor()
         self.collision = Collision()
 
-    def load_video(self):
-        self.collision.add_video(self.processor.video_path)
+    def load_video(self, videopath):
+        self.collision.add_video(videopath)
         self.collision.crop_intime()
 
         frame1 = self.collision.frame(0)

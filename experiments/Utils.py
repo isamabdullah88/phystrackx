@@ -23,7 +23,7 @@ def ptsline(lcoords, numpts=10, xoff=0, yoff=0):
         x = np.linspace(x0, x1, numpts) - xoff
         y = np.linspace(y0, y1, numpts) - yoff
         
-        l = np.stack((x, y), axis=1)
+        l = np.stack((y, x), axis=1)
         linepts.append(l)
     
     return np.array(linepts).reshape(-1, 2)  # shape (N, 2)

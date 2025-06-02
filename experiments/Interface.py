@@ -14,13 +14,10 @@ import numpy as np
 from tqdm import tqdm
 from skimage.segmentation import active_contour
 from skimage.filters import gaussian
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 
 from .Experiment import Experiment
-from filters import Smoothen
 from .Utils import ptsline
-from core import PixelRect
+from core import Points
 
 class Interface(Experiment):
     def __init__(self, trackpath):
@@ -51,82 +48,11 @@ class Interface(Experiment):
         if mask is not None:
             edges = cv2.bitwise_and(edges, edges, mask=mask)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        # contour = max(contours, key=cv2.contourArea) if contours else None
+        
         if len(contours) > 0:
             cv2.drawContours(gray, contours, -1, (255, 255, 255), 3)
-        
-        # plt.imshow(edges, cmap='gray')
-        # plt.imshow(gray, cmap='gray')
-        # plt.show()
 
         return gray
-    
-    def prepmask(self, mask):
-        """Preprocess and convert user defined mask to ellipse. Also convert from opencv
-        (x,y) to (r,c)"""
-        _, thresh = cv2.threshold(mask, 1, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        contour = max(contours, key=cv2.contourArea)
-        ellipse = cv2.fitEllipse(contour)
-        (xc, yc), (a, b), angle = ellipse
-
-        return (xc, yc), (a, b), angle
-    
-
-    def offset(self, initpts, rect: PixelRect, val: int):
-        xmin = max(0, floor(np.min(initpts[:, 1])))
-        xmax = floor(np.max(initpts[:, 1]))
-        ymin = max(0, floor(np.min(initpts[:, 0])))
-        ymax = floor(np.max(initpts[:, 0]))
-        
-        x, y, w, h = rect.totuple()
-
-        if xmin < val:
-            x = x-val
-            initpts[:, 1] = initpts[:, 1] + val
-        if ymin < val:
-            y = y-val
-            initpts[:, 0] = initpts[:, 0] + val
-        if xmax+val > w:
-            w += val
-        if ymax + val > h:
-            h += val        
-
-        return PixelRect(x, y, w, h)
-    
-    def offellipse(self, ellipse, rect: PixelRect, val: int):
-        (cx, cy), (a, b), angle = ellipse
-        
-        x, y, w, h = rect.totuple()
-
-        if cx-a/2 < val:
-            x = x-val
-            cx += val
-            w += val
-
-        if cy-b/2 < val:
-            y = y-val
-            cy += val
-            h += val
-
-        if a+val > w-val:
-            w += val
-
-        if b+val > h-val:
-            h += val
-
-        ellipse = (cx, cy), (a, b), angle
-
-        return PixelRect(x, y, w, h), ellipse
-    
-
-    def mask2rect(self, mask):
-
-        coords = cv2.findNonZero(mask)
-        # Get bounding rectangle
-        x, y, w, h = cv2.boundingRect(coords)
-
-        return PixelRect(x, y, w, h)
 
 
     def ocr(self, rect, startidx=0, endidx=0):
@@ -161,7 +87,7 @@ class Interface(Experiment):
 
 
 
-    def track(self, lcoords, rect, startidx=0, endidx=0):
+    def track(self, lcoords: Points, rect, startidx=0, endidx=0):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -175,7 +101,7 @@ class Interface(Experiment):
         """
         # Do OCR detection
         if rect is not None:
-            rectp = rect.normal2pixel(self.fwidth, self.fheight)
+            rectp = rect.norm2pix(self.fwidth, self.fheight)
             self.ocr(rectp, startidx=startidx, endidx=endidx)
 
         # Tracking
@@ -190,176 +116,43 @@ class Interface(Experiment):
         else:
             fcount = endidx - startidx
 
-        # print('line before: ', line)
-        # line = ((1014, 450.0), (1017.0, 654.0))
-        # (x0, y0), (x1, y1) = line
-        # x0 *= self.fwidth
-        # x1 *= self.fwidth
-        # y0 *= self.fheight
-        # y1 *= self.fheight
-
-        # line = (x0, y0), (x1, y1)
-        # print('line after: ', line)
-        # mask = cv2.resize(mask, (self.fwidth, self.fheight))
-        
-        # rect = self.mask2rect(mask)
-        # mask = mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
-        # ellipse = self.prepmask(mask)
-
-        # initpts = ptsellpise(ellipse)
-
-        alpha = 1
-        beta = 1
+        alpha = 0.1
+        beta = 0.1
         gamma = 0.01
         w_edge = 5
         w_line = 15
         maxiters = 1000
-
-        asp = []
-        bs = []
-        angles = []
-        # Filters for trajectory smoothing
-        # smoothenx = Smoothen(tol=50, winlen=1)
-        # smootheny = Smoothen(tol=50, winlen=1)
-        smoothena = Smoothen(tol=50, winlen=5)
-        smoothenb = Smoothen(tol=50, winlen=5)
-        # smoothenang = Smoothen(tol=5, winlen=30)
-        # (x0, y0), (x1, y1) = line
-        # y0 -= 383
-        # y1 -= 383
-        # x0 -= 700
-        # x1 -= 700
-
-        # line = (x0, y0), (x1, y1)
         
-        x0 = floor(min([coord[0] for coord in lcoords]))
-        y0 = floor(min([coord[1] for coord in lcoords]))
-        x1 = floor(max([coord[0] for coord in lcoords]))
-        y1 = floor(max([coord[1] for coord in lcoords]))
+        lcoords = lcoords.norm2pix(self.fwidth, self.fheight)
+        rect = lcoords.pts2rect(xoff=100, yoff=100, fwidth=self.fwidth, fheight=self.fheight)
         
-        initpts = ptsline(lcoords, numpts=100, xoff=x0, yoff=y0)
+        initpts = ptsline(lcoords, numpts=10, xoff=rect.xmin, yoff=rect.ymin)
 
-        startrect = rect
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
 
-            # rectp, ellipse = self.offellipse(ellipse, rect, 100)
-
-
-            # rect = self.offset(initpts, rect, 100)
-            
-            # framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
-            # framep = frame.copy()[383:690, 700:1080]
-            framep = frame.copy()[y0:y1, x0:x1]
-
-            # print('frame: ', framep.shape)
-
+            framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
 
-            # initpts = active_contour(gray, initpts)
             initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-                                    gamma=gamma, w_edge=w_edge, w_line=w_line, boundary_condition='free-fixed')
+                                    gamma=gamma, w_edge=w_edge, w_line=w_line, 
+                                    boundary_condition='fixed')
             
-
-            # (cx, cy), (a, b), angle = ellipse
-            # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
-            # ellipse = cv2.fitEllipse(initpts.copy()[:,[1,0]].reshape(-1, 1, 2).astype(np.float32))
-
-            # if i > 5:
-            #     (cxp, cyp), (ap, bp), anglep = ellipse
-            #     if ap < a:
-            #         ap = a
-                
-            #     if bp < b:
-            #         bp = b
-
-            #     ellipse = (cx, cy), (ap, bp), anglep
-
-            # print('Inverse transform: ', ellipse)
-            # (cx, cy), (a, b), angle = ellipse
-            # print('a, b angle => ', (a,b, angle))
-
-            # asp.append(a)
-            # bs.append(b)
-            # angles.append(angle)
-
-            # if startrect.xmin != rectp.xmin:
-            #     cx -= (startrect.xmin - rectp.xmin)
-            # if startrect.ymin != rectp.ymin:
-            #     cy -= (startrect.ymin-rectp.ymin)
-                # _, ellipse = self.offellipse(ellipse, rectp, -100)
-            # ellipse = (cx, cy), (a, b), angle
+            cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False,
+                          color=(0, 255, 0), thickness=2)
             
-            # print('before: ', ellipse)
-            # cx = smoothenx.smoothen(cx)
-            # cy = smootheny.smoothen(cy)
-            # a = smoothena.smoothen(a)
-            # b = smoothenb.smoothen(b)
-            # angle = smoothenang.smoothen(angle)
-            # ellipse = (cx, cy), (a, b), angle
-            # print('after: ', ellipse)
-
-            # print('transform again: ')
-            # _, ellipse = self.offellipse(ellipse, rect, 100)
-
-            # (cx, cy), (a, b), angle = ellipse
-            # if startrect.xmin != rectp.xmin:
-            #     cx += (startrect.xmin - rectp.xmin)
-            # if startrect.ymin != rectp.ymin:
-            #     cy += (startrect.ymin-rectp.ymin)
-            #     # _, ellipse = self.offellipse(ellipse, rectp, -100)
-            # ellipse = (cx, cy), (a, b), angle
-            # print('After Ellipse: ', ellipse)
-
-            # rect = rectp
-            # snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
-            # snakecont[:, :, 0] += rect.xmin
-            # snakecont[:, :, 1] += rect.ymin
-            # (cx, cy), (a, b), angle = ellipse
-            # cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
-            # cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
-            #             endAngle=360, thickness=2)
-            # x0 = floor(np.min(initpts[:, 1]))
-            # x1 = floor(np.max(initpts[:, 1]))
-            # y0 = floor(np.min(initpts[:, 0]))
-            # y1 = floor(np.max(initpts[:, 0]))
-            # cv2.line(framep, (x0, y0), (x1, y1), (0, 255, 0), thickness=2)
-            cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False, color=(0, 255, 0), thickness=2)
-
-            
-
-            # plt.figure(figsize=(12, 8))
-            # (cx, cy), (a, b), angle = ellipse
-            # if i > 200:
-            # _, ax = plt.subplots()
-            # ax.imshow(gray, cmap='gray')
-            # ax.imshow(framep)
-            # ax.plot(initpts[:,1], initpts[:,0], '--g', lw=3)
-            
-            # ax.plot([x0, x1], [y0, y1], '--b')
-            # plt.show()
-            # plt.imshow(frame)
+            # plt.imshow(gray, cmap='gray')
+            # plt.figure()
+            # plt.imshow(framep)
             # plt.show()
 
-            # ellipse = ellipsep
-            # initpts = snakep
-            # snakecont = snakecontp
-            frame[y0:y1, x0:x1] = framep
-            
-            cv2.imwrite(f"frame-{i}.png", frame)
+            frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
 
             self._videowriter.write(frame)
-
-        plt.figure()
-        plt.plot(asp)
-        plt.plot(bs)
-        plt.figure()
-        plt.plot(angles)
-        plt.show()
 
 
         self._videowriter.release()
@@ -368,7 +161,13 @@ class Interface(Experiment):
 
 
 if __name__ == '__main__':
-    balloon = Interface("interface-track.mp4")
-    balloon.add_video("Candle1.mp4")
-    # mask = cv2.imread("mask-balloon.png", 0)
-    balloon.track(None, None, 100, 3500)
+    # candle = Interface("candle-track.mp4")
+    # candle.add_video("Candle1.mp4")
+    # points = Points([0.45, 0.4796875, 0.5015625, 0.51875, 0.525, 0.521875, 0.5109375, 0.478125, 0.45],
+    #                [0.41388888888888886, 0.41388888888888886, 0.41944444444444445, 0.4638888888888889, 0.5277777777777778, 0.5833333333333334, 0.6, 0.5972222222222222, 0.5944444444444444])
+    # candle.track(points, None, 787, 2700)
+    
+    interface = Interface("interface-track.mp4")
+    interface.add_video("Interface.mp4")
+    points =  Points(x=[0.4423791821561338, 0.48698884758364314], y=[0.6145833333333334, 0.6145833333333334])
+    interface.track(points, None, 165, 193)

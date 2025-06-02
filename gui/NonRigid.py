@@ -68,24 +68,6 @@ class NonRigid:
         self.clear_screen()
 
         app = InterfaceApp(self.root)
-
-    # def load_and_display_logo(self, master):
-    #     # Load the image
-    #     image_path = "phys_track_logo.png"
-    #     image = Image.open(image_path)
-
-    #     # Resize the image to fit the window width while maintaining aspect ratio
-    #     base_width = 700  # Set width smaller than the window width for padding considerations
-    #     w_percent = (base_width / float(image.size[0]))
-    #     h_size = int((float(image.size[1]) * float(w_percent)))
-    #     image = image.resize((base_width, h_size), Image.Resampling.LANCZOS)
-
-    #     photo = ImageTk.PhotoImage(image)
-
-    #     # Create a label to display the image
-    #     image_label = tk.Label(master, image=photo)
-    #     image_label.image = photo  # Keep a reference, prevent GC
-    #     image_label.pack(pady=(10, 0))
     
 
 

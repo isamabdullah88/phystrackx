@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .Experiments import Experiments
+from .Rigid import Rigid
 from .NonRigid import NonRigid
 
 class MenuScreen:
@@ -26,7 +26,7 @@ class MenuScreen:
 
     def load_and_display_logo(self, master):
         # Load the image
-        image_path = "phys_track_logo.png"
+        image_path = "assets/phys_track_logo.png"
         image = Image.open(image_path)
 
         # Resize the image to fit the window width while maintaining aspect ratio
@@ -48,7 +48,7 @@ class MenuScreen:
         # root.geometry("960x640")
 
         # app = VideoApp(root)
-        experiments = Experiments()
+        rigid = Rigid()
         # root.mainloop()
 
     def on_non_rigid(self):

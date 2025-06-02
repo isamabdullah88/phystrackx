@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 
 from tkinter import filedialog, simpledialog, messagebox
-from video_processing import VideoProcessor
+# from video_processing import VideoProcessor
 
 class App:
     def __init__(self, root):
@@ -13,7 +13,7 @@ class App:
         
         # Make the window cover the entire screen
         self.root.geometry("960x640")
-        self.processor = VideoProcessor()
+        # self.processor = VideoProcessor()
         self.create_widgets()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
@@ -60,41 +60,41 @@ class App:
         self.canvas.configure(yscrollcommand=scrollbar.set)
 
         # Create a frame to hold the filter widgets on the left side
-        self.toolbar_frame = ctk.CTkFrame(self.canvas, width=80, height=7*80)
-        self.toolbar_frame.pack(side=ctk.LEFT, fill=ctk.Y, padx=10, pady=10)
-        self.toolbar_window = self.canvas.create_window((0, 0), window=self.toolbar_frame, anchor="nw")
+        self.toolbarf = ctk.CTkFrame(self.canvas, width=80, height=7*80)
+        self.toolbarf.pack(side=ctk.LEFT, fill=ctk.Y, padx=10, pady=10)
+        self.toolbar_window = self.canvas.create_window((0, 0), window=self.toolbarf, anchor="nw")
 
         sfimg = Image.open("assets/open-video.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.open_button = ctk.CTkButton(self.toolbar_frame, command=self.open_video,width=80,
+        self.open_button = ctk.CTkButton(self.toolbarf, command=self.open_video,width=80,
                                             height=80, image=sfimg, text="")
         self.open_button.pack(pady=10)
         
-        # self.fps_label = ctk.CTkLabel(self.toolbar_frame, text="")
+        # self.fps_label = ctk.CTkLabel(self.toolbarf, text="")
         # self.fps_label.pack(pady=5)
         
         sfimg = Image.open("assets/axis.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.axis_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.axis_button = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                             image=sfimg, command=self.mark_axes)
         self.axis_button.pack(pady=10)
         
         sfimg = Image.open("assets/points.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.track_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.track_button = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                             image=sfimg, command=self.choose_tracking_method)
         self.track_button.pack(pady=10)
 
         sfimg = Image.open("assets/start.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.track_start_button = ctk.CTkButton(self.toolbar_frame, text="", width=80,
+        self.track_start_button = ctk.CTkButton(self.toolbarf, text="", width=80,
                                                 height=90, image=sfimg,
                                                 command=self.start_tracking)
         self.track_start_button.pack(pady=10)
         
         sfimg = Image.open("assets/plot.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.track_coords_button = ctk.CTkButton(self.toolbar_frame, text="", width=80,
+        self.track_coords_button = ctk.CTkButton(self.toolbarf, text="", width=80,
                                                     height=80, image=sfimg,
                                                     command=self.show_tracked_coordinates_window)
         self.track_coords_button.pack(pady=10)
@@ -102,11 +102,11 @@ class App:
 
         sfimg = Image.open("assets/back.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.menu_button = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.menu_button = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                             image=sfimg, command=self.back_to_menu)
         self.menu_button.pack(pady=10)
 
-        # self.info_label = ctk.CTkLabel(self.toolbar_frame, text="")
+        # self.info_label = ctk.CTkLabel(self.toolbarf, text="")
         # self.info_label.pack(pady=10)
         
         # Create a frame to hold the video and slider widgets on the right side
@@ -126,7 +126,7 @@ class App:
         # self.slider.set(0)
         # self.slider.pack(pady=10)
         # Bind updates to scrollbar & resizing
-        self.toolbar_frame.bind("<Configure>", self.on_frame_configure)
+        self.toolbarf.bind("<Configure>", self.on_frame_configure)
         self.canvas.bind("<Configure>", self.on_canvas_configure)
 
         # Enable mousewheel scrolling
