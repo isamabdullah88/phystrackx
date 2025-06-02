@@ -121,7 +121,7 @@ class App:
 
         # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
         #                             width=400, fg_color="red", progress_color="green",
-        #                             button_color="yellow", command=self.update_frame)
+        #                             button_color="yellow", command=self.updateframe)
         
         # self.slider.set(0)
         # self.slider.pack(pady=10)
@@ -166,10 +166,10 @@ class App:
     def load_video(self, videopath):
         pass
 
-    def display_first_frame(self, frame=None):
+    def dispframe(self, frame=None):
         pass
 
-    def update_frame(self, event):
+    def updateframe(self, event):
         pass
         
     
@@ -263,7 +263,7 @@ class App:
             
             frame = cv2.resize(frame, (fwidth, fheight))
         
-        print('frame: ', frame.shape)
+        # print('frame: ', frame.shape)
 
         return frame
 

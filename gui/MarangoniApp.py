@@ -24,7 +24,7 @@ class MarangoniApp(App):
         self.boundary.pack(pady=10)
         self._idx = 0
 
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
+        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
 
         self.ccoords = (0, 0)
 
@@ -48,9 +48,9 @@ class MarangoniApp(App):
         self.seekbar.setcount(self.marangoni.fcount)
 
         frame1 = self.marangoni.frame(0)
-        self.display_first_frame(frame1)
+        self.dispframe(frame1)
 
-    def display_first_frame(self, frame):
+    def dispframe(self, frame):
         fwidth = self.marangoni.fwidth
         fheight = self.marangoni.fheight
         frame = self.resize_frame(frame, fwidth, fheight)
@@ -64,7 +64,7 @@ class MarangoniApp(App):
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
-    def update_frame(self):
+    def updateframe(self):
         
         frame = self.marangoni.frame(index=self.seekbar.idx)
         fwidth = self.marangoni.fwidth

@@ -33,7 +33,7 @@ class BalloonApp(App):
         self.circlebd.pack(pady=10)
         
 
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
+        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
 
         self.ccoords = (0, 0)
 
@@ -59,9 +59,9 @@ class BalloonApp(App):
         self.seekbar.setcount(self.balloon.fcount)
 
         frame1 = self.balloon.frame(0)
-        self.display_first_frame(frame1)
+        self.dispframe(frame1)
 
-    def display_first_frame(self, frame):
+    def dispframe(self, frame):
         fwidth = self.balloon.fwidth
         fheight = self.balloon.fheight
         frame = self.resize_frame(frame, fwidth, fheight)
@@ -76,7 +76,7 @@ class BalloonApp(App):
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
-    def update_frame(self):
+    def updateframe(self):
         
         frame = self.balloon.frame(index=self.seekbar.idx)
         fwidth = self.balloon.fwidth
