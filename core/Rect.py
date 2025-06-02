@@ -20,6 +20,14 @@ class PixelRect:
     def totuple(self):
         """Converts to tuple"""
         return (self.xmin, self.ymin, self.width, self.height)
+    
+    
+    def topt(self):
+        """Converts to center point"""
+        x = floor((self.xmin+self.xmax)/2)
+        y = floor((self.ymin+self.ymax)/2)
+        
+        return (x, y)
 
 
 class NormalizedRect:
@@ -45,6 +53,13 @@ class NormalizedRect:
     def totuple(self):
         """Converts to tuple"""
         return (self.xmin, self.ymin, self.width, self.height)
+    
+    def topt(self):
+        """Converts to center point"""
+        x = (self.xmin+self.xmax)/2
+        y = (self.ymin+self.ymax)/2
+        
+        return (x, y)
 
 
 class Points:

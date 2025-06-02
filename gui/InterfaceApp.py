@@ -12,7 +12,7 @@ from experiments.Interface import Interface
 from .Core import circilize, fcrop_coords
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
-from core.Rect import NormalizedRect, PixelRect, Points
+from core.Rect import PixelRect, Points
 
 class InterfaceApp(App):
     def __init__(self, root):
@@ -21,14 +21,14 @@ class InterfaceApp(App):
         # For drawing ellipse over tracking area
         sfimg = Image.open("assets/line.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.linebd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.linebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawline)
         self.linebd.pack(pady=10)
         
         # For drawing rectangle over text area
         sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.rectbd = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.rectbd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawrect)
         self.rectbd.pack(pady=10)
         

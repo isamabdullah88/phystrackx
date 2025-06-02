@@ -19,7 +19,7 @@ class MarangoniApp(App):
 
         sfimg = Image.open("assets/boundary.png").resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
-        self.boundary = ctk.CTkButton(self.toolbar_frame, text="", width=80, height=80,
+        self.boundary = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
                                       image=sfimg, command=self.drawcircle)
         self.boundary.pack(pady=10)
         self._idx = 0

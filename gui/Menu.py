@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .Experiments import Experiments
+from .Rigid import Rigid
 from .NonRigid import NonRigid
 
 class MenuScreen:
@@ -48,7 +48,7 @@ class MenuScreen:
         # root.geometry("960x640")
 
         # app = VideoApp(root)
-        experiments = Experiments()
+        rigid = Rigid()
         # root.mainloop()
 
     def on_non_rigid(self):
