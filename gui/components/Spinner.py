@@ -1,5 +1,5 @@
-import customtkinter as ctk
-from tkinter import Label
+
+from math import floor
 from PIL import Image, ImageTk, ImageSequence
 
 class SpinnerPopup:
@@ -7,9 +7,10 @@ class SpinnerPopup:
         self.running = True
         self.parent = parent
 
+
         # Load animated GIF
-        self.frames = [ImageTk.PhotoImage(img) for img in ImageSequence.Iterator(Image.open(
-            "./assets/process.gif"))]
+        self.frames = [ImageTk.PhotoImage(self.rszframe(img, width, height)) for img in \
+            ImageSequence.Iterator(Image.open("./assets/process.gif"))]
         self.imgview = self.parent.create_image(width//2, height//2, image=self.frames[0],
                                                 anchor="center")
 
@@ -27,3 +28,24 @@ class SpinnerPopup:
     def destroy(self):
         self.running = False
         self.parent.delete(self.imgview)
+        
+    
+    def rszframe(self, img, cwidth, cheight):
+        fwidth, fheight = img.size
+        if (fwidth > cwidth):
+            ratio = fheight/fwidth
+            fwidth = cwidth
+            fheight = floor(fwidth * ratio)
+            
+            img = img.resize((fwidth, fheight), Image.Resampling.LANCZOS)
+
+        if (fheight > cheight):
+            ratio = fwidth/fheight
+            fheight = cheight
+            fwidth = floor(fheight*ratio)
+            
+            img = img.resize((fwidth, fheight), Image.Resampling.LANCZOS)
+        
+        # print('img: ', img.shape)
+
+        return img
