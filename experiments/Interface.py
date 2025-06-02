@@ -14,13 +14,10 @@ import numpy as np
 from tqdm import tqdm
 from skimage.segmentation import active_contour
 from skimage.filters import gaussian
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 
 from .Experiment import Experiment
-from filters import Smoothen
 from .Utils import ptsline
-from core import PixelRect, Points
+from core import Points
 
 class Interface(Experiment):
     def __init__(self, trackpath):
@@ -51,13 +48,9 @@ class Interface(Experiment):
         if mask is not None:
             edges = cv2.bitwise_and(edges, edges, mask=mask)
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        # contour = max(contours, key=cv2.contourArea) if contours else None
+        
         if len(contours) > 0:
             cv2.drawContours(gray, contours, -1, (255, 255, 255), 3)
-        
-        # plt.imshow(edges, cmap='gray')
-        # plt.imshow(gray, cmap='gray')
-        # plt.show()
 
         return gray
 
@@ -122,10 +115,6 @@ class Interface(Experiment):
             fcount = self._vidreader.fcount - startidx
         else:
             fcount = endidx - startidx
-            
-        print('star idx: ', startidx)
-        print('end idx: ', endidx)
-        print('lcoords: ', lcoords)
 
         alpha = 0.1
         beta = 0.1
