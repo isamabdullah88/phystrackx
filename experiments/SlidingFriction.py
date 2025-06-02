@@ -42,9 +42,12 @@ class SlidingFriction(Experiment):
         lk_params = dict(winSize=(15, 15), maxLevel=5,criteria=(cv2.TERM_CRITERIA_EPS | \
             cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         
+        ptstrack = []
+        
+        self._vidreader.seek(startidx)
+        
         for rect in rects:
-            
-            self._vidreader.seek(startidx)
+            rect = rect.norm2pix(self.fwidth, self.fheight)
             
             frame = self._vidreader.read()
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -55,30 +58,32 @@ class SlidingFriction(Experiment):
             p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=5, qualityLevel=0.5, minDistance=10, blockSize=5, mask=mask)
             p0 = np.array(p0, dtype=np.float32).reshape(-1, 1, 2)
             
-            fprev = None
-            for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount):
-                frame = self._vidreader.read()
-                fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            ptstrack.append(p0)
+            
+        fprev = None
+        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount):
+            frame = self._vidreader.read()
+            fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-                if fprev is None:
-                    fprev = fgray.copy()
-                    continue
-
-                p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
-
-                x, y = pts2pt(p1)
-                cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=1)
-                
-                # plt.imshow(frame)
-                # plt.plot(p1[:,:,0], p1[:,:,1], 'r.')
-                # plt.show()
+            if fprev is None:
                 fprev = fgray.copy()
-                p0 = p1
-                
-                self._videowriter.write(frame)
-                
-            self._videowriter.release()
+                continue
 
+            for i,p0 in enumerate(ptstrack):
+                p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
+                x, y = pts2pt(p1)
+                cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=2)
+                ptstrack[i] = p1
+            
+            # plt.imshow(frame)
+            # plt.plot(p1[:,:,0], p1[:,:,1], 'r.')
+            # plt.show()
+            fprev = fgray.copy()
+            # p0 = p1
+            
+            self._videowriter.write(frame)
+            
+        self._videowriter.release()
             # Add the set of tracked points
             # self.tracked_pts.append(tracked_pts)
 
