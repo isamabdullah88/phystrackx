@@ -25,18 +25,17 @@ class SlidingFriction(Experiment):
         self.fwidth = floor(self.aspratio * self.fheight)
     
     
-    def track(self, rects:NormalizedRect, startidx=0, endidx=0):
+    def track(self, rects:list[NormalizedRect], startidx=0, endidx=0):
         
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        # self.resize()
+        self.resize()
         self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.fwidth, self.fheight))
         
         if endidx == 0:
             fcount = self._vidreader.fcount - startidx
         else:
             fcount = endidx - startidx
-        print('fcount: ', fcount)
 
         # Define Lucas-Kanade optical flow parameters
         lk_params = dict(winSize=(15, 15), maxLevel=5,criteria=(cv2.TERM_CRITERIA_EPS | \
@@ -46,9 +45,11 @@ class SlidingFriction(Experiment):
         
         self._vidreader.seek(startidx)
         
+        self.trackpts = [[] for _ in rects]
+        
         for rect in rects:
             rect = rect.norm2pix(self.fwidth, self.fheight)
-            
+
             frame = self._vidreader.read()
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             
@@ -69,29 +70,24 @@ class SlidingFriction(Experiment):
                 fprev = fgray.copy()
                 continue
 
-            for i,p0 in enumerate(ptstrack):
+            for j,p0 in enumerate(ptstrack):
                 p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
-                x, y = pts2pt(p1)
+                x, y = self.pts2pt(p1)
                 cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=2)
-                ptstrack[i] = p1
+                ptstrack[j] = p1
+                
+                self.trackpts[j].append([x,y])
             
-            # plt.imshow(frame)
-            # plt.plot(p1[:,:,0], p1[:,:,1], 'r.')
-            # plt.show()
             fprev = fgray.copy()
-            # p0 = p1
             
             self._videowriter.write(frame)
             
         self._videowriter.release()
-            # Add the set of tracked points
-            # self.tracked_pts.append(tracked_pts)
+
+        for i in range(len(self.trackpts)):
+            self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
 
 
-def pts2pt(pts):
-    """Convert points to single mean point."""
-    x, y = np.mean(np.squeeze(pts), axis=0)
-    return floor(x), floor(y)
 
 if __name__ == '__main__':
     sliding_friction = SlidingFriction('track-sfriction.mp4')
@@ -101,3 +97,6 @@ if __name__ == '__main__':
 
     rects = [PixelRect(284, 52, 23, 20)]
     sliding_friction.track(rects, 100, 450)
+    sliding_friction.plot()
+    
+    
