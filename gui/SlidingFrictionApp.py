@@ -4,13 +4,13 @@ import cv2
 import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
 from .App import App
 from experiments.SlidingFriction import SlidingFriction
 from core.Rect import PixelRect
+from .Plot import Plot
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
 
@@ -24,10 +24,10 @@ class SlidingFrictionApp(App):
                                       image=sfimg, command=self.drawrect)
         self.rectbd.pack(pady=10)
         
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.update_frame)
+        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
         
         self._rcoords = None
-        self._rect = None
+        self._rects = []
         
         tempdir = './temp'
         if not os.path.exists(tempdir):
@@ -38,41 +38,35 @@ class SlidingFrictionApp(App):
 
     def load_video(self, videopath):
         self.sfriction.add_video(videopath)
-        # self.sfriction.crop_intime()
         
         self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.sfriction.fcount)
 
         frame1 = self.sfriction.frame(0)
-        self.display_first_frame(frame1)
+        self.dispframe(frame1)
 
-    def display_first_frame(self, frame=None):
+    def dispframe(self, frame=None):
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        photo = ImageTk.PhotoImage(image=img)
+        self.photo = ImageTk.PhotoImage(image=img)
         
 
         self.fx = floor(self.cwidth/2 - self.sfriction.fwidth/2)
         self.fy = floor(self.cheight/2 - self.sfriction.fheight/2)
 
-        # print('frame ox: ', self.frame_ox)
-        self.imgview = self.videoview.create_image(self.fx, self.fy, image=photo, anchor='nw')
-        # self.videoview.photo = photo
+        self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
-        self.slider.configure(from_=0, to=self.sfriction.frame_count - 1)
-        self.slider.set(0)
-
-    def update_frame(self):
+    def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
 
         frame = self.sfriction.frame(index=self.seekbar.idx)
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
-        frame = self.resize_frame(frame, fwidth, fheight)
+        frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -108,8 +102,9 @@ class SlidingFrictionApp(App):
         self._ctkbox = None
         
         def ondown(event):
-            if self._ctkbox is not None:
-                self.videoview.delete(self._ctkbox)
+            # if self._ctkbox is not None:
+            #     self.videoview.delete(self._ctkbox)
+            self._ctbox = None
             
             self._rcoords = (event.x, event.y)
             
@@ -119,39 +114,29 @@ class SlidingFrictionApp(App):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
 
-            print('Rect Orig: ', (sx, sy, ex, ey))
+            self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
+            
+        def onrelease(event):
+            sx, sy = self._rcoords
+            ex, ey = (event.x, event.y)
 
-            self.videoview.coords(self._ctkbox, sx, sy, event.x, event.y)
-
-            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
-            print('Rect tr: ', self._rect.totuple())
-            self._rect = self._rect.pix2norm(self.fwidth, self.fheight)
+            rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
+            self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
             
 
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", inrect)
+        self.videoview.bind("<ButtonRelease-1>", onrelease)
 
-    def plot_distances(self):
-        if len(self.sfriction.tracked_pts) < 1:
+    def plotx(self):
+        if len(self.sfriction.trackpts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        # ox, oy = self._ref_frame
-
-        num_tracks = len(self.sfriction.tracked_pts)
-        _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
-
-        for i in range(num_tracks):
-            tracked_pts = self.sfriction.tracked_pts[i]
-            xcoords = tracked_pts[0, :] - self.fx
-            ycoords = tracked_pts[1, :] - self.fy
-
-            axes[i][0].plot(xcoords)
-            axes[i][0].set_title("x coordinates")
-            axes[i][1].plot(ycoords)
-            axes[i][1].set_title("y coordinates")
-        plt.tight_layout()
-        plt.show()
+        plot = Plot(self.sfriction.trackpts)
+        plot.plotx()
+        plot.plotdrv()
+        plot.show()
 
 
     def start_tracking(self):
@@ -164,7 +149,7 @@ class SlidingFrictionApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.sfriction.track(self._rect, startidx, endidx)
+            self.sfriction.track(self._rects, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 

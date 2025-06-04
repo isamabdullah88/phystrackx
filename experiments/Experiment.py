@@ -1,5 +1,6 @@
 
 from itertools import groupby
+from math import floor
 import cv2
 import numpy as np
 
@@ -13,7 +14,6 @@ class Experiment:
         self.fcount = 0
         
         self.active_duration = []
-        self.tracked_pts = []
 
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
@@ -96,3 +96,14 @@ class Experiment:
         self.active_duration = list(range(start, end, 1))
 
         self.fcount = len(self.active_duration)
+        
+    
+    def pts2pt(self, pts:np.ndarray):
+        """Convert points to single mean point. pts should have have (x, y) coordinates"""
+        pts = pts.reshape(-1, 2)
+        
+        if pts.shape[0] == 1:
+            return np.squeeze(pts).astype(np.int32)
+        
+        x, y = np.mean(np.squeeze(pts), axis=0)
+        return floor(x), floor(y)

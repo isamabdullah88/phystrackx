@@ -7,26 +7,37 @@ from .Rigid import Rigid
 from .NonRigid import NonRigid
 
 class MenuScreen:
-    def __init__(self, master, restart=None):
-        self.master = master
-        self.master.title("Select Tracking Type")
-        self.master.geometry("960x640")
+    def __init__(self, root, restart=None):
+        self.root = root
+        self.root.title("Select Tracking Type")
+        self.root.geometry("960x640")
 
         # Load and display the logo, resized to fit the window
-        self.load_and_display_logo(master)
+        self.displogo(root)
+        
+        # === Center frame to hold the grid ===
+        center_frame = ctk.CTkFrame(self.root)
+        center_frame.place(relx=0.5, rely=0.5, anchor="center")  # center the frame
 
-        # Title label
-        ctk.CTkLabel(master, text="Choose a tracking type:", font=("Helvetica", 16)).pack(pady=(20, 10))
+        # === Create grid of icon buttons ===
+        
+        sfimg = Image.open("assets/rigid.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+                                          width=80, height=80, compound="left",
+                                          command=self.rigid)
+        butnsf.grid(row=0, column=0, padx=10, pady=10)
 
-        # Buttons for menu options
-        ttk.Button(master, text="Rigid Object Tracking", command=self.on_rigid).pack(fill='x', padx=50, pady=5)
-        ttk.Button(master, text="Non-Rigid Object Tracking", command=self.on_non_rigid).pack(fill='x', padx=50, pady=5)
-        # ttk.Button(master, text="Auto Tracking", command=self.on_auto).pack(fill='x', padx=50, pady=5)
-        # self._restart = restart
+        sfimg = Image.open("assets/nonrigid.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+                                          width=80, height=80, compound="left", fg_color="#D35B58",
+                                          command=self.nonrigid)
+        butnsf.grid(row=0, column=1, padx=10, pady=10)
 
-    def load_and_display_logo(self, master):
+    def displogo(self, root):
         # Load the image
-        image_path = "assets/phys_track_logo.png"
+        image_path = "assets/logo.png"
         image = Image.open(image_path)
 
         # Resize the image to fit the window width while maintaining aspect ratio
@@ -38,12 +49,12 @@ class MenuScreen:
         photo = ImageTk.PhotoImage(image)
 
         # Create a label to display the image
-        image_label = ctk.CTkLabel(master, image=photo)
+        image_label = ctk.CTkLabel(root, image=photo)
         image_label.image = photo  # Keep a reference, prevent GC
         image_label.pack(pady=(10, 0))
 
-    def on_rigid(self):
-        self.master.destroy()
+    def rigid(self):
+        self.root.destroy()
         # root = tk.Tk()
         # root.geometry("960x640")
 
@@ -51,14 +62,14 @@ class MenuScreen:
         rigid = Rigid()
         # root.mainloop()
 
-    def on_non_rigid(self):
-        self.master.destroy()
+    def nonrigid(self):
+        self.root.destroy()
         
         NonRigid()
 
-    def on_auto(self):
-        self.master.destroy()
-        root = tk.Tk()
-        root.geometry("960x640")
-        app = VideoApp3(root)
-        root.mainloop()
+    # def on_auto(self):
+    #     self.root.destroy()
+    #     root = tk.Tk()
+    #     root.geometry("960x640")
+    #     app = VideoApp3(root)
+    #     root.mainloop()

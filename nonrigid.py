@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
 from PIL import ImageTk, Image, ImageDraw
 from video_processing import VideoProcessor
-from utils import resize_frame
+from utils import resizeframe
 import cv2
 import numpy as np
 from tkinter import ttk
@@ -262,7 +262,7 @@ class VideoApp2:
             if self.crop_coords:
                 x1, y1, x2, y2 = self.crop_coords
                 frame = frame[min(y1, y2):max(y1, y2), min(x1, x2):max(x1, x2)]
-            frame = resize_frame(frame, 640, 480)
+            frame = resizeframe(frame, 640, 480)
             self.processor.frames.append(frame)
 
             frame_count += 1
@@ -272,9 +272,9 @@ class VideoApp2:
         self.close_progress_bar()
 
         if self.processor.frames:
-            self.display_first_frame()
+            self.dispframe()
 
-    def display_first_frame(self):
+    def dispframe(self):
         frame = self.processor.frames[0]
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         photo = ImageTk.PhotoImage(image=img)

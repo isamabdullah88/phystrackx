@@ -96,7 +96,7 @@ class App:
         sfimg = ImageTk.PhotoImage(sfimg)
         self.track_coords_button = ctk.CTkButton(self.toolbarf, text="", width=80,
                                                     height=80, image=sfimg,
-                                                    command=self.show_tracked_coordinates_window)
+                                                    command=self.plot)
         self.track_coords_button.pack(pady=10)
         self.track_coords_button.configure(state=ctk.DISABLED)  # Disable the button initially
 
@@ -121,7 +121,7 @@ class App:
 
         # self.slider = ctk.CTkSlider(self.video_frame, orientation="horizontal", from_=0,
         #                             width=400, fg_color="red", progress_color="green",
-        #                             button_color="yellow", command=self.update_frame)
+        #                             button_color="yellow", command=self.updateframe)
         
         # self.slider.set(0)
         # self.slider.pack(pady=10)
@@ -166,10 +166,10 @@ class App:
     def load_video(self, videopath):
         pass
 
-    def display_first_frame(self, frame=None):
+    def dispframe(self, frame=None):
         pass
 
-    def update_frame(self, event):
+    def updateframe(self, event):
         pass
         
     
@@ -248,7 +248,7 @@ class App:
     #     self.processor.points_to_track.append((centroid_x, centroid_y))
     #     self.videoview.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
-    def resize_frame(self, frame, fwidth, fheight):
+    def resizeframe(self, frame, fwidth, fheight):
         if (fwidth > self.cwidth):
             ratio = fheight/fwidth
             fwidth = self.cwidth
@@ -263,17 +263,17 @@ class App:
             
             frame = cv2.resize(frame, (fwidth, fheight))
         
-        print('frame: ', frame.shape)
+        # print('frame: ', frame.shape)
 
         return frame
 
-    def show_tracked_coordinates_window(self):
+    def plot(self):
         popup = ctk.CTkToplevel(self.root)
         popup.title("Tracked Coordinates Options")
 
-        ctk.CTkButton(popup, text="Plot X and Y Distances", command=self.plot_distances).pack(pady=5)
+        ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
 
-    def plot_distances(self):
+    def plotx(self):
         pass
 
     def on_close(self):
