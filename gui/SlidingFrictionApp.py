@@ -4,13 +4,13 @@ import cv2
 import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
 from .App import App
 from experiments.SlidingFriction import SlidingFriction
 from core.Rect import PixelRect
+from .Plot import Plot
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
 
@@ -128,27 +128,15 @@ class SlidingFrictionApp(App):
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
 
-    def plot_distances(self):
-        if len(self.sfriction.tracked_pts) < 1:
+    def plotx(self):
+        if len(self.sfriction.trackpts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        # ox, oy = self._ref_frame
-
-        num_tracks = len(self.sfriction.tracked_pts)
-        _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
-
-        for i in range(num_tracks):
-            tracked_pts = self.sfriction.tracked_pts[i]
-            xcoords = tracked_pts[0, :] - self.fx
-            ycoords = tracked_pts[1, :] - self.fy
-
-            axes[i][0].plot(xcoords)
-            axes[i][0].set_title("x coordinates")
-            axes[i][1].plot(ycoords)
-            axes[i][1].set_title("y coordinates")
-        plt.tight_layout()
-        plt.show()
+        plot = Plot(self.sfriction.trackpts)
+        plot.plotx()
+        plot.plotdrv()
+        plot.show()
 
 
     def start_tracking(self):

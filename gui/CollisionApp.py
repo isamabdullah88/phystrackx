@@ -13,6 +13,7 @@ from experiments.Collision import Collision
 from core.Rect import PixelRect
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
+from .Plot import Plot
 
 class CollisionApp(App):
     def __init__(self, root):
@@ -130,27 +131,17 @@ class CollisionApp(App):
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
 
-    def plot_distances(self):
-        if len(self.collision.tracked_pts) < 1:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
-            return
+    def plotx(self):
+        # if len(self.sfriction.tracked_pts) < 1:
+        #     messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+        #     return
 
         # ox, oy = self._ref_frame
 
-        num_tracks = len(self.collision.tracked_pts)
-        _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
-
-        for i in range(num_tracks):
-            tracked_pts = self.collision.tracked_pts[i]
-            xcoords = tracked_pts[0, :] - self.fx
-            ycoords = tracked_pts[1, :] - self.fy
-
-            axes[i][0].plot(xcoords)
-            axes[i][0].set_title("x coordinates")
-            axes[i][1].plot(ycoords)
-            axes[i][1].set_title("y coordinates")
-        plt.tight_layout()
-        plt.show()
+        plot = Plot(self.collision.trackpts)
+        plot.plotx()
+        plot.plotdrv()
+        plot.show()
 
 
     def start_tracking(self):
