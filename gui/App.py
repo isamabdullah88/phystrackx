@@ -96,7 +96,7 @@ class App:
         sfimg = ImageTk.PhotoImage(sfimg)
         self.track_coords_button = ctk.CTkButton(self.toolbarf, text="", width=80,
                                                     height=80, image=sfimg,
-                                                    command=self.show_tracked_coordinates_window)
+                                                    command=self.plot)
         self.track_coords_button.pack(pady=10)
         self.track_coords_button.configure(state=ctk.DISABLED)  # Disable the button initially
 
@@ -267,13 +267,13 @@ class App:
 
         return frame
 
-    def show_tracked_coordinates_window(self):
+    def plot(self):
         popup = ctk.CTkToplevel(self.root)
         popup.title("Tracked Coordinates Options")
 
-        ctk.CTkButton(popup, text="Plot X and Y Distances", command=self.plot_distances).pack(pady=5)
+        ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
 
-    def plot_distances(self):
+    def plotx(self):
         pass
 
     def on_close(self):
