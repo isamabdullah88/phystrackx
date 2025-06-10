@@ -9,7 +9,6 @@ from .components import CutSeekBar, ScrollBar
 
 class App:
     def __init__(self, root):
-        # root.destroy()
         self.root = root
         # self.root.title("Phys TrackerX")
         # self.root = ctk.CTk()
@@ -18,117 +17,114 @@ class App:
         
         self.cwidth = 900
         self.cheight = 600
-        self._padx = floor(self.cwidth * 0.01)
-        self._pady = floor(self.cheight * 0.01)
-        print('pdx, pady:', self._padx, self._pady)
+        self.padx = floor(self.cwidth * 0.01)
+        self.pady = floor(self.cheight * 0.01)
+        print('pdx, pady:', self.padx, self.pady)
         
-        self.root.geometry(f"{self.cwidth}x{self.cheight}")
+        screen = f"{self.cwidth}x{self.cheight}"
+        print('screen:', screen)
+        self.root.geometry(screen)
         self.toolbar()
-        self.root.protocol("WM_DELETE_WINDOW", self.onclose)
-        
-        # self.toolbar()
+        # self.root.protocol("WM_DELETE_WINDOW", self.onclose)
+        # self.root.mainloop()
 
     def toolbar(self):
         
-        self._twidth = floor(self.cwidth * 0.1)
-        self._theight = self.cheight - 2*self._pady
-        # self._seekbarh = floor(self.cheight * 0.1)
+        self.twidth = floor(self.cwidth * 0.1)
+        self.theight = self.cheight - 2*self.pady
+        self.seekbarh = floor(self.cheight * 0.1)
+        self.btnsize = self.twidth - 20
+        
+        self.padx = 0
+        self.pady = 0
+        
         # ==== LEFT TOOLBAR PANEL ====
-        """
-        toolbar = ctk.CTkFrame(self.root, width=self._twidth, height=self._theight, fg_color="black")
-        toolbar.pack(side=ctk.LEFT, fill=None, expand=False, padx=(self._padx, 0), pady=self._pady)
-        # toolbar = ctk.CTkFrame(self.root)
-        # toolbar.pack(side=ctk.RIGHT)
-
-
-        # Scrollbar for the canvas
-        scrollbar = ctk.CTkScrollbar(toolbar, orientation="vertical", height=self._theight)
-        scrollbar.pack(side=ctk.RIGHT, fill="y")
-        
-        self._tcanvas = ctk.CTkCanvas(toolbar, width=self._twidth, height=self._theight, bg="silver")
-        # self._tcanvas = ctk.CTkCanvas(toolbar, yscrollcommand=scrollbar.set)
-        # self._tcanvas.pack(side=TOP, fill=X)
-        # self._tcanvas.configure(yscrollcommand=scrollbar.set)
-        scrollframe = ctk.CTkFrame(self._tcanvas, width=self._twidth, height=2*self._theight)
-        self._tcanvas.create_window((0, 0), window=scrollframe, anchor="nw", width=self._twidth, height=2*self._theight)
-        
-        self._tcanvas.configure(scrollregion=self._tcanvas.bbox("all"))
-        self._tcanvas.pack(side=ctk.LEFT, fill=None, expand=False, padx=(self._padx, 0), pady=self._pady)
-        
-        # t = Text(toolbar, width = 15, height = 15, wrap = NONE, 
-        #          yscrollcommand = scrollbar.set)
-
-        # insert some text into the text widget
-        # for i in range(20):
-            # t.insert(END,"this is some text\n")
-        # btn = ctk.CTkButton(toolbar, height=1000)
-        # btn.pack()
-
-        scrollbar.configure(command=self._tcanvas.yview)
-        # self.root.mainloop()
-        # attach Text widget to root window at top
-        # t.pack(side=TOP, fill=X)
-        """
-        scroll_toolbar = ScrollBar(self.root, width=self._twidth, height=self._theight, padx=self._padx, pady=self._pady)
+        scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight, padx=self.padx, pady=self.pady)
         self.scrollframe = scroll_toolbar.scrollframe
+        
+        buttons = [
+            ("assets/open-video.png", self.openvideo),
+            # ("assets/fps.png", self.set_fps),  # Uncomment if you want to set FPS
+            ("assets/axis.png", self.markaxes),
+            ("assets/start.png", self.strack),
+            ("assets/plot.png", self.plot),
+            ("assets/back.png", self.tomenu)
+        ]
+        
+        for img_path, command in buttons:
+            img = Image.open(img_path).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+            img = ImageTk.PhotoImage(img)
+            button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                   image=img, command=command)
+            button.pack(pady=10)
+            # Store the image reference to prevent garbage collection
+            button.image = img
 
-        # Create a frame to hold the filter widgets on the left side
-        # self.toolbarf = ctk.CTkFrame(self.scrollframe, width=self._twidth, height=self._theight)
-        # self.toolbarf.pack(side=ctk.TOP)
-        # self.toolbarwin = tcanvas.create_window((0, 0), window=self.toolbarf, anchor="nw", width=self._twidth)
-        # self.toolbarwin = tcanvas.create_window((0, 0), anchor="nw", width=self._twidth)
-
-        sfimg = Image.open("assets/open-video.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.openbtn = ctk.CTkButton(self.scrollframe, command=self.openvideo,width=self._twidth,
-                                            height=self._twidth, image=sfimg, text="")
+        """
+        img = Image.open("assets/open-video.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.openbtn = ctk.CTkButton(self.scrollframe, command=self.openvideo,width=self.twidth,
+                                            height=self.twidth, image=img, text="")
         self.openbtn.pack(pady=10)
         
         # self.fps_label = ctk.CTkLabel(self.scrollframe, text="")
         # self.fps_label.pack(pady=5)
         
-        sfimg = Image.open("assets/axis.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.axisbtn = ctk.CTkButton(self.scrollframe, text="", width=self._twidth, height=self._twidth,
-                                            image=sfimg, command=self.markaxes)
+        img = Image.open("assets/axis.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.axisbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth, height=self.twidth,
+                                            image=img, command=self.markaxes)
         self.axisbtn.pack(pady=10)
 
-        sfimg = Image.open("assets/start.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.strackbtn = ctk.CTkButton(self.scrollframe, text="", width=self._twidth,
-                                                height=self._twidth, image=sfimg,
+        img = Image.open("assets/start.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.strackbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
+                                                height=self.twidth, image=img,
                                                 command=self.strack)
         self.strackbtn.pack(pady=10)
         
-        sfimg = Image.open("assets/plot.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.plotbtn = ctk.CTkButton(self.scrollframe, text="", width=self._twidth,
-                                                    height=self._twidth, image=sfimg,
+        img = Image.open("assets/plot.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.plotbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
+                                                    height=self.twidth, image=img,
                                                     command=self.plot)
         self.plotbtn.pack(pady=10)
         self.plotbtn.configure(state=ctk.DISABLED)  # Disable the button initially
 
-        sfimg = Image.open("assets/back.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.menubtn = ctk.CTkButton(self.scrollframe, text="", width=self._twidth, height=self._twidth,
-                                            image=sfimg, command=self.tomenu)
+        img = Image.open("assets/back.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.menubtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth, height=self.twidth,
+                                            image=img, command=self.tomenu)
         self.menubtn.pack(pady=10)
-
-        # self.info_label = ctk.CTkLabel(self.scrollframe, text="")
-        # self.info_label.pack(pady=10)
         
-        # Create a frame to hold the video and slider widgets on the right side
-        
+        self.plotbtn2 = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
+                                                    height=self.twidth, image=img,
+                                                    command=self.plot)
+        self.plotbtn2.pack(pady=10)
+        self.plotbtn2.configure(state=ctk.DISABLED)  # Disable the button initially
         """
-        self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self._twidth - 3*self._padx, height=self._theight, fg_color="black")
-        self.vidframe.pack(side=ctk.LEFT, fill=None, expand=False, padx=self._padx, pady=self._pady)
+        scroll_toolbar.pack()
         
-        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.cwidth-self._twidth - 3*self._padx, height=self._theight-self._seekbarh-2*self._pady, bg="silver", highlightbackground="black")
+        # temp1 = ctk.CTkFrame(self.root, width=100, bg_color="#899fbd", fg_color="#e75ad0")
+        # temp1.pack_propagate(False)
+        # temp1.pack(side=ctk.LEFT)
+
+        # temp2 = ctk.CTkCanvas(temp1, width=100)
+        # temp2.pack(side=ctk.LEFT)
+        
+        # temp3 = ctk.CTkCanvas(temp2, width=100)
+        # temp3.pack(side=ctk.LEFT)
+        
+        self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
+        self.vidframe.pack_propagate(False)
+        self.vidframe.pack(side=ctk.LEFT)
+        
+        self.vwidth = self.cwidth - self.twidth
+        self.vheight = self.theight-self.seekbarh-2*self.pady
+        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="silver") #, highlightbackground="black")
         self.videoview.pack(side=ctk.TOP, expand=False)
         
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self._twidth - 3*self._padx, height=self._seekbarh, bg="silver", highlightbackground="black")
-        # self.seekbar.pack(side=ctk.TOP, pady=(self._pady, 0))
-        """
+        # self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, bg="silver") #, highlightbackground="black")
         
         # Bind updates to scrollbar & resizing
         # self.toolbarf.bind("<Configure>", self.onfconfigure)
@@ -138,15 +134,16 @@ class App:
         # self._tcanvas.bind_all("<MouseWheel>", self.onmwheel)  # Windows/macOS
         # self._tcanvas.bind_all("<Button-4>", self.onmwheel)    # Linux scroll up
         # self._tcanvas.bind_all("<Button-5>", self.onmwheel)    # Linux scroll down
+        
 
 
     # def onfconfigure(self, event):
-    #     self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=self._twidth)
+    #     self.canvas.configure(scrollregion=self.canvas.bbox("all"), width=self.twidth)
 
     # def oncconfigure(self, event):
     #     # Resize inner frame's width to match canvas width
     #     cwidth = event.width
-    #     self.canvas.itemconfig(self.toolbarwin, width=self._twidth)
+    #     self.canvas.itemconfig(self.toolbarwin, width=self.twidth)
 
     # def onmwheel(self, event):
     #     if event.num == 5 or event.delta == -120:
@@ -249,16 +246,16 @@ class App:
     #     self.videoview.create_oval(centroid_x - 3, centroid_y - 3, centroid_x + 3, centroid_y + 3, fill="red")
 
     def resizeframe(self, frame, fwidth, fheight):
-        if (fwidth > self.cwidth):
+        if (fwidth > self.vwidth):
             ratio = fheight/fwidth
             fwidth = self.cwidth
             fheight = floor(fwidth * ratio)
             
             frame = cv2.resize(frame, (fwidth, fheight))
 
-        if (fheight > self.cheight):
+        if (fheight > self.vheight):
             ratio = fwidth/fheight
-            fheight = self.cheight
+            fheight = self.vheight
             fwidth = floor(fheight*ratio)
             
             frame = cv2.resize(frame, (fwidth, fheight))
