@@ -3,22 +3,28 @@ import customtkinter as ctk
 
 class ScrollBar:
     def __init__(self, root, width=200, height=200, padx=10, pady=10):
+        self.width = width - 20
+        self.height = height
+        self.padx = padx
+        self.pady = pady
         # toolbar = ctk.CTkFrame(root, width=width, height=height, fg_color="black")
-        toolbar = ctk.CTkFrame(root, width=width)
-        toolbar.pack(side=ctk.LEFT, fill=None, expand=False, padx=(padx, 0), pady=pady)
+        toolbar = ctk.CTkFrame(root, width=width, height=height)
+        toolbar.pack_propagate(False)
+        toolbar.pack(side=ctk.LEFT)
         
+        
+        self.canvas = ctk.CTkCanvas(toolbar, width=self.width, height=height)
+        # self.canvas.pack(side=ctk.LEFT)
+        # self.canvas = ctk.CTkCanvas(toolbar, width=width)
         # Scrollbar for the canvas
-        scrollbar = ctk.CTkScrollbar(toolbar, orientation="vertical")
-        scrollbar.pack(side=ctk.RIGHT, fill="y")
+        self.scrollbar = ctk.CTkScrollbar(toolbar, width=20, orientation="vertical", height=height, command=self.canvas.yview)
         
-        # self.canvas = ctk.CTkCanvas(toolbar, width=width, height=height, bg="silver")
-        self.canvas = ctk.CTkCanvas(toolbar, width=width, height=height)
+        self.scrollframe = ctk.CTkFrame(self.canvas, width=self.width)
         
-        self.scrollframe = ctk.CTkFrame(self.canvas, width=width)
-        self.canvas.create_window((0, 0), window=self.scrollframe, anchor="nw", width=width, height=height)
+    def pack(self):
+        self.canvas.create_window((0, 0), window=self.scrollframe, anchor="nw", width=self.width)
+        self.canvas.update_idletasks()
         
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        self.canvas.pack(side=ctk.LEFT, fill=None, expand=False, padx=(padx, 0), pady=pady)
-        
-        
-        scrollbar.configure(command=self.canvas.yview)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"), yscrollcommand=self.scrollbar.set)
+        self.canvas.pack(side=ctk.LEFT)
+        self.scrollbar.pack(side=ctk.RIGHT)
