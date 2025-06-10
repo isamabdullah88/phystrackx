@@ -2,12 +2,12 @@ from math import floor
 import customtkinter as ctk
 import tkinter as tk
 
-class CutSeekBar(ctk.CTkFrame):
+class CutSeekBar:
     def __init__(self, master, width=700, height=40, fcount=100, ondrag=None, *args, **kwargs):
-        super().__init__(master, width=width, height=height, *args, **kwargs)
-        self.pack_propagate(False)
+        # super().__init__(master, width=width, height=height, *args, **kwargs)
+        # self.pack_propagate(False)
 
-        self.canvas = tk.Canvas(self, width=width, height=height, bg="#222222", highlightthickness=0)
+        self.canvas = tk.Canvas(master, width=width, height=height, *args, **kwargs)
         self.canvas.pack()
 
         self.fcount = fcount-1
@@ -21,9 +21,9 @@ class CutSeekBar(ctk.CTkFrame):
 
         self._ondrag = ondrag
 
+        self.draw()
         self.canvas.bind("<Button-1>", self.click)
         self.canvas.bind("<B1-Motion>", self.drag)
-        self.draw()
 
 
     def setcount(self, fcount):
@@ -46,15 +46,16 @@ class CutSeekBar(ctk.CTkFrame):
         x2 = self.frame_to_x(self.endidx)
 
         recth = floor(self.height/2)
+        print('recth: ', recth)
         # Draw background bar
-        self.canvas.create_rectangle(0, recth//2 - 3, self.width, recth//2 + 3, fill="#444")
+        self.canvas.create_rectangle(5, recth - 3, self.width-5, recth + 3, fill="#444")
 
         # Draw selected range (trim region)
-        self.canvas.create_rectangle(x1, recth//2 - 4, x2, recth//2 + 4, fill="#3a89f4", outline="")
+        self.canvas.create_rectangle(x1, recth - 4, x2, recth + 4, fill="#3a89f4", outline="")
 
         # Draw draggable handles
-        self.canvas.create_line(x1, 0, x1, recth-2, fill="white", width=3, tag="start")
-        self.canvas.create_line(x2, 0, x2, recth-2, fill="white", width=3, tag="end")
+        self.canvas.create_line(x1, 10, x1, self.height-10, fill="white", width=3, tag="start")
+        self.canvas.create_line(x2, 10, x2, self.height-10, fill="white", width=3, tag="end")
 
         # Optional: display current range
         self.canvas.create_text(self.width//2, recth+10, fill="white",
