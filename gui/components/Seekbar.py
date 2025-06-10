@@ -3,7 +3,7 @@ import customtkinter as ctk
 import tkinter as tk
 
 class CutSeekBar:
-    def __init__(self, master, width=700, height=40, fcount=100, ondrag=None, *args, **kwargs):
+    def __init__(self, master, width=200, height=40, fcount=100, ondrag=None, *args, **kwargs):
         # super().__init__(master, width=width, height=height, *args, **kwargs)
         # self.pack_propagate(False)
 
@@ -27,9 +27,11 @@ class CutSeekBar:
 
 
     def setcount(self, fcount):
-        self.fcount = fcount-1
-        self.startidx = floor(0.2*self.fcount)
-        self.endidx = floor(0.8*self.fcount)
+        self.fcount = fcount-10
+        # self.startidx = floor(0.2*self.fcount)
+        self.startidx = 0
+        # self.endidx = floor(0.8*self.fcount)
+        self.endidx = self.fcount
         self.idx = self.startidx
         self.draw()
 
@@ -42,23 +44,23 @@ class CutSeekBar:
     def draw(self):
         self.canvas.delete("all")
 
-        x1 = self.frame_to_x(self.startidx)
-        x2 = self.frame_to_x(self.endidx)
+        x1 = self.frame_to_x(self.startidx) + 5
+        x2 = self.frame_to_x(self.endidx) - 5
 
         recth = floor(self.height/2)
-        print('recth: ', recth)
+        # print('recth: ', recth)
         # Draw background bar
-        self.canvas.create_rectangle(5, recth - 3, self.width-5, recth + 3, fill="#444")
+        self.canvas.create_rectangle(5, recth - 3, self.width-5, recth + 3, fill="#e2bcc5")
 
         # Draw selected range (trim region)
         self.canvas.create_rectangle(x1, recth - 4, x2, recth + 4, fill="#3a89f4", outline="")
 
         # Draw draggable handles
-        self.canvas.create_line(x1, 10, x1, self.height-10, fill="white", width=3, tag="start")
-        self.canvas.create_line(x2, 10, x2, self.height-10, fill="white", width=3, tag="end")
+        self.canvas.create_rectangle(x1-2, 10, x1+2, self.height-10, fill="#ffffff", outline="", tag="start")
+        self.canvas.create_rectangle(x2-2, 10, x2+2, self.height-10, fill="#ffffff", outline="", tag="end")
 
         # Optional: display current range
-        self.canvas.create_text(self.width//2, recth+10, fill="white",
+        self.canvas.create_text(self.width//2, recth+10, fill="#ffffff",
                                 text=f"Trim Range: {self.startidx} - {self.endidx}")
 
     def click(self, event):
@@ -83,7 +85,8 @@ class CutSeekBar:
             self.endidx = max(min(self.fcount, frame), self.startidx + 1)
             self.idx = self.endidx
 
-        self._ondrag()
+        if self._ondrag is not None:
+            self._ondrag()
 
         self.draw()
 
