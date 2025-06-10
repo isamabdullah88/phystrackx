@@ -1,9 +1,9 @@
 # Lucas-Kanade Optical Flow Implementation in PhysTrackerX
 
 ## Overview of Tracking System
-The tracking system in PhysTrackerX uses the Lucas-Kanade optical flow algorithm to track points across video frames. The implementation is primarily handled in the `start_tracking()` method of the VideoApp and VideoApp2 class, with support from the VideoProcessor class for frame processing and point/filter management.
+The tracking system in PhysTrackerX uses the Lucas-Kanade optical flow algorithm to track points across video frames. The implementation is primarily handled in the `strack()` method of the VideoApp and VideoApp2 class, with support from the VideoProcessor class for frame processing and point/filter management.
 
-The object tracking is done by `cv2.calcOpticalFlowPyrLK` in the `start_tracking()` method of the VideoApp classes.
+The object tracking is done by `cv2.calcOpticalFlowPyrLK` in the `strack()` method of the VideoApp classes.
 
 The filters are only to assist the LK method perform better tracking.
 
@@ -24,7 +24,7 @@ In my last meeting with Dr. Sabieh, we saw that PhystrackX was not tracking at a
 
 The flow of the tracking functionality is described in the following sections.
 
-I have also added detailed comments to the `start_tracking()` function in both `rigid.py` and `nonrigid.py`.
+I have also added detailed comments to the `strack()` function in both `rigid.py` and `nonrigid.py`.
 
 ### 1. Theory and Mathematical Foundation
 The Lucas-Kanade method assumes that the flow is essentially constant in a local neighborhood of pixels. It solves the basic optical flow equations:
@@ -66,7 +66,7 @@ For each frame pair:
 3. Prepare point arrays for tracking
 
 #### b. Core Tracking Steps
-The main tracking loop (in `start_tracking()`):
+The main tracking loop (in `strack()`):
 
 1. **Point Prediction**:
    - Estimate new point locations based on previous motion

@@ -124,7 +124,7 @@ class VideoApp2:
             # self.clip_button = tk.Button(self.filter_frame, text="Clip Video", command=self.clip_video)
             # self.clip_button.pack(pady=10)
             
-            self.axis_button = tk.Button(self.filter_frame, text="Mark Axes", command=self.mark_axes)
+            self.axis_button = tk.Button(self.filter_frame, text="Mark Axes", command=self.markaxes)
             self.axis_button.pack(pady=10)
         
 
@@ -158,13 +158,13 @@ class VideoApp2:
 
             
             # Create a frame to hold the video and slider widgets on the right side
-            self.video_frame = tk.Frame(self.root)
-            self.video_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+            self.vidframe = tk.Frame(self.root)
+            self.vidframe.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
             
-            self.videoview = tk.Canvas(self.video_frame, width=640, height=480)
+            self.videoview = tk.Canvas(self.vidframe, width=640, height=480)
             self.videoview.pack(pady=20, expand=True)
             
-            self.slider = tk.Scale(self.video_frame, from_=0, to=100, orient=tk.HORIZONTAL, length=400, resolution=1, command=self.update_frame)
+            self.slider = tk.Scale(self.vidframe, from_=0, to=100, orient=tk.HORIZONTAL, length=400, resolution=1, command=self.update_frame)
             self.slider.pack(pady=10)
 
             self.menu_button = tk.Button(self.filter_frame, text="Back to Menu", command=self.back_to_menu)
@@ -345,7 +345,7 @@ class VideoApp2:
         self.slider.config(command=lambda event: update_display(int(self.slider.get())))
         update_display(0)
 
-    def mark_axes(self):
+    def markaxes(self):
         self.processor.axis_coords = []
         messagebox.showinfo("Instruction", "Please click to set the origin of the axes.")
         self.videoview.bind("<Button-1>", self.set_origin)
@@ -401,7 +401,7 @@ class VideoApp2:
         self.processor.points_to_track.append((event.x, event.y))
         self.videoview.create_oval(event.x-3, event.y-3, event.x+3, event.y+3, fill="red")
     
-    def start_tracking(self):
+    def strack(self):
         """
         Implements Lucas-Kanade optical flow tracking optimized for non-rigid body tracking.
         

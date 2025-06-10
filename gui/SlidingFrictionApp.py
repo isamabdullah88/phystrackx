@@ -18,13 +18,13 @@ class SlidingFrictionApp(App):
     def __init__(self, root):
         super().__init__(root)
         
-        sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.rectbd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
-                                      image=sfimg, command=self.drawrect)
-        self.rectbd.pack(pady=10)
+        # sfimg = Image.open("assets/rectanglebd.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
+        # sfimg = ImageTk.PhotoImage(sfimg)
+        # self.rectbd = ctk.CTkButton(self._tcanvas, text="", width=self._twidth, height=self._twidth,
+        #                               image=sfimg, command=self.drawrect)
+        # self.rectbd.pack(pady=10)
         
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
+        # self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
         
         self._rcoords = None
         self._rects = []
@@ -73,7 +73,7 @@ class SlidingFrictionApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def mark_axes(self):
+    def markaxes(self):
 
         def update_axes(event):
             """ Update the axes to follow the mouse cursor. """
@@ -139,7 +139,7 @@ class SlidingFrictionApp(App):
         plot.show()
 
 
-    def start_tracking(self):
+    def strack(self):
         """
         Detects and tracks radius for the main sfriction circle using classical techniques.
         """

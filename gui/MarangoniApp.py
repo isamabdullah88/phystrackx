@@ -24,7 +24,7 @@ class MarangoniApp(App):
         self.boundary.pack(pady=10)
         self._idx = 0
 
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
 
         self.ccoords = (0, 0)
 
@@ -78,7 +78,7 @@ class MarangoniApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def mark_axes(self):
+    def markaxes(self):
 
         def update_axes(event):
             """ Update the axes to follow the mouse cursor. """
@@ -127,7 +127,7 @@ class MarangoniApp(App):
         self.videoview.bind("<B1-Motion>", incircle)
 
 
-    def start_tracking(self):
+    def strack(self):
         """
         Detects and tracks radius for the main marangoni circle using classical techniques.
         """
