@@ -18,13 +18,13 @@ class SlidingFrictionApp(App):
     def __init__(self, root):
         super().__init__(root)
         
-        # sfimg = Image.open("assets/rectanglebd.png").resize((self._twidth, self._twidth), Image.Resampling.LANCZOS)
-        # sfimg = ImageTk.PhotoImage(sfimg)
-        # self.rectbd = ctk.CTkButton(self._tcanvas, text="", width=self._twidth, height=self._twidth,
-        #                               image=sfimg, command=self.drawrect)
-        # self.rectbd.pack(pady=10)
+        sfimg = Image.open("assets/rectanglebd.png").resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        sfimg = ImageTk.PhotoImage(sfimg)
+        self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=sfimg, command=self.drawrect)
+        self.rectbd.pack(pady=10)
         
-        # self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, bg="silver", ondrag=self.updateframe)
         
         self._rcoords = None
         self._rects = []
@@ -39,7 +39,7 @@ class SlidingFrictionApp(App):
     def load_video(self, videopath):
         self.sfriction.add_video(videopath)
         
-        self.seekbar.pack(pady=10)
+        # self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.sfriction.fcount)
 
         frame1 = self.sfriction.frame(0)
@@ -50,13 +50,15 @@ class SlidingFrictionApp(App):
         fheight = self.sfriction.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
+        print('shape: ', self.fheight, self.fwidth)
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         
-
-        self.fx = floor(self.cwidth/2 - self.sfriction.fwidth/2)
-        self.fy = floor(self.cheight/2 - self.sfriction.fheight/2)
+        print('self.vwidth, self.vheight: ', self.vwidth, self.vheight)
+        self.fx = floor(self.vwidth/2 - self.fwidth/2)
+        self.fy = floor(self.vheight/2 - self.fheight/2)
+        print('fx, fy: ', self.fx, self.fy)
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
