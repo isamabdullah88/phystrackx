@@ -59,50 +59,7 @@ class App:
             button.pack(pady=10)
             # Store the image reference to prevent garbage collection
             button.image = img
-
-        """
-        img = Image.open("assets/open-video.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.openbtn = ctk.CTkButton(self.scrollframe, command=self.openvideo,width=self.twidth,
-                                            height=self.twidth, image=img, text="")
-        self.openbtn.pack(pady=10)
-        
-        # self.fps_label = ctk.CTkLabel(self.scrollframe, text="")
-        # self.fps_label.pack(pady=5)
-        
-        img = Image.open("assets/axis.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.axisbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth, height=self.twidth,
-                                            image=img, command=self.markaxes)
-        self.axisbtn.pack(pady=10)
-
-        img = Image.open("assets/start.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.strackbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
-                                                height=self.twidth, image=img,
-                                                command=self.strack)
-        self.strackbtn.pack(pady=10)
-        
-        img = Image.open("assets/plot.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.plotbtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
-                                                    height=self.twidth, image=img,
-                                                    command=self.plot)
-        self.plotbtn.pack(pady=10)
-        self.plotbtn.configure(state=ctk.DISABLED)  # Disable the button initially
-
-        img = Image.open("assets/back.png").resize((self.twidth, self.twidth), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.menubtn = ctk.CTkButton(self.scrollframe, text="", width=self.twidth, height=self.twidth,
-                                            image=img, command=self.tomenu)
-        self.menubtn.pack(pady=10)
-        
-        self.plotbtn2 = ctk.CTkButton(self.scrollframe, text="", width=self.twidth,
-                                                    height=self.twidth, image=img,
-                                                    command=self.plot)
-        self.plotbtn2.pack(pady=10)
-        self.plotbtn2.configure(state=ctk.DISABLED)  # Disable the button initially
-        """
+            
         scroll_toolbar.pack()
         
         # temp1 = ctk.CTkFrame(self.root, width=100, bg_color="#899fbd", fg_color="#e75ad0")
