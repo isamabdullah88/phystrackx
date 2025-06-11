@@ -79,17 +79,23 @@ class SlidingFrictionApp(App):
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
     def markaxes(self):
-
-        def update_axes(event):
+        
+        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
+        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+        
+        def onmove(event):
             """ Update the axes to follow the mouse cursor. """
             self.videoview.delete("axes")  # Remove old axes
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
+            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+            
+            self.videoview.coords(self._x, self.vwidth-50, y+10)
+            self.videoview.coords(self._y, x-10, self.vheight-50)
 
-        def store_click(event):
+        def onclick(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
             # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
@@ -99,8 +105,8 @@ class SlidingFrictionApp(App):
             self.videoview.unbind("<Motion>")
             self.videoview.unbind("<Button>")
 
-        self.videoview.bind("<Motion>", update_axes)
-        self.videoview.bind("<Button>", store_click)
+        self.videoview.bind("<Motion>", onmove)
+        self.videoview.bind("<Button>", onclick)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -149,7 +155,7 @@ class SlidingFrictionApp(App):
         Detects and tracks radius for the main sfriction circle using classical techniques.
         """
 
-        self.popup = SpinnerPopup(self.videoview, self.cwidth, self.cheight)
+        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
