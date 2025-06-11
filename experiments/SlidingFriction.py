@@ -48,12 +48,12 @@ class SlidingFriction(Experiment):
         
         self.trackpts = [[] for _ in rects]
         
+        frame = self._vidreader.read()
+        fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            
         for rect in rects:
             rect = rect.norm2pix(self.fwidth, self.fheight)
 
-            frame = self._vidreader.read()
-            fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = 255
             
@@ -63,7 +63,7 @@ class SlidingFriction(Experiment):
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount), desc="Sliding Friction", total=fcount-1):
+        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount-1):
             frame = self._vidreader.read()
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -93,9 +93,7 @@ class SlidingFriction(Experiment):
 if __name__ == '__main__':
     sliding_friction = SlidingFriction('track-sfriction.mp4')
     sliding_friction.add_video("R1.mp4")
-
-    # sliding_friction.crop_intime()
-
+    
     rects = [PixelRect(284, 52, 23, 20)]
     sliding_friction.track(rects, 100, 450)
     sliding_friction.plot()
