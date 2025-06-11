@@ -6,16 +6,18 @@ class CutSeekBar:
     def __init__(self, master, width=200, height=40, fcount=100, ondrag=None, *args, **kwargs):
         # super().__init__(master, width=width, height=height, *args, **kwargs)
         # self.pack_propagate(False)
+        # frame = ctk.CTkFrame(master, width=width, height=height)
+        # frame.pack_propagate(False)
 
-        self.canvas = tk.Canvas(master, width=width, height=height, *args, **kwargs)
+        self.canvas = tk.Canvas(master, width=width, height=height, bg="#4d535c")
         self.canvas.pack()
 
-        self.fcount = fcount-1
+        self.fcount = fcount
         self.width = width
         self.height = height
 
-        self.startidx = 20
-        self.endidx = 80
+        self.startidx = 1
+        self.endidx = 98
         self.active_marker = None
         self.idx = self.startidx
 
@@ -27,11 +29,11 @@ class CutSeekBar:
 
 
     def setcount(self, fcount):
-        self.fcount = fcount-10
+        self.fcount = fcount
         # self.startidx = floor(0.2*self.fcount)
-        self.startidx = 0
+        self.startidx = 1
         # self.endidx = floor(0.8*self.fcount)
-        self.endidx = self.fcount
+        self.endidx = self.fcount-1
         self.idx = self.startidx
         self.draw()
 
@@ -53,11 +55,11 @@ class CutSeekBar:
         self.canvas.create_rectangle(5, recth - 3, self.width-5, recth + 3, fill="#e2bcc5")
 
         # Draw selected range (trim region)
-        self.canvas.create_rectangle(x1, recth - 4, x2, recth + 4, fill="#3a89f4", outline="")
+        self.canvas.create_rectangle(x1, recth - 4, x2, recth + 4, fill="#e74ce0", outline="")
 
         # Draw draggable handles
-        self.canvas.create_rectangle(x1-2, 10, x1+2, self.height-10, fill="#ffffff", outline="", tag="start")
-        self.canvas.create_rectangle(x2-2, 10, x2+2, self.height-10, fill="#ffffff", outline="", tag="end")
+        self.canvas.create_rectangle(x1-2, 10, x1+2, self.height-10, fill="#1eff00", outline="", tag="start")
+        self.canvas.create_rectangle(x2-2, 10, x2+2, self.height-10, fill="#1eff00", outline="", tag="end")
 
         # Optional: display current range
         self.canvas.create_text(self.width//2, recth+10, fill="#ffffff",
@@ -85,7 +87,7 @@ class CutSeekBar:
             self.endidx = max(min(self.fcount, frame), self.startidx + 1)
             self.idx = self.endidx
 
-        if self._ondrag is not None:
+        if (self._ondrag is not None) and (self.endidx < self.fcount):
             self._ondrag()
 
         self.draw()
