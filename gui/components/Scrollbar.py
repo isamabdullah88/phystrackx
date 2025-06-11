@@ -7,19 +7,18 @@ class ScrollBar:
         self.height = height
         self.padx = padx
         self.pady = pady
-        # toolbar = ctk.CTkFrame(root, width=width, height=height, fg_color="black")
         toolbar = ctk.CTkFrame(root, width=width, height=height)
         toolbar.pack_propagate(False)
         toolbar.pack(side=ctk.LEFT)
         
         
         self.canvas = ctk.CTkCanvas(toolbar, width=self.width, height=height)
-        # self.canvas.pack(side=ctk.LEFT)
-        # self.canvas = ctk.CTkCanvas(toolbar, width=width)
-        # Scrollbar for the canvas
-        self.scrollbar = ctk.CTkScrollbar(toolbar, width=20, orientation="vertical", height=height, command=self.canvas.yview)
         
-        self.scrollframe = ctk.CTkFrame(self.canvas, width=self.width)
+        # Scrollbar for the canvas
+        self.scrollbar = ctk.CTkScrollbar(toolbar, width=20, orientation="vertical", height=height,
+                                          command=self.canvas.yview)
+        
+        self.scrollframe = ctk.CTkFrame(self.canvas, width=self.width, bg_color="#899fbd", fg_color="#5bdada")
         
     def pack(self):
         self.canvas.create_window((0, 0), window=self.scrollframe, anchor="nw", width=self.width)
