@@ -30,7 +30,8 @@ class SlidingFriction(Experiment):
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.fwidth, self.fheight))
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
         
         if endidx == 0:
             fcount = self._vidreader.fcount - startidx
@@ -62,7 +63,7 @@ class SlidingFriction(Experiment):
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount):
+        for i in tqdm(range(1, fcount), desc="Sliding Friction", total=fcount-1):
             frame = self._vidreader.read()
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 

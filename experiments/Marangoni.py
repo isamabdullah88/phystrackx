@@ -25,7 +25,8 @@ class Marangoni(Experiment):
             happening. It has size of gui canvas.
         """
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.fwidth, self.fheight))
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
 
         mask = cv2.resize(mask, (self.fwidth, self.fheight))
 

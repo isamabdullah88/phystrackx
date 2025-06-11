@@ -27,10 +27,10 @@ class Plot:
         self.plot(datadrv, title="Derivative")
         
     def plot(self, trackpts, title="Data"):
-        numt = len(trackpts)
-        _, axes = plt.subplots(numt, 3, figsize=(12, 8))
 
-        for i in range(numt):
+        _, axes = plt.subplots(self._datanum, 3, figsize=(12, 8), squeeze=False)
+
+        for i in range(self._datanum):
             trackpt = trackpts[i]
             
             xcoords = trackpt[:, 0]
