@@ -18,13 +18,16 @@ class SlidingFrictionApp(App):
     def __init__(self, root):
         super().__init__(root)
         
-        sfimg = Image.open("assets/rectanglebd.png").resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
+        img = Image.open("assets/rectanglebd.png").resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
         self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=sfimg, command=self.drawrect)
-        self.rectbd.pack(pady=10)
+                                      image=img, command=self.drawrect)
+        self.rectbd.pack(padx=5, pady=5)
+        self.rectbd.image = img
         
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, bg="silver", ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        
+        self.scroll_toolbar.pack()
         
         self._rcoords = None
         self._rects = []
@@ -157,6 +160,6 @@ class SlidingFrictionApp(App):
 
             self.load_video(self._trackpath)
 
-            self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
+            # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()

@@ -10,37 +10,29 @@ from .components import CutSeekBar, ScrollBar
 class App:
     def __init__(self, root):
         self.root = root
-        # self.root.title("Phys TrackerX")
-        # self.root = ctk.CTk()
-        
-        # Make the window cover the entire screen
-        
+        self.root.title("Phys TrackerX")
         self.cwidth = 900
         self.cheight = 600
         self.padx = floor(self.cwidth * 0.01)
         self.pady = floor(self.cheight * 0.01)
-        print('pdx, pady:', self.padx, self.pady)
         
-        screen = f"{self.cwidth}x{self.cheight}"
-        print('screen:', screen)
-        self.root.geometry(screen)
+        self.root.geometry(f"{self.cwidth}x{self.cheight}")
         self.toolbar()
-        # self.root.protocol("WM_DELETE_WINDOW", self.onclose)
-        # self.root.mainloop()
+        self.root.protocol("WM_DELETE_WINDOW", self.onclose)
 
     def toolbar(self):
         
-        self.twidth = floor(self.cwidth * 0.1)
+        self.twidth = floor(self.cwidth * 0.12)
         self.theight = self.cheight - 2*self.pady
         self.seekbarh = floor(self.cheight * 0.1)
-        self.btnsize = self.twidth - 20
+        self.btnsize = self.twidth - 40
         
         self.padx = 0
         self.pady = 0
         
         # ==== LEFT TOOLBAR PANEL ====
-        scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight, padx=self.padx, pady=self.pady)
-        self.scrollframe = scroll_toolbar.scrollframe
+        self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight, padx=self.padx, pady=self.pady)
+        self.scrollframe = self.scroll_toolbar.scrollframe
         
         buttons = [
             ("assets/open-video.png", self.openvideo),
@@ -56,11 +48,11 @@ class App:
             img = ImageTk.PhotoImage(img)
             button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                    image=img, command=command)
-            button.pack(pady=10)
+            button.pack(padx=5, pady=5)
             # Store the image reference to prevent garbage collection
             button.image = img
             
-        scroll_toolbar.pack()
+        # scroll_toolbar.pack()
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
@@ -68,7 +60,7 @@ class App:
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh-2*self.pady
-        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="silver") #, highlightbackground="black")
+        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c") #, highlightbackground="black")
         self.videoview.pack(side=ctk.TOP, expand=False)
 
 
@@ -115,10 +107,11 @@ class App:
         return frame
 
     def plot(self):
-        popup = ctk.CTkToplevel(self.root)
-        popup.title("Tracked Coordinates Options")
+        # popup = ctk.CTkToplevel(self.root)
+        # popup.title("Tracked Coordinates Options")
 
-        ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
+        # ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
+        self.plotx()
 
     def plotx(self):
         pass
