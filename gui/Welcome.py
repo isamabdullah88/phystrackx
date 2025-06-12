@@ -1,6 +1,7 @@
 
 import customtkinter as ctk
 from PIL import ImageTk, Image
+from core import abspath
 
 class WelcomeScreen:
     def __init__(self, root):
@@ -23,7 +24,7 @@ class WelcomeScreen:
 
     def displogo(self, root):
         # Load the image
-        img = Image.open("assets/logo.png")
+        img = Image.open(abspath("assets/logo.png"))
         photo = ImageTk.PhotoImage(img)
 
         # Create a label to display the image

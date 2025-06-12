@@ -88,9 +88,10 @@ class CutSeekBar:
             self.idx = self.endidx
 
         if (self._ondrag is not None) and (self.endidx < self.fcount):
+            print('endidx: ', self.endidx)
             self._ondrag()
 
-        self.draw()
+            self.draw()
 
     def get_trim_range(self):
         return self.startidx, self.endidx

@@ -2,6 +2,7 @@
 from math import floor
 from PIL import Image, ImageTk, ImageSequence
 import numpy as np
+from core import abspath
 
 class SpinnerPopup:
     def __init__(self, parent, width, height):
@@ -11,7 +12,7 @@ class SpinnerPopup:
 
         # Load animated GIF
         self.frames = [ImageTk.PhotoImage(self.prsframe(img, width, height)) for img in \
-            ImageSequence.Iterator(Image.open("./assets/process.gif"))]
+            ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
         self.imgview = self.parent.create_image(width//2, height//2, image=self.frames[0],
                                                 anchor="center")
 

@@ -13,6 +13,7 @@ from core.Rect import PixelRect
 from .Plot import Plot
 from .components.Spinner import SpinnerPopup
 from .components.Seekbar import CutSeekBar
+from core import abspath
 
 class SlidingFrictionApp(App):
     def __init__(self, root):
@@ -22,7 +23,7 @@ class SlidingFrictionApp(App):
         """
         super().__init__(root)
         
-        img = Image.open("assets/rectanglebd.png").resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ImageTk.PhotoImage(img)
         self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.drawrect)

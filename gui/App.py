@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 
 from tkinter import filedialog, simpledialog, messagebox, Text, END, TOP, X, NONE
 from .components import CutSeekBar, ScrollBar
+from core import abspath
 # from video_processing import VideoProcessor
 
 class App:
@@ -43,8 +44,8 @@ class App:
             ("assets/back.png", self.tomenu)
         ]
         
-        for img_path, command in buttons:
-            img = Image.open(img_path).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        for imgpath, command in buttons:
+            img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
             img = ImageTk.PhotoImage(img)
             button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                    image=img, command=command)
