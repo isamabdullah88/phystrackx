@@ -1,6 +1,8 @@
 
 from math import floor
 from PIL import Image, ImageTk, ImageSequence
+import numpy as np
+from core import abspath
 
 class SpinnerPopup:
     def __init__(self, parent, width, height):
@@ -9,8 +11,8 @@ class SpinnerPopup:
 
 
         # Load animated GIF
-        self.frames = [ImageTk.PhotoImage(self.rszframe(img, width, height)) for img in \
-            ImageSequence.Iterator(Image.open("./assets/process.gif"))]
+        self.frames = [ImageTk.PhotoImage(self.prsframe(img, width, height)) for img in \
+            ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
         self.imgview = self.parent.create_image(width//2, height//2, image=self.frames[0],
                                                 anchor="center")
 
@@ -28,24 +30,24 @@ class SpinnerPopup:
     def destroy(self):
         self.running = False
         self.parent.delete(self.imgview)
-        
-    
-    def rszframe(self, img, cwidth, cheight):
-        fwidth, fheight = img.size
-        if (fwidth > cwidth):
-            ratio = fheight/fwidth
-            fwidth = cwidth
-            fheight = floor(fwidth * ratio)
-            
-            img = img.resize((fwidth, fheight), Image.Resampling.LANCZOS)
 
-        if (fheight > cheight):
-            ratio = fwidth/fheight
-            fheight = cheight
-            fwidth = floor(fheight*ratio)
-            
-            img = img.resize((fwidth, fheight), Image.Resampling.LANCZOS)
+    def prsframe(self, img: Image, vwidth, vheight):
         
-        # print('img: ', img.shape)
+        imgsize = 200
+        img = img.resize((imgsize, imgsize), Image.Resampling.LANCZOS)
+        img = np.array(img.convert("RGB"))
+        
+        canvas = np.ones((vheight, vwidth, 3), np.uint8)*255
+        
+        xstart = floor(vwidth/2) - floor(imgsize/2)
+        xend = floor(vwidth/2) + floor(imgsize/2)
+        ystart = floor(vheight/2) - floor(imgsize/2)
+        yend = floor(vheight/2) + floor(imgsize/2)
+            
+        canvas[ystart:yend, xstart:xend, :] = img
+        
+        return Image.fromarray(canvas)
 
-        return img
+
+if __name__ == '__main__':
+    SpinnerPopup(None, 900, 600)

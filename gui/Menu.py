@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 
 from .Rigid import Rigid
 from .NonRigid import NonRigid
+from core import abspath
 
 class MenuScreen:
     def __init__(self, root, restart=None):
@@ -21,24 +22,24 @@ class MenuScreen:
 
         # === Create grid of icon buttons ===
         
-        sfimg = Image.open("assets/rigid.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/rigid.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left",
                                           command=self.rigid)
         butnsf.grid(row=0, column=0, padx=10, pady=10)
 
-        sfimg = Image.open("assets/nonrigid.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/nonrigid.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.nonrigid)
         butnsf.grid(row=0, column=1, padx=10, pady=10)
 
     def displogo(self, root):
         # Load the image
-        image_path = "assets/logo.png"
-        image = Image.open(image_path)
+        imgpath = abspath("assets/logo.png")
+        image = Image.open(imgpath)
 
         # Resize the image to fit the window width while maintaining aspect ratio
         base_width = 700  # Set width smaller than the window width for padding considerations

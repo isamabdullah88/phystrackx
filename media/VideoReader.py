@@ -1,4 +1,5 @@
 import cv2
+from math import floor
 
 class VideoReader():
     def __init__(self, video_path):
@@ -7,9 +8,10 @@ class VideoReader():
         if not self._reader.isOpened():
             print("Video unable to open!")
 
-        self.fcount = int(self._reader.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.width = int(self._reader.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.height = int(self._reader.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fcount = floor(self._reader.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.width = floor(self._reader.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = floor(self._reader.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps = floor(self._reader.get(cv2.CAP_PROP_FPS))
         self._start_idx = 0
 
         self._idx = 0

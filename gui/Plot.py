@@ -3,34 +3,72 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class Plot:
-    def __init__(self, data:list[float], fps=24, theme='ggplot'):
-        # data: list of numpy arrays. Each array should have shape N,2
+    def __init__(self, data:list[float], vwidth, vheight, fwidth, fheight, ox=0, oy=0, fps=24,
+                 theme='ggplot'):
+        """
+        data: list of numpy arrays. Each array should have shape N,2.
+        ox, oy: origin of user specified coordinate axes.
+        fwidth: Width of video frame.
+        fheight: Height of video frame.
+        vwidth: Width of videoview frame.
+        vheight: Height of videoview frame.
+        """
         self._data = data
         self._datanum = len(data)
         self._fps = 24
+        self._fwidth = fwidth
+        self._fheight = fheight
+        self._ox = ox
+        self._oy = oy
+        self._vwidth = vwidth
+        self._vheight = vheight
         
         samplecount = self._data[0].shape[0]
         self._t = np.linspace(0, samplecount/fps, samplecount)
         plt.style.use(theme)
         
+        # Transform
+        self._datatr = []
+        for i in range(self._datanum):
+            data = self._data[i]
+            
+            datax, datay = self.transform(data[:,0], data[:,1])
+            datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
+            self._datatr.append(datatr)
+        
+    def transform(self, x, y):
+        """Applies transformation according to videoview, image frame and user specified frame"""
+        fvx = self._vwidth/2 - self._fwidth/2
+        fvy = self._vheight/2 - self._fheight/2
+        
+        # Invert y coordinates
+        y = self._fheight - y
+        self._oy = self._vheight - self._oy
+        
+        # Transform
+        x = x - (self._ox - fvx)
+        y = y - (self._oy - fvy)
+        
+        return x, y
+        
     def plotx(self):
-        self.plot(self._data, title="Data")
+        self.plot(self._datatr, title="Data")
         
     def plotdrv(self):        
         datadrv = []
         
         for i in range(self._datanum):
-            dx = np.gradient(np.squeeze(self._data[i][:,0])).reshape(-1, 1)
-            dy = np.gradient(np.squeeze(self._data[i][:,1])).reshape(-1, 1)
+            dx = np.gradient(np.squeeze(self._datatr[i][:,0])).reshape(-1, 1)
+            dy = np.gradient(np.squeeze(self._datatr[i][:,1])).reshape(-1, 1)
             datadrv.append(np.hstack((dx,dy)))
         
         self.plot(datadrv, title="Derivative")
         
     def plot(self, trackpts, title="Data"):
-        numt = len(trackpts)
-        _, axes = plt.subplots(numt, 3, figsize=(12, 8))
 
-        for i in range(numt):
+        _, axes = plt.subplots(self._datanum, 3, figsize=(12, 8), squeeze=False)
+
+        for i in range(self._datanum):
             trackpt = trackpts[i]
             
             xcoords = trackpt[:, 0]

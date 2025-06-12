@@ -107,7 +107,8 @@ class Interface(Experiment):
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         # self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, 24, (self.fwidth, self.fheight))
+        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
 
         self._vidreader.seek(startidx)
         

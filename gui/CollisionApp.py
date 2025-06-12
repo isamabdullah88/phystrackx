@@ -25,7 +25,7 @@ class CollisionApp(App):
                                       image=sfimg, command=self.drawrect)
         self.rectbd.pack(pady=10)
         
-        self.seekbar = CutSeekBar(self.video_frame, ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
         
         self._rcoords = None
         self._rects = []
@@ -74,7 +74,7 @@ class CollisionApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def mark_axes(self):
+    def markaxes(self):
 
         def update_axes(event):
             """ Update the axes to follow the mouse cursor. """
@@ -88,10 +88,9 @@ class CollisionApp(App):
         def store_click(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
-            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
+
             self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            # print(self._ref_frame)
             self.videoview.unbind("<Motion>")
             self.videoview.unbind("<Button>")
 
@@ -100,11 +99,8 @@ class CollisionApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        self._ctkbox = None
         
         def ondown(event):
-            # if self._ctkbox is not None:
-            #     self.videoview.delete(self._ctkbox)
             self._ctbox = None
             
             self._rcoords = (event.x, event.y)
@@ -114,8 +110,6 @@ class CollisionApp(App):
         def inrect(event):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
-
-            # print('Rect Orig: ', (sx, sy, ex, ey))
 
             self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
             
@@ -132,11 +126,9 @@ class CollisionApp(App):
         self.videoview.bind("<ButtonRelease-1>", onrelease)
 
     def plotx(self):
-        # if len(self.sfriction.tracked_pts) < 1:
-        #     messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
-        #     return
-
-        # ox, oy = self._ref_frame
+        if len(self.collision.trackpts) < 1:
+            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+            return
 
         plot = Plot(self.collision.trackpts)
         plot.plotx()
@@ -144,7 +136,7 @@ class CollisionApp(App):
         plot.show()
 
 
-    def start_tracking(self):
+    def strack(self):
         """
         Detects and tracks radius for the main collision circle using classical techniques.
         """

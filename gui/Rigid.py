@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 
 from .SlidingFrictionApp import SlidingFrictionApp
 from .CollisionApp import CollisionApp
+from core import abspath
 # customtkinter.set_appearance_mode("dark")
 # customtkinter.set_default_color_theme("dark-blue")
 
@@ -24,14 +25,14 @@ class Rigid:
 
         # === Create grid of icon buttons ===
         
-        sfimg = Image.open("assets/friction.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = Image.open(abspath("assets/friction.png")).resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
         butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
                                           width=80, height=80, compound="left",
                                           command=self.friction)
         butnsf.grid(row=0, column=0, padx=10, pady=10)
 
-        sfimg = Image.open("assets/collision.png").resize((80, 80), Image.Resampling.LANCZOS)
+        sfimg = Image.open(abspath("assets/collision.png")).resize((80, 80), Image.Resampling.LANCZOS)
         sfimg = ImageTk.PhotoImage(sfimg)
         butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
