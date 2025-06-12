@@ -70,7 +70,6 @@ class Plot:
 
         for i in range(self._datanum):
             trackpt = trackpts[i]
-            print('trackpt: ', trackpt.shape)
             
             xcoords = trackpt[:, 0]
             ycoords = trackpt[:, 1]

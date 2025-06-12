@@ -57,15 +57,12 @@ class SlidingFrictionApp(App):
         fheight = self.sfriction.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
-        print('shape: ', self.fheight, self.fwidth)
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         
-        print('self.vwidth, self.vheight: ', self.vwidth, self.vheight)
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
-        print('fx, fy: ', self.fx, self.fy)
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
@@ -105,7 +102,6 @@ class SlidingFrictionApp(App):
             
             self.ox = x
             self.oy = y
-            print('ox, oy: ', self.ox, self.oy)
             
             self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
@@ -137,8 +133,6 @@ class SlidingFrictionApp(App):
         def onrelease(event):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
-            print('sx, sy: ', sx, sy)
-            print('ex, ey: ', ex, ey)
 
             rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
             self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
