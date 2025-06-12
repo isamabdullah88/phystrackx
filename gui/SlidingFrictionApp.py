@@ -16,6 +16,10 @@ from .components.Seekbar import CutSeekBar
 
 class SlidingFrictionApp(App):
     def __init__(self, root):
+        """
+        ox, oy: Position of origin of coordinate axes specified by user in the video frame.
+        fx, fy: Position of origin of image in the video frame.
+        """
         super().__init__(root)
         
         img = Image.open("assets/rectanglebd.png").resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
@@ -98,10 +102,13 @@ class SlidingFrictionApp(App):
         def onclick(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
-            # self._ref_frame = [x-self.frame_ox, y-self.frame_oy]  # Store coordinates
+            
+            self.ox = x
+            self.oy = y
+            print('ox, oy: ', self.ox, self.oy)
+            
             self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            # print(self._ref_frame)
             self.videoview.unbind("<Motion>")
             self.videoview.unbind("<Button>")
 
@@ -130,9 +137,15 @@ class SlidingFrictionApp(App):
         def onrelease(event):
             sx, sy = self._rcoords
             ex, ey = (event.x, event.y)
+            print('sx, sy: ', sx, sy)
+            print('ex, ey: ', ex, ey)
 
             rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
             self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
+            
+            self.videoview.unbind("<Button-1>")
+            self.videoview.unbind("<B1-Motion>")
+            self.videoview.unbind("<ButtonRelease-1>")
             
 
         self.videoview.bind("<Button-1>", ondown)
@@ -144,7 +157,8 @@ class SlidingFrictionApp(App):
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        plot = Plot(self.sfriction.trackpts)
+        plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
+                    ox=self.ox, oy=self.oy)
         plot.plotx()
         plot.plotdrv()
         plot.show()
