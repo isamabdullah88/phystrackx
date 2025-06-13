@@ -66,7 +66,7 @@ class Plot:
         
     def plot(self, trackpts, title="Data"):
 
-        _, axes = plt.subplots(self._datanum, 3, figsize=(12, 8), squeeze=False)
+        _, axes = plt.subplots(self._datanum, 3, figsize=(10, 5), squeeze=False)
 
         for i in range(self._datanum):
             trackpt = trackpts[i]

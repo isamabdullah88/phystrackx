@@ -64,6 +64,10 @@ class SlidingFrictionApp(App):
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
+        
+        # Default coordinate system
+        self.ox = self.fx
+        self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
