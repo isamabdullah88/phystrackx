@@ -42,6 +42,7 @@ class SlidingFrictionApp(App):
         
         self.scroll_toolbar.pack()
         
+        self.scruler = None
         self._rcoords = None
         self._rects = []
         
@@ -128,7 +129,7 @@ class SlidingFrictionApp(App):
         self.videoview.bind("<Button>", onclick)
         
     def scale(self):
-        self.ruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -170,8 +171,11 @@ class SlidingFrictionApp(App):
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
+        scale = 1
+        if self.scruler is not None:
+            scale = self.scruler.scalef
         plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=self.ruler.scalef)
+                    ox=self.ox, oy=self.oy, scale=scale)
         plot.plotx()
         plot.plotdrv()
         plot.show()
@@ -199,3 +203,9 @@ class SlidingFrictionApp(App):
             # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
+        
+    def tomenu(self):
+        super().tomenu()
+        
+        del self.sfriction
+        self.sfriction = SlidingFriction(trackpath=self._trackpath)

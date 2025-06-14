@@ -40,7 +40,6 @@ class App:
         
         buttons = [
             ("assets/open-video.png", self.openvideo),
-            # ("assets/fps.png", self.set_fps),  # Uncomment if you want to set FPS
             ("assets/axis.png", self.markaxes),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
@@ -64,7 +63,7 @@ class App:
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh-2*self.pady
-        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c") #, highlightbackground="black")
+        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         self.videoview.pack(side=ctk.TOP, expand=False)
 
 
@@ -72,23 +71,8 @@ class App:
         videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
-            # self.processor.fps = int(simpledialog.askinteger("FPS", "Enter FPS:"))
-            # self.fps_label.configure(text=f"FPS: {self.processor.fps}")
             self.load_video(videopath)
     
-    
-    # def mark_line(self, event):
-    #     if len(self.processor.line_coords) < 2:
-    #         self.processor.line_coords.append((event.x, event.y))
-    #         if len(self.processor.line_coords) == 2:
-    #             self.videoview.create_line(self.processor.line_coords[0],
-    #                                         self.processor.line_coords[1], fill="red", width=2)
-    #             self.processor.ref_distance = simpledialog.askfloat("Reference Distance",
-    #                                         "Enter the reference distance in your chosen unit:")
-    #             self.info_label.configure(
-    #                 text=f"Reference Distance: {self.processor.ref_distance} units")
-    
-
     def markaxes(self):
         pass
 
@@ -111,10 +95,6 @@ class App:
         return frame
 
     def plot(self):
-        # popup = ctk.CTkToplevel(self.root)
-        # popup.title("Tracked Coordinates Options")
-
-        # ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
         self.plotx()
 
     def plotx(self):
@@ -133,5 +113,6 @@ class App:
     
 
     def tomenu(self):
-        self.root.update()
-        self.root.deiconify()
+        self.videoview.delete("all")
+        # self.root.update()
+        # self.root.deiconify()
