@@ -20,6 +20,9 @@ class App:
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
         self.toolbar()
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
+        
+        # Global Coordinate Frame
+        self.ox = self.oy = None
 
     def toolbar(self):
         
