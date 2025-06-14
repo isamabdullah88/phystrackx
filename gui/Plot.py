@@ -4,7 +4,7 @@ import numpy as np
 
 class Plot:
     def __init__(self, data:list[float], vwidth, vheight, fwidth, fheight, ox=0, oy=0, fps=24,
-                 theme='ggplot'):
+                 scale=1, theme='ggplot'):
         """
         data: list of numpy arrays. Each array should have shape N,2.
         ox, oy: origin of user specified coordinate axes.
@@ -22,6 +22,7 @@ class Plot:
         self._oy = oy
         self._vwidth = vwidth
         self._vheight = vheight
+        self._scale = scale
         
         samplecount = self._data[0].shape[0]
         self._t = np.linspace(0, samplecount/fps, samplecount)
@@ -48,6 +49,10 @@ class Plot:
         # Transform
         x = x - (self._ox - fvx)
         y = y - (self._oy - fvy)
+        
+        if self._scale is not None:
+            x = x * self._scale
+            y = y * self._scale
         
         return x, y
         

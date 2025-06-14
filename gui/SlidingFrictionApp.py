@@ -171,7 +171,7 @@ class SlidingFrictionApp(App):
             return
 
         plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy)
+                    ox=self.ox, oy=self.oy, scale=self.ruler.scalef)
         plot.plotx()
         plot.plotdrv()
         plot.show()

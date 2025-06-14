@@ -5,7 +5,7 @@ from math import floor
 class ScaleRuler:
     def __init__(self, canvas, cwidth, cheight):
         self.canvas = canvas
-        self.width = 100
+        self.width = 50
         self.height = 30
         self.p1 = [floor(cwidth/2)-floor(self.width/2), floor(cheight/2)]
         self.p2 = [floor(cwidth/2)+floor(self.width/2), floor(cheight/2)]
