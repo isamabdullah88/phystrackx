@@ -11,8 +11,9 @@ from .App import App
 from experiments.SlidingFriction import SlidingFriction
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components.Spinner import SpinnerPopup
-from .components.Seekbar import CutSeekBar
+from .components import SpinnerPopup
+from .components import CutSeekBar
+from .components import ScaleRuler
 from core import abspath
 
 class SlidingFrictionApp(App):
@@ -22,6 +23,13 @@ class SlidingFrictionApp(App):
         fx, fy: Position of origin of image in the video frame.
         """
         super().__init__(root)
+        
+        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.scale)
+        self.ruler.pack(padx=5, pady=5)
+        self.ruler.image = img
         
         img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ImageTk.PhotoImage(img)
@@ -66,8 +74,11 @@ class SlidingFrictionApp(App):
         self.fy = floor(self.vheight/2 - self.fheight/2)
         
         # Default coordinate system
-        self.ox = self.fx
-        self.oy = self.fy + self.fheight
+        if self.ox is None:
+            self.ox = self.fx
+        
+        if self.oy is None:
+            self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
@@ -115,6 +126,9 @@ class SlidingFrictionApp(App):
 
         self.videoview.bind("<Motion>", onmove)
         self.videoview.bind("<Button>", onclick)
+        
+    def scale(self):
+        self.ruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -167,7 +181,10 @@ class SlidingFrictionApp(App):
         """
         Detects and tracks radius for the main sfriction circle using classical techniques.
         """
-
+        if self.sfriction.fcount < 10:
+            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+            return
+        
         self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
