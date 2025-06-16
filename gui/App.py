@@ -3,10 +3,9 @@ import customtkinter as ctk
 import cv2
 from PIL import Image, ImageTk
 
-from tkinter import filedialog, simpledialog, messagebox, Text, END, TOP, X, NONE
-from .components import CutSeekBar, ScrollBar
+from tkinter import filedialog
+from .components import ScrollBar
 from core import abspath
-# from video_processing import VideoProcessor
 
 class App:
     def __init__(self, root):
@@ -143,5 +142,3 @@ class App:
 
     def tomenu(self):
         self.videoview.delete("all")
-        # self.root.update()
-        # self.root.deiconify()
