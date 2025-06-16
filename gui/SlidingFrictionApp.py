@@ -62,6 +62,7 @@ class SlidingFrictionApp(App):
         self.dispframe(frame1)
 
     def dispframe(self, frame=None):
+        """Displays the first frame in videoviewer."""
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
@@ -95,37 +96,37 @@ class SlidingFrictionApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def markaxes(self):
+    # def markaxes(self):
         
-        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
-        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+    #     self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
+    #     self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
         
-        def onmove(event):
-            """ Update the axes to follow the mouse cursor. """
-            self.videoview.delete("axes")  # Remove old axes
-            x, y = event.x, event.y  # Get mouse position
+    #     def onmove(event):
+    #         """ Update the axes to follow the mouse cursor. """
+    #         self.videoview.delete("axes")  # Remove old axes
+    #         x, y = event.x, event.y  # Get mouse position
 
-            # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+    #         # Draw new axes centered on mouse position
+    #         self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+    #         self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
             
-            self.videoview.coords(self._x, self.vwidth-50, y+10)
-            self.videoview.coords(self._y, x-10, self.vheight-50)
+    #         self.videoview.coords(self._x, self.vwidth-50, y+10)
+    #         self.videoview.coords(self._y, x-10, self.vheight-50)
 
-        def onclick(event):
-            """ Store the clicked coordinates and draw a point. """
-            x, y = event.x, event.y
+    #     def onclick(event):
+    #         """ Store the clicked coordinates and draw a point. """
+    #         x, y = event.x, event.y
             
-            self.ox = x
-            self.oy = y
+    #         self.ox = x
+    #         self.oy = y
             
-            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Button>")
+    #         self.videoview.unbind("<Motion>")
+    #         self.videoview.unbind("<Button>")
 
-        self.videoview.bind("<Motion>", onmove)
-        self.videoview.bind("<Button>", onclick)
+    #     self.videoview.bind("<Motion>", onmove)
+    #     self.videoview.bind("<Button>", onclick)
         
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
@@ -198,8 +199,6 @@ class SlidingFrictionApp(App):
             self.root.after(0, popup.destroy())
 
             self.load_video(self._trackpath)
-
-            # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
         
