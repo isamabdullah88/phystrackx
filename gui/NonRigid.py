@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from .MarangoniApp import MarangoniApp
 from .BalloonApp import BalloonApp
 from .InterfaceApp import InterfaceApp
+from core import abspath
 # customtkinter.set_appearance_mode("dark")
 # customtkinter.set_default_color_theme("dark-blue")
 
@@ -25,24 +26,24 @@ class NonRigid:
 
         # === Create grid of icon buttons ===
         
-        sfimg = Image.open("assets/marangoni.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/marangoni.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left",
                                           command=self.marangoni)
         butnsf.grid(row=0, column=0, padx=10, pady=10)
 
-        sfimg = Image.open("assets/balloon.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/balloon.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.balloon)
         butnsf.grid(row=0, column=1, padx=10, pady=10)
         
         # Interface 
-        sfimg = Image.open("assets/interface.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/interface.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.interface)
         butnsf.grid(row=0, column=2, padx=10, pady=10)

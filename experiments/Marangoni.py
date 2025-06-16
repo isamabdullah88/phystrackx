@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from .Experiment import Experiment
 from filters import Smoothen
+from core import Circle
 
 class Marangoni(Experiment):
     def __init__(self, trackpath):
@@ -16,6 +17,7 @@ class Marangoni(Experiment):
 
         self._trackpath = trackpath
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
+        self.trackpts = []
 
     def track(self, mask, startidx=0, endidx=0):
         """Tracks the radius in marangoni effect
@@ -87,6 +89,9 @@ class Marangoni(Experiment):
 
             # Draw the circle
             cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
+
+            # Store data
+            self.trackpts.append(Circle(r, x, y))
 
             self._videowriter.write(frame)
 
