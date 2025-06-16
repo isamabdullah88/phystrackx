@@ -11,7 +11,7 @@ from core import abspath
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Phys TrackerX")
+        self.root.title("PhysTrackX")
         self.cwidth = 900
         self.cheight = 600
         self.padx = floor(self.cwidth * 0.01)

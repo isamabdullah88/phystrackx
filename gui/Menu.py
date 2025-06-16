@@ -8,7 +8,7 @@ from .NonRigid import NonRigid
 from core import abspath
 
 class MenuScreen:
-    def __init__(self, root, restart=None):
+    def __init__(self, root):
         self.root = root
         self.root.title("Select Tracking Type")
         self.root.geometry("960x640")
@@ -50,27 +50,17 @@ class MenuScreen:
         photo = ImageTk.PhotoImage(image)
 
         # Create a label to display the image
-        image_label = ctk.CTkLabel(root, image=photo)
+        image_label = ctk.CTkLabel(root, image=photo, text="")
         image_label.image = photo  # Keep a reference, prevent GC
         image_label.pack(pady=(10, 0))
 
     def rigid(self):
         self.root.destroy()
-        # root = tk.Tk()
-        # root.geometry("960x640")
-
-        # app = VideoApp(root)
+        
         rigid = Rigid()
-        # root.mainloop()
+        
 
     def nonrigid(self):
         self.root.destroy()
         
         NonRigid()
-
-    # def on_auto(self):
-    #     self.root.destroy()
-    #     root = tk.Tk()
-    #     root.geometry("960x640")
-    #     app = VideoApp3(root)
-    #     root.mainloop()

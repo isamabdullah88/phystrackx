@@ -14,13 +14,13 @@ class WelcomeScreen:
         self.label.pack(pady=(20, 0))
 
         # Subtitle label
-        subtlabel = ctk.CTkLabel(root, text="A Project By", font=("Helvetica", 18))
+        subtlabel = ctk.CTkLabel(root, text="A Project By Dr. Sabieh, Isam", font=("Helvetica", 18))
         subtlabel.pack(pady=(10, 0))
 
         # Load and display the image
         self.displogo(root)
 
-        self.animate_text()
+        self.texanim()
 
     def displogo(self, root):
         # Load the image
@@ -28,15 +28,15 @@ class WelcomeScreen:
         photo = ImageTk.PhotoImage(img)
 
         # Create a label to display the image
-        imglabel = ctk.CTkLabel(root, image=photo)
+        imglabel = ctk.CTkLabel(root, image=photo, text="")
         imglabel.image = photo  # Keep a reference, prevent GC
         imglabel.pack(pady=(10, 20))
 
-    def animate_text(self):
+    def texanim(self):
         text = self.label.cget("text")
         if text.endswith("..."):
             self.label.configure(text="Welcome to PhysTrackX")
         else:
             self.label.configure(text=text + ".")
-        self.root.after(500, self.animate_text)
+        self.root.after(500, self.texanim)
 
