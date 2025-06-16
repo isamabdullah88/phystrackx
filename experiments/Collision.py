@@ -2,9 +2,8 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 from math import floor
-import matplotlib.pyplot as plt
 from .Experiment import Experiment
-from core.Rect import NormalizedRect, PixelRect
+from core.Rect import NormalizedRect
 
 class Collision(Experiment):
     def __init__(self, trackpath):
@@ -48,23 +47,22 @@ class Collision(Experiment):
         
         self.trackpts = [[] for _ in rects]
         
+        frame = self._vidreader.read()
+        fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            
         for rect in rects:
             rect = rect.norm2pix(self.fwidth, self.fheight)
 
-            frame = self._vidreader.read()
-            fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = 255
             
             p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=5, qualityLevel=0.5, minDistance=10, blockSize=5, mask=mask)
-            print('p0: ', p0)
             p0 = np.array(p0, dtype=np.float32).reshape(-1, 1, 2)
             
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount), desc="Sliding Friction", total=fcount-1):
+        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount-1):
             frame = self._vidreader.read()
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -88,7 +86,6 @@ class Collision(Experiment):
 
         for i in range(len(self.trackpts)):
             self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
-            
 
 
 if __name__ == '__main__':

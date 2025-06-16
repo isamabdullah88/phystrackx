@@ -56,7 +56,6 @@ class SlidingFrictionApp(App):
     def load_video(self, videopath):
         self.sfriction.add_video(videopath)
         
-        # self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.sfriction.fcount)
 
         frame1 = self.sfriction.frame(0)
@@ -205,7 +204,14 @@ class SlidingFrictionApp(App):
         threading.Thread(target=trackbg, args=(self.popup,)).start()
         
     def tomenu(self):
+        """Clears almost everything"""
         super().tomenu()
         
         del self.sfriction
         self.sfriction = SlidingFriction(trackpath=self._trackpath)
+        
+        self.scruler = None
+        self._rcoords = None
+        self._rects = []
+        
+        self.seekbar.setcount(100)

@@ -4,29 +4,45 @@ import cv2
 import threading
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
 from .App import App
 from experiments.Collision import Collision
 from core.Rect import PixelRect
-from .components.Spinner import SpinnerPopup
-from .components.Seekbar import CutSeekBar
 from .Plot import Plot
+from .components import SpinnerPopup
+from .components import CutSeekBar
+from .components import ScaleRuler
+from core import abspath
 
 class CollisionApp(App):
     def __init__(self, root):
+        """
+        ox, oy: Position of origin of coordinate axes specified by user in the video frame.
+        fx, fy: Position of origin of image in the video frame.
+        """
         super().__init__(root)
         
-        sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.rectbd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
-                                      image=sfimg, command=self.drawrect)
-        self.rectbd.pack(pady=10)
+        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.scale)
+        self.ruler.pack(padx=5, pady=5)
+        self.ruler.image = img
         
-        self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
+        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.drawrect)
+        self.rectbd.pack(padx=5, pady=5)
+        self.rectbd.image = img
         
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        
+        self.scroll_toolbar.pack()
+        
+        self.scruler = None
         self._rcoords = None
         self._rects = []
         
@@ -39,9 +55,7 @@ class CollisionApp(App):
 
     def load_video(self, videopath):
         self.collision.add_video(videopath)
-        # self.collision.crop_intime()
         
-        self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.collision.fcount)
 
         frame1 = self.collision.frame(0)
@@ -55,9 +69,16 @@ class CollisionApp(App):
         
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
-
-        self.fx = floor(self.cwidth/2 - self.collision.fwidth/2)
-        self.fy = floor(self.cheight/2 - self.collision.fheight/2)
+        
+        self.fx = floor(self.vwidth/2 - self.fwidth/2)
+        self.fy = floor(self.vheight/2 - self.fheight/2)
+        
+        # Default coordinate system
+        if self.ox is None:
+            self.ox = self.fx
+        
+        if self.oy is None:
+            self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
@@ -75,32 +96,47 @@ class CollisionApp(App):
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
     def markaxes(self):
-
-        def update_axes(event):
+        
+        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
+        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+        
+        def onmove(event):
             """ Update the axes to follow the mouse cursor. """
             self.videoview.delete("axes")  # Remove old axes
             x, y = event.x, event.y  # Get mouse position
 
             # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
+            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+            
+            self.videoview.coords(self._x, self.vwidth-50, y+10)
+            self.videoview.coords(self._y, x-10, self.vheight-50)
 
-        def store_click(event):
+        def onclick(event):
             """ Store the clicked coordinates and draw a point. """
             x, y = event.x, event.y
-
+            
+            self.ox = x
+            self.oy = y
+            
             self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
             self.videoview.unbind("<Motion>")
             self.videoview.unbind("<Button>")
 
-        self.videoview.bind("<Motion>", update_axes)
-        self.videoview.bind("<Button>", store_click)
+        self.videoview.bind("<Motion>", onmove)
+        self.videoview.bind("<Button>", onclick)
+        
+    def scale(self):
+        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
+        self._ctkbox = None
         
         def ondown(event):
+            # if self._ctkbox is not None:
+            #     self.videoview.delete(self._ctkbox)
             self._ctbox = None
             
             self._rcoords = (event.x, event.y)
@@ -120,6 +156,10 @@ class CollisionApp(App):
             rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
             self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
             
+            self.videoview.unbind("<Button-1>")
+            self.videoview.unbind("<B1-Motion>")
+            self.videoview.unbind("<ButtonRelease-1>")
+            
 
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", inrect)
@@ -130,7 +170,11 @@ class CollisionApp(App):
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        plot = Plot(self.collision.trackpts)
+        scale = 1
+        if self.scruler is not None:
+            scale = self.scruler.scalef
+        plot = Plot(self.collision.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
+                    ox=self.ox, oy=self.oy, scale=scale)
         plot.plotx()
         plot.plotdrv()
         plot.show()
@@ -140,8 +184,11 @@ class CollisionApp(App):
         """
         Detects and tracks radius for the main collision circle using classical techniques.
         """
-
-        self.popup = SpinnerPopup(self.videoview, self.cwidth, self.cheight)
+        if self.collision.fcount < 10:
+            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+            return
+        
+        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
@@ -152,6 +199,19 @@ class CollisionApp(App):
 
             self.load_video(self._trackpath)
 
-            self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
+            # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
+        
+    def tomenu(self):
+        """Clears almost everything"""
+        super().tomenu()
+        
+        del self.collision
+        self.collision = Collision(trackpath=self._trackpath)
+        
+        self.scruler = None
+        self._rcoords = None
+        self._rects = []
+        
+        self.seekbar.setcount(100)
