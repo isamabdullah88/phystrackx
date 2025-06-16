@@ -11,8 +11,9 @@ from .App import App
 from experiments.SlidingFriction import SlidingFriction
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components.Spinner import SpinnerPopup
-from .components.Seekbar import CutSeekBar
+from .components import SpinnerPopup
+from .components import CutSeekBar
+from .components import ScaleRuler
 from core import abspath
 
 class SlidingFrictionApp(App):
@@ -22,6 +23,13 @@ class SlidingFrictionApp(App):
         fx, fy: Position of origin of image in the video frame.
         """
         super().__init__(root)
+        
+        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.scale)
+        self.ruler.pack(padx=5, pady=5)
+        self.ruler.image = img
         
         img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ImageTk.PhotoImage(img)
@@ -34,6 +42,7 @@ class SlidingFrictionApp(App):
         
         self.scroll_toolbar.pack()
         
+        self.scruler = None
         self._rcoords = None
         self._rects = []
         
@@ -47,13 +56,13 @@ class SlidingFrictionApp(App):
     def load_video(self, videopath):
         self.sfriction.add_video(videopath)
         
-        # self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.sfriction.fcount)
 
         frame1 = self.sfriction.frame(0)
         self.dispframe(frame1)
 
     def dispframe(self, frame=None):
+        """Displays the first frame in videoviewer."""
         fwidth = self.sfriction.fwidth
         fheight = self.sfriction.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
@@ -64,6 +73,13 @@ class SlidingFrictionApp(App):
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
+        
+        # Default coordinate system
+        if self.ox is None:
+            self.ox = self.fx
+        
+        if self.oy is None:
+            self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
@@ -80,37 +96,40 @@ class SlidingFrictionApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def markaxes(self):
+    # def markaxes(self):
         
-        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
-        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+    #     self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
+    #     self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
         
-        def onmove(event):
-            """ Update the axes to follow the mouse cursor. """
-            self.videoview.delete("axes")  # Remove old axes
-            x, y = event.x, event.y  # Get mouse position
+    #     def onmove(event):
+    #         """ Update the axes to follow the mouse cursor. """
+    #         self.videoview.delete("axes")  # Remove old axes
+    #         x, y = event.x, event.y  # Get mouse position
 
-            # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+    #         # Draw new axes centered on mouse position
+    #         self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+    #         self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
             
-            self.videoview.coords(self._x, self.vwidth-50, y+10)
-            self.videoview.coords(self._y, x-10, self.vheight-50)
+    #         self.videoview.coords(self._x, self.vwidth-50, y+10)
+    #         self.videoview.coords(self._y, x-10, self.vheight-50)
 
-        def onclick(event):
-            """ Store the clicked coordinates and draw a point. """
-            x, y = event.x, event.y
+    #     def onclick(event):
+    #         """ Store the clicked coordinates and draw a point. """
+    #         x, y = event.x, event.y
             
-            self.ox = x
-            self.oy = y
+    #         self.ox = x
+    #         self.oy = y
             
-            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Button>")
+    #         self.videoview.unbind("<Motion>")
+    #         self.videoview.unbind("<Button>")
 
-        self.videoview.bind("<Motion>", onmove)
-        self.videoview.bind("<Button>", onclick)
+    #     self.videoview.bind("<Motion>", onmove)
+    #     self.videoview.bind("<Button>", onclick)
+        
+    def scale(self):
+        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -152,8 +171,11 @@ class SlidingFrictionApp(App):
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
+        scale = 1
+        if self.scruler is not None:
+            scale = self.scruler.scalef
         plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy)
+                    ox=self.ox, oy=self.oy, scale=scale)
         plot.plotx()
         plot.plotdrv()
         plot.show()
@@ -163,7 +185,10 @@ class SlidingFrictionApp(App):
         """
         Detects and tracks radius for the main sfriction circle using classical techniques.
         """
-
+        if self.sfriction.fcount < 10:
+            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+            return
+        
         self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
@@ -175,6 +200,17 @@ class SlidingFrictionApp(App):
 
             self.load_video(self._trackpath)
 
-            # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
-
         threading.Thread(target=trackbg, args=(self.popup,)).start()
+        
+    def tomenu(self):
+        """Clears almost everything"""
+        super().tomenu()
+        
+        del self.sfriction
+        self.sfriction = SlidingFriction(trackpath=self._trackpath)
+        
+        self.scruler = None
+        self._rcoords = None
+        self._rects = []
+        
+        self.seekbar.setcount(100)

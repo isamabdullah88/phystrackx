@@ -20,6 +20,9 @@ class App:
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
         self.toolbar()
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
+        
+        # Global Coordinate Frame
+        self.ox = self.oy = None
 
     def toolbar(self):
         
@@ -37,7 +40,6 @@ class App:
         
         buttons = [
             ("assets/open-video.png", self.openvideo),
-            # ("assets/fps.png", self.set_fps),  # Uncomment if you want to set FPS
             ("assets/axis.png", self.markaxes),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
@@ -61,7 +63,7 @@ class App:
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh-2*self.pady
-        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c") #, highlightbackground="black")
+        self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         self.videoview.pack(side=ctk.TOP, expand=False)
 
 
@@ -69,25 +71,39 @@ class App:
         videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
-            # self.processor.fps = int(simpledialog.askinteger("FPS", "Enter FPS:"))
-            # self.fps_label.configure(text=f"FPS: {self.processor.fps}")
             self.load_video(videopath)
     
-    
-    # def mark_line(self, event):
-    #     if len(self.processor.line_coords) < 2:
-    #         self.processor.line_coords.append((event.x, event.y))
-    #         if len(self.processor.line_coords) == 2:
-    #             self.videoview.create_line(self.processor.line_coords[0],
-    #                                         self.processor.line_coords[1], fill="red", width=2)
-    #             self.processor.ref_distance = simpledialog.askfloat("Reference Distance",
-    #                                         "Enter the reference distance in your chosen unit:")
-    #             self.info_label.configure(
-    #                 text=f"Reference Distance: {self.processor.ref_distance} units")
-    
-
     def markaxes(self):
-        pass
+        
+        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
+        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+        
+        def onmove(event):
+            """ Update the axes to follow the mouse cursor. """
+            self.videoview.delete("axes")  # Remove old axes
+            x, y = event.x, event.y  # Get mouse position
+
+            # Draw new axes centered on mouse position
+            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+            
+            self.videoview.coords(self._x, self.vwidth-50, y+10)
+            self.videoview.coords(self._y, x-10, self.vheight-50)
+
+        def onclick(event):
+            """ Store the clicked coordinates and draw a point. """
+            x, y = event.x, event.y
+            
+            self.ox = x
+            self.oy = y
+            
+            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+
+            self.videoview.unbind("<Motion>")
+            self.videoview.unbind("<Button>")
+
+        self.videoview.bind("<Motion>", onmove)
+        self.videoview.bind("<Button>", onclick)
 
 
     def resizeframe(self, frame, fwidth, fheight):
@@ -108,10 +124,6 @@ class App:
         return frame
 
     def plot(self):
-        # popup = ctk.CTkToplevel(self.root)
-        # popup.title("Tracked Coordinates Options")
-
-        # ctk.CTkButton(popup, text="Plot X and Y", command=self.plotx).pack(pady=5)
         self.plotx()
 
     def plotx(self):
@@ -130,5 +142,6 @@ class App:
     
 
     def tomenu(self):
-        self.root.update()
-        self.root.deiconify()
+        self.videoview.delete("all")
+        # self.root.update()
+        # self.root.deiconify()

@@ -253,7 +253,7 @@ class Balloon(Experiment):
 
             # print('Inverse transform: ', ellipse)
             (cx, cy), (a, b), angle = ellipse
-            print('a, b angle => ', (a,b, angle))
+            # print('a, b angle => ', (a,b, angle))
 
             asp.append(a)
             bs.append(b)

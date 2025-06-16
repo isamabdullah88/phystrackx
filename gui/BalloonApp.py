@@ -10,30 +10,41 @@ from math import floor
 from .App import App
 from experiments.Balloon import Balloon
 from .Core import circilize, fcrop_coords
-from .components.Spinner import SpinnerPopup
-from .components.Seekbar import CutSeekBar
-from core.Rect import NormalizedRect, PixelRect
+from .components import SpinnerPopup, CutSeekBar, ScaleRuler
+from core.Rect import PixelRect
+from core import abspath
 
 class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
+        
+        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.scale)
+        self.ruler.pack(padx=5, pady=5)
+        self.ruler.image = img
 
         # For drawing ellipse over tracking area
-        sfimg = Image.open("assets/circlebd.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
-                                      image=sfimg, command=self.drawcircle)
+        img = Image.open(abspath("assets/circlebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.circlebd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.drawcircle)
         self.circlebd.pack(pady=10)
         
         # For drawing rectangle over text area
-        sfimg = Image.open("assets/rectanglebd.png").resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        self.circlebd = ctk.CTkButton(self.toolbarf, text="", width=80, height=80,
-                                      image=sfimg, command=self.drawrect)
-        self.circlebd.pack(pady=10)
+        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.drawrect)
+        self.rectbd.pack(pady=10)
         
 
-        self.seekbar = CutSeekBar(self.vidframe, ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        
+        self.scroll_toolbar.pack()
+        
+        self.scruler = None
 
         self.ccoords = (0, 0)
 
@@ -55,7 +66,6 @@ class BalloonApp(App):
     def load_video(self, videopath):
         self.balloon.add_video(videopath)
         
-        self.seekbar.pack(pady=10)
         self.seekbar.setcount(self.balloon.fcount)
 
         frame1 = self.balloon.frame(0)
@@ -65,19 +75,26 @@ class BalloonApp(App):
         fwidth = self.balloon.fwidth
         fheight = self.balloon.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
+        self.fheight, self.fwidth = frame.shape[:2]
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         self._frame = frame
-        self.fheight, self.fwidth = self._frame.shape[:2]
-
-        self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
-        self.fy = floor(self.cheight/2 - frame.shape[0]/2)
+        
+        self.fx = floor(self.vwidth/2 - self.fwidth/2)
+        self.fy = floor(self.vheight/2 - self.fheight/2)
+        
+        # Default coordinate system
+        if self.ox is None:
+            self.ox = self.fx
+        
+        if self.oy is None:
+            self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def updateframe(self):
-        
+        """Updates the frame displayed in the video view based on the slider position."""
         frame = self.balloon.frame(index=self.seekbar.idx)
         fwidth = self.balloon.fwidth
         fheight = self.balloon.fheight
@@ -90,28 +107,30 @@ class BalloonApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    def markaxes(self):
+    # def markaxes(self):
 
-        def update_axes(event):
-            """ Update the axes to follow the mouse cursor. """
-            self.videoview.delete("axes")  # Remove old axes
-            x, y = event.x, event.y  # Get mouse position
+    #     def update_axes(event):
+    #         """ Update the axes to follow the mouse cursor. """
+    #         self.videoview.delete("axes")  # Remove old axes
+    #         x, y = event.x, event.y  # Get mouse position
 
-            # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
+    #         # Draw new axes centered on mouse position
+    #         self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
+    #         self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
 
-        def store_click(event):
-            """ Store the clicked coordinates and draw a point. """
-            x, y = event.x, event.y
+    #     def store_click(event):
+    #         """ Store the clicked coordinates and draw a point. """
+    #         x, y = event.x, event.y
 
-            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
 
-            self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Button>")
+    #         self.videoview.unbind("<Motion>")
+    #         self.videoview.unbind("<Button>")
 
-        self.videoview.bind("<Motion>", update_axes)
-        self.videoview.bind("<Button>", store_click)
+    #     self.videoview.bind("<Motion>", update_axes)
+    #     self.videoview.bind("<Button>", store_click)
+    def scale(self):
+        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawcircle(self):
         """Draws circle with filled transparent image laid over region of interest"""
@@ -168,8 +187,11 @@ class BalloonApp(App):
         """
         Detects and tracks radius for the main balloon circle using classical techniques.
         """
+        if self.balloon.fcount < 10:
+            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+            return
 
-        self.popup = SpinnerPopup(self.videoview, self.cwidth, self.cheight)
+        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
@@ -180,26 +202,36 @@ class BalloonApp(App):
 
             self.load_video(self._trackpath)
 
-            self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
-
         threading.Thread(target=trackbg, args=(self.popup,)).start()
 
 
 
+    def tomenu(self):
+        """Clears almost everything"""
+        super().tomenu()
+        
+        del self.balloon
+        self.balloon = Balloon(trackpath=self._trackpath)
+        
+        self.scruler = None
+        self._rcoords = None
+        self._rects = []
+        
+        self.seekbar.setcount(100)
 
 
     def plot_distances(self):
-        if len(self.balloon.tracked_pts) < 1:
+        if len(self.balloon.trackpts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        num_tracks = len(self.balloon.tracked_pts)
+        num_tracks = len(self.balloon.trackpts)
         _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
 
         for i in range(num_tracks):
-            tracked_pts = self.balloon.tracked_pts[i]
-            xcoords = tracked_pts[0, :] - self.fx
-            ycoords = tracked_pts[1, :] - self.fy
+            trackpts = self.balloon.trackpts[i]
+            xcoords = trackpts[0, :] - self.fx
+            ycoords = trackpts[1, :] - self.fy
 
             axes[i][0].plot(xcoords)
             axes[i][0].set_title("x coordinates")
