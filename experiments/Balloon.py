@@ -14,8 +14,6 @@ import numpy as np
 from tqdm import tqdm
 from skimage.segmentation import active_contour
 from skimage.filters import gaussian
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 
 from .Experiment import Experiment
 from filters import Smoothen
@@ -95,6 +93,7 @@ class Balloon(Experiment):
         return PixelRect(x, y, w, h)
     
     def offellipse(self, ellipse, rect: PixelRect, val: int):
+        """offsets ellipse by the rectangle"""
         (cx, cy), (a, b), angle = ellipse
         
         x, y, w, h = rect.totuple()
@@ -314,13 +313,6 @@ class Balloon(Experiment):
             # snakecont = snakecontp
 
             self._videowriter.write(frame)
-
-        plt.figure()
-        plt.plot(asp)
-        plt.plot(bs)
-        plt.figure()
-        plt.plot(angles)
-        plt.show()
 
 
         self._videowriter.release()
