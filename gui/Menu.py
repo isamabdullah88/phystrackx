@@ -12,9 +12,19 @@ class MenuScreen:
         self.root = root
         self.root.title("Select Tracking Type")
         self.root.geometry("960x640")
+        
+        # Title label
+        self.label = ctk.CTkLabel(root, text="Welcome to PhysTrackX", font=("Helvetica", 24))
+        self.label.pack(pady=(20, 0))
 
+        # Subtitle label
+        subtlabel = ctk.CTkLabel(root, text="A Project By Dr. Sabieh, Isam", font=("Helvetica", 18))
+        subtlabel.pack(pady=(10, 0))
+        
         # Load and display the logo, resized to fit the window
         self.displogo(root)
+        
+        self.texanim()
         
         # === Center frame to hold the grid ===
         center_frame = ctk.CTkFrame(self.root)
@@ -53,6 +63,14 @@ class MenuScreen:
         image_label = ctk.CTkLabel(root, image=photo, text="")
         image_label.image = photo  # Keep a reference, prevent GC
         image_label.pack(pady=(10, 0))
+        
+    def texanim(self):
+        text = self.label.cget("text")
+        if text.endswith("..."):
+            self.label.configure(text="Welcome to PhysTrackX")
+        else:
+            self.label.configure(text=text + ".")
+        self.root.after(500, self.texanim)
 
     def rigid(self):
         self.root.destroy()

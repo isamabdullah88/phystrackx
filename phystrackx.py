@@ -16,7 +16,7 @@ class GUI:
         root = customtkinter.CTk()
         root.geometry("960x640")
         welcome = WelcomeScreen(root)
-        root.after(5000, root.destroy)  # Close welcome screen after 5 seconds
+        root.after(500, root.destroy)  # Close welcome screen after 5 seconds
         root.mainloop()
 
     def start(self):
@@ -28,7 +28,7 @@ class GUI:
 
 def main():
     program = GUI()
-    program.welcome()
+    # program.welcome()
     program.start()
 
 
