@@ -11,13 +11,13 @@ class GUI:
     def __init__(self):
         pass
 
-    def welcome(self):
+    # def welcome(self):
 
-        root = customtkinter.CTk()
-        root.geometry("960x640")
-        welcome = WelcomeScreen(root)
-        root.after(500, root.destroy)  # Close welcome screen after 5 seconds
-        root.mainloop()
+    #     root = customtkinter.CTk()
+    #     root.geometry("960x640")
+    #     welcome = WelcomeScreen(root)
+    #     root.after(500, root.destroy)  # Close welcome screen after 5 seconds
+    #     root.mainloop()
 
     def start(self):
         

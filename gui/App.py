@@ -17,11 +17,13 @@ class App:
         self.pady = floor(self.cheight * 0.01)
         
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
+        
         self.toolbar()
-        self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
         # Global Coordinate Frame
         self.ox = self.oy = None
+        
+        self.root.protocol("WM_DELETE_WINDOW", self.onclose)
 
     def toolbar(self):
         
@@ -47,7 +49,8 @@ class App:
         
         for imgpath, command in buttons:
             img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-            img = ImageTk.PhotoImage(img)
+            # img = ImageTk.PhotoImage(img)
+            img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
             button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                    image=img, command=command)
             button.pack(padx=5, pady=5)
