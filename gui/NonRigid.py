@@ -13,9 +13,10 @@ class NonRigid:
     """
     Class for screen showing list of experiments.
     """
-    def __init__(self):
+    def __init__(self, root):
         # self.master = master
-        self.root = ctk.CTk()
+        # self.root = ctk.CTk()
+        self.root = root
         self.root.title("Non-Rigid Experiments")
 
         self.root.geometry("960x640")
@@ -27,14 +28,14 @@ class NonRigid:
         # === Create grid of icon buttons ===
         
         img = Image.open(abspath("assets/marangoni.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(80, 80))
         butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left",
                                           command=self.marangoni)
         butnsf.grid(row=0, column=0, padx=10, pady=10)
 
         img = Image.open(abspath("assets/balloon.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(80, 80))
         butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.balloon)
@@ -42,7 +43,7 @@ class NonRigid:
         
         # Interface 
         img = Image.open(abspath("assets/interface.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(80, 80))
         butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.interface)

@@ -121,12 +121,12 @@ class App(ctk.CTk):
         self.seekbar = CutSeekBar(self.videoview, width=600, fcount=2000, ondrag=self.ondrag,
                                   disable=False)
 
-        self.print_button = ctk.CTkButton(self, text="Print Cut Range", command=self.print_range)
-        self.print_button.pack()
+        # self.print_button = ctk.CTkButton(self, text="Print Cut Range", command=self.print_range)
+        # self.print_button.pack()
 
-    def print_range(self):
-        start, end = self.seekbar.get_trim_range()
-        print(f"Selected trim range: Frame {start} to {end}")
+    # def print_range(self):
+    #     start, end = self.seekbar.get_trim_range()
+    #     print(f"Selected trim range: Frame {start} to {end}")
     
     def ondrag(self):
         pass

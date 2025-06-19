@@ -25,14 +25,14 @@ class SlidingFrictionApp(App):
         super().__init__(root)
         
         img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.scale)
         self.ruler.pack(padx=5, pady=5)
         self.ruler.image = img
         
         img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.drawrect)
         self.rectbd.pack(padx=5, pady=5)
@@ -96,38 +96,6 @@ class SlidingFrictionApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    # def markaxes(self):
-        
-    #     self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
-    #     self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
-        
-    #     def onmove(event):
-    #         """ Update the axes to follow the mouse cursor. """
-    #         self.videoview.delete("axes")  # Remove old axes
-    #         x, y = event.x, event.y  # Get mouse position
-
-    #         # Draw new axes centered on mouse position
-    #         self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
-    #         self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
-            
-    #         self.videoview.coords(self._x, self.vwidth-50, y+10)
-    #         self.videoview.coords(self._y, x-10, self.vheight-50)
-
-    #     def onclick(event):
-    #         """ Store the clicked coordinates and draw a point. """
-    #         x, y = event.x, event.y
-            
-    #         self.ox = x
-    #         self.oy = y
-            
-    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
-
-    #         self.videoview.unbind("<Motion>")
-    #         self.videoview.unbind("<Button>")
-
-    #     self.videoview.bind("<Motion>", onmove)
-    #     self.videoview.bind("<Button>", onclick)
-        
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 

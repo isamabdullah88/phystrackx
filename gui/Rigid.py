@@ -12,9 +12,10 @@ class Rigid:
     """
     Class for screen showing list of Rigid body experiments.
     """    
-    def __init__(self):
+    def __init__(self, root):
         # self.master = master
-        self.root = ctk.CTk()
+        # self.root = ctk.CTk()
+        self.root = root
         self.root.title("Rigid Experiments")
 
         self.root.geometry("960x640")
@@ -25,21 +26,22 @@ class Rigid:
 
         # === Create grid of icon buttons ===
         
-        sfimg = Image.open(abspath("assets/friction.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/friction.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        # img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(80, 80))
+        butnsf = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left",
                                           command=self.friction)
         butnsf.grid(row=0, column=0, padx=10, pady=10)
 
-        sfimg = Image.open(abspath("assets/collision.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
-        butnsf = ctk.CTkButton(center_frame, image=sfimg, text="",
+        img = Image.open(abspath("assets/collision.png")).resize((80, 80), Image.Resampling.LANCZOS)
+        # img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(80, 80))
+        butncls = ctk.CTkButton(center_frame, image=img, text="",
                                           width=80, height=80, compound="left", fg_color="#D35B58",
                                           command=self.collision)
-        butnsf.grid(row=0, column=1, padx=10, pady=10)
+        butncls.grid(row=0, column=1, padx=10, pady=10)
         
-
         self.root.mainloop()
 
     def clear_screen(self):

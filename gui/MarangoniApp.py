@@ -18,14 +18,14 @@ class MarangoniApp(App):
         super().__init__(root)
 
         img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.scale)
         self.ruler.pack(padx=5, pady=5)
         self.ruler.image = img
 
         img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.boundary = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.drawcircle)
         self.boundary.pack(padx=5, pady=5)

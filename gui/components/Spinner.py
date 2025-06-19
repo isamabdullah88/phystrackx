@@ -1,6 +1,7 @@
 
 from math import floor
 from PIL import Image, ImageTk, ImageSequence
+import customtkinter as ctk
 import numpy as np
 from core import abspath
 
@@ -21,7 +22,6 @@ class SpinnerPopup:
 
     def animate(self):
         if not self.running:
-            print('after destroy')
             return
         self.index = (self.index + 1) % len(self.frames)
         self.parent.itemconfig(self.imgview, image=self.frames[self.index])
@@ -50,4 +50,9 @@ class SpinnerPopup:
 
 
 if __name__ == '__main__':
-    SpinnerPopup(None, 900, 600)
+    root = ctk.CTk()
+    root.geometry("900x600")
+    root.title("Spinner Popup Example")
+    canvas = ctk.CTkCanvas(root, width=900, height=600, bg="white")
+    canvas.pack(fill="both", expand=True)
+    SpinnerPopup(canvas, 900, 600)

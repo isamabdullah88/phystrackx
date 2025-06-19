@@ -17,24 +17,24 @@ class InterfaceApp(App):
         super().__init__(root)
         
         img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.scale)
         self.ruler.pack(padx=5, pady=5)
         self.ruler.image = img
 
         # For drawing ellipse over tracking area
-        sfimg = Image.open(abspath("assets/line.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
+        img = Image.open(abspath("assets/line.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.linebd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=sfimg, command=self.drawline)
+                                      image=img, command=self.drawline)
         self.linebd.pack(padx=5, pady=5)
         
         # For drawing rectangle over text area
-        sfimg = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        sfimg = ImageTk.PhotoImage(sfimg)
+        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=sfimg, command=self.drawrect)
+                                      image=img, command=self.drawrect)
         self.rectbd.pack(padx=5, pady=5)
         
 
@@ -105,29 +105,6 @@ class InterfaceApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    # def markaxes(self):
-
-    #     def update_axes(event):
-    #         """ Update the axes to follow the mouse cursor. """
-    #         self.videoview.delete("axes")  # Remove old axes
-    #         x, y = event.x, event.y  # Get mouse position
-
-    #         # Draw new axes centered on mouse position
-    #         self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-    #         self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
-
-    #     def store_click(event):
-    #         """ Store the clicked coordinates and draw a point. """
-    #         x, y = event.x, event.y
-
-    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
-
-    #         self.videoview.unbind("<Motion>")
-    #         self.videoview.unbind("<Button>")
-
-    #     self.videoview.bind("<Motion>", update_axes)
-    #     self.videoview.bind("<Button>", store_click)
-    
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
@@ -173,7 +150,6 @@ class InterfaceApp(App):
                 self.videoview.delete(self._ctkline)
                 self._ctkline = None
                 # self._lcoords = []
-                print('Line cleared')
             
             self.videoview.unbind("<Button>")
             self.videoview.unbind("<Motion>")
