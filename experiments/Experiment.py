@@ -1,4 +1,7 @@
 
+import sys
+import os
+
 from itertools import groupby
 from math import floor
 import cv2
@@ -8,6 +11,16 @@ from media import VideoReader
 
 class Experiment:
     def __init__(self):
+        
+        # if not sys.stdout or not sys.stdout.isatty():
+            # Create a logs directory if it doesn't exist
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
+
+        # Redirect standard output and standard error to log files
+        sys.stdout = open("logs/stdout.log", "a")
+        sys.stderr = open("logs/stderr.log", "a")
+        
         self._vidreader = None
         self.fwidth = None
         self.fheight = None
