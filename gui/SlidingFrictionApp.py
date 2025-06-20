@@ -50,7 +50,7 @@ class SlidingFrictionApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-sfriction.mp4')
-        self.sfriction = SlidingFriction(trackpath=self._trackpath)
+        self.sfriction = SlidingFriction(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
         
 
     def load_video(self, videopath):

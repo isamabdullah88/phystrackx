@@ -50,7 +50,7 @@ class CollisionApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-collision.mp4')
-        self.collision = Collision(trackpath=self._trackpath)
+        self.collision = Collision(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
         
 
     def load_video(self, videopath):
