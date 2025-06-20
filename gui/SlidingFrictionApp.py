@@ -146,6 +146,7 @@ class SlidingFrictionApp(App):
                     ox=self.ox, oy=self.oy, scale=scale, fps=self.sfriction.fps)
         plot.plotx()
         plot.plotdrv()
+        plot.plotdrv2()
         plot.show()
 
 

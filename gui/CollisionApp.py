@@ -177,6 +177,7 @@ class CollisionApp(App):
                     ox=self.ox, oy=self.oy, scale=scale, fps=self.collision.fps)
         plot.plotx()
         plot.plotdrv()
+        plot.plotdrv2()
         plot.show()
 
 

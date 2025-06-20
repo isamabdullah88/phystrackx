@@ -49,6 +49,7 @@ class Experiment:
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
+        self.fps = self._vidreader.fps
         print('frame count: ', self.fcount)
 
 
