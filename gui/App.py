@@ -129,9 +129,6 @@ class App:
         return frame
 
     def plot(self):
-        self.plotx()
-
-    def plotx(self):
         pass
 
     def onclose(self):

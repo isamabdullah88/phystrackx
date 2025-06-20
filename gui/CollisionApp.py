@@ -174,7 +174,7 @@ class CollisionApp(App):
         if self.scruler is not None:
             scale = self.scruler.scalef
         plot = Plot(self.collision.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale)
+                    ox=self.ox, oy=self.oy, scale=scale, fps=self.collision.fps)
         plot.plotx()
         plot.plotdrv()
         plot.show()

@@ -134,7 +134,7 @@ class SlidingFrictionApp(App):
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
 
-    def plotx(self):
+    def plot(self):
         if len(self.sfriction.trackpts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
@@ -143,7 +143,7 @@ class SlidingFrictionApp(App):
         if self.scruler is not None:
             scale = self.scruler.scalef
         plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale)
+                    ox=self.ox, oy=self.oy, scale=scale, fps=self.sfriction.fps)
         plot.plotx()
         plot.plotdrv()
         plot.show()
