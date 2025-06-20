@@ -59,15 +59,29 @@ class Plot:
     def plotx(self):
         self.plot(self._datatr, title="Data")
         
-    def plotdrv(self):        
+    def plotdrv(self):
         datadrv = []
         
         for i in range(self._datanum):
-            dx = np.gradient(np.squeeze(self._datatr[i][:,0])).reshape(-1, 1)
-            dy = np.gradient(np.squeeze(self._datatr[i][:,1])).reshape(-1, 1)
-            datadrv.append(np.hstack((dx,dy)))
+            dx_dt = np.gradient(self._datatr[i][:,0], self._t)
+            dy_dt = np.gradient(self._datatr[i][:,1], self._t)
+            datadrv.append(np.vstack((dx_dt,dy_dt)).reshape(-1, 2))
         
-        self.plot(datadrv, title="Derivative")
+        self.plot(datadrv, title="1st Derivative")
+        
+    def plotdrv2(self):
+        datadrv = []
+        
+        for i in range(self._datanum):
+            dx_dt = np.gradient(self._datatr[i][:,0], self._t)
+            dx2_dt = np.gradient(dx_dt, self._t)
+            
+            dy_dt = np.gradient(self._datatr[i][:,1], self._t)
+            dy2_dt = np.gradient(dy_dt, self._t)
+            
+            datadrv.append(np.vstack((dx2_dt,dy2_dt)).reshape(-1, 2))
+        
+        self.plot(datadrv, title="2nd Derivative")
         
     def plot(self, trackpts, title="Data"):
 
@@ -103,3 +117,11 @@ class Plot:
         
     def show(self):
         plt.show()
+        
+        
+if __name__ == "__main__":
+    plot = Plot([np.random.rand(100, 2) * 100], 640, 480, 640, 480)
+    plot.plotx()
+    plot.plotdrv()
+    plot.plotdrv2()
+    plot.show()
