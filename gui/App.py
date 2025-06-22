@@ -11,12 +11,22 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title("PhysTrackX")
-        self.cwidth = 900
-        self.cheight = 600
+        
+        self.cwidth = 1200
+        self.cheight = 800
+        
         self.padx = floor(self.cwidth * 0.01)
         self.pady = floor(self.cheight * 0.01)
         
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
+        
+        self.twidth = floor(self.cwidth * 0.10)
+        self.theight = self.cheight
+        self.seekbarh = floor(self.cheight * 0.1)
+        self.btnsize = self.twidth - 40
+        
+        self.vwidth = self.cwidth - self.twidth
+        self.vheight = self.theight-self.seekbarh
         
         self.toolbar()
         
@@ -30,26 +40,19 @@ class App:
         Creates a button with an image and a command.
         """
         img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        # img = ImageTk.PhotoImage(img)
+        
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
         button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                               image=img, command=command)
+                            image=img, command=command)
         button.pack(padx=5, pady=5)
         # Store the image reference to prevent garbage collection
         button.image = img
 
     def toolbar(self):
         
-        self.twidth = floor(self.cwidth * 0.12)
-        self.theight = self.cheight - 2*self.pady
-        self.seekbarh = floor(self.cheight * 0.1)
-        self.btnsize = self.twidth - 40
-        
-        self.padx = 0
-        self.pady = 0
         
         # ==== LEFT TOOLBAR PANEL ====
-        self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight, padx=self.padx, pady=self.pady)
+        self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight)
         self.scrollframe = self.scroll_toolbar.scrollframe
         
         buttons = [
@@ -62,15 +65,12 @@ class App:
         ]
         
         for imgpath, command in buttons:
-           
             self.button(imgpath, command)
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
         self.vidframe.pack(side=ctk.LEFT)
         
-        self.vwidth = self.cwidth - self.twidth
-        self.vheight = self.theight-self.seekbarh-2*self.pady
         self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         self.videoview.pack(side=ctk.TOP, expand=False)
 

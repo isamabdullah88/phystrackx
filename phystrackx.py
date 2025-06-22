@@ -9,26 +9,18 @@ customtkinter.set_default_color_theme("dark-blue")
 
 class GUI:
     def __init__(self):
-        pass
-
-    # def welcome(self):
-
-    #     root = customtkinter.CTk()
-    #     root.geometry("960x640")
-    #     welcome = WelcomeScreen(root)
-    #     root.after(500, root.destroy)  # Close welcome screen after 5 seconds
-    #     root.mainloop()
+        self.width = 1200
+        self.hegiht = 800
 
     def start(self):
         
         root = customtkinter.CTk()
-        root.geometry("960x640")
+        root.geometry(f"{self.width}x{self.hegiht}")
         menu = MenuScreen(root)
         root.mainloop()
 
 def main():
     program = GUI()
-    # program.welcome()
     program.start()
 
 
