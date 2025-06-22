@@ -1,7 +1,5 @@
-import tkinter as tk
 import customtkinter 
 
-from gui.Welcome import WelcomeScreen
 from gui.Menu import MenuScreen
 
 customtkinter.set_appearance_mode("dark")
