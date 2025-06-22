@@ -178,6 +178,7 @@ class CollisionApp(App):
         plot.plotx()
         plot.plotdrv()
         plot.plotdrv2()
+        plot.intgr()
         plot.show()
 
 

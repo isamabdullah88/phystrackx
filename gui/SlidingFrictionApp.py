@@ -147,6 +147,7 @@ class SlidingFrictionApp(App):
         plot.plotx()
         plot.plotdrv()
         plot.plotdrv2()
+        plot.intgr()
         plot.show()
 
 
