@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from .Experiment import Experiment
 from core.Rect import NormalizedRect, PixelRect
 
-class SlidingFriction(Experiment):
+class Rigid(Experiment):
     def __init__(self, trackpath, vwidth=900, vheight=600):
         super().__init__(vwidth, vheight)
         
@@ -80,7 +80,7 @@ class SlidingFriction(Experiment):
 
 
 if __name__ == '__main__':
-    sliding_friction = SlidingFriction('track-sfriction.mp4')
+    sliding_friction = Rigid('track-sfriction.mp4')
     sliding_friction.add_video("R1.mp4")
     
     rects = [PixelRect(284, 52, 23, 20)]
