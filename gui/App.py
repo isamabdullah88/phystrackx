@@ -57,6 +57,7 @@ class App:
             ("assets/axis.png", self.markaxes),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
+            ("assets/plot.png", self.savedata),
             ("assets/back.png", self.tomenu)
         ]
         
@@ -135,10 +136,16 @@ class App:
 
     def plot(self):
         pass
+    
+    def savedata(self):
+        """
+        Placeholder for saving data functionality.
+        This method should implement the logic to save the tracked data.
+        """
+        pass
 
     def onclose(self):
         self.root.destroy()
-
 
     def strack(self):
         """

@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .Rigid import RigidApp
+from .RigidApp import RigidApp
 from .NonRigid import NonRigid
 from core import abspath
 

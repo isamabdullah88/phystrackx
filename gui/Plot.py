@@ -26,8 +26,8 @@ class Plot:
         self._ox = ox
         self._oy = self._vheight - oy
         
-        samplecount = self._data[0].shape[0]
-        self._t = np.linspace(0, samplecount/fps, samplecount)
+        self.samplecount = self._data[0].shape[0]
+        self._t = np.linspace(0, self.samplecount/fps, self.samplecount)
         plt.style.use(theme)
         
         # Transform
@@ -39,6 +39,10 @@ class Plot:
             datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
             
             self._datatr.append(datatr)
+            
+    def dataprocessed(self):
+        """Returns processed data after transformation"""
+        return self._datatr
         
     def transform(self, x, y):
         """Applies transformation according to videoview, image frame and user specified frame"""
