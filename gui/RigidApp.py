@@ -8,15 +8,15 @@ from tkinter import messagebox
 from math import floor
 
 from .App import App
-from experiments.SlidingFriction import SlidingFriction
+from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
 from .components import SpinnerPopup
 from .components import CutSeekBar
 from .components import ScaleRuler
-from core import abspath
+import csv
 
-class SlidingFrictionApp(App):
+class RigidApp(App):
     def __init__(self, root):
         """
         ox, oy: Position of origin of coordinate axes specified by user in the video frame.
@@ -24,19 +24,9 @@ class SlidingFrictionApp(App):
         """
         super().__init__(root)
         
-        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=img, command=self.scale)
-        self.ruler.pack(padx=5, pady=5)
-        self.ruler.image = img
+        self.button("assets/ruler.png", self.scale)
         
-        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=img, command=self.drawrect)
-        self.rectbd.pack(padx=5, pady=5)
-        self.rectbd.image = img
+        self.button("assets/rectanglebd.png", self.drawrect)
         
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
@@ -49,22 +39,22 @@ class SlidingFrictionApp(App):
         tempdir = './temp'
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
-        self._trackpath = os.path.join(tempdir, 'track-sfriction.mp4')
-        self.sfriction = SlidingFriction(trackpath=self._trackpath)
+        self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
+        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
         
 
     def load_video(self, videopath):
-        self.sfriction.add_video(videopath)
+        self.rigid.add_video(videopath)
         
-        self.seekbar.setcount(self.sfriction.fcount)
+        self.seekbar.setcount(self.rigid.fcount)
 
-        frame1 = self.sfriction.frame(0)
+        frame1 = self.rigid.frame(0)
         self.dispframe(frame1)
 
     def dispframe(self, frame=None):
         """Displays the first frame in videoviewer."""
-        fwidth = self.sfriction.fwidth
-        fheight = self.sfriction.fheight
+        fwidth = self.rigid.fwidth
+        fheight = self.rigid.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
         
@@ -86,9 +76,9 @@ class SlidingFrictionApp(App):
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
 
-        frame = self.sfriction.frame(index=self.seekbar.idx)
-        fwidth = self.sfriction.fwidth
-        fheight = self.sfriction.fheight
+        frame = self.rigid.frame(index=self.seekbar.idx)
+        fwidth = self.rigid.fwidth
+        fheight = self.rigid.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
@@ -134,26 +124,11 @@ class SlidingFrictionApp(App):
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
 
-    def plotx(self):
-        if len(self.sfriction.trackpts) < 1:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
-            return
-
-        scale = 1
-        if self.scruler is not None:
-            scale = self.scruler.scalef
-        plot = Plot(self.sfriction.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale)
-        plot.plotx()
-        plot.plotdrv()
-        plot.show()
-
-
     def strack(self):
         """
-        Detects and tracks radius for the main sfriction circle using classical techniques.
+        Detects and tracks radius for the main rigid circle using classical techniques.
         """
-        if self.sfriction.fcount < 10:
+        if self.rigid.fcount < 10:
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
@@ -162,7 +137,7 @@ class SlidingFrictionApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.sfriction.track(self._rects, startidx, endidx)
+            self.rigid.track(self._rects, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
@@ -174,11 +149,57 @@ class SlidingFrictionApp(App):
         """Clears almost everything"""
         super().tomenu()
         
-        del self.sfriction
-        self.sfriction = SlidingFriction(trackpath=self._trackpath)
+        del self.rigid
+        self.rigid = Rigid(trackpath=self._trackpath)
         
         self.scruler = None
         self._rcoords = None
         self._rects = []
         
         self.seekbar.setcount(100)
+        
+    
+    def plot(self):
+        if len(self.rigid.trackpts) < 1:
+            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+            return
+
+        scale = 1
+        if self.scruler is not None:
+            scale = self.scruler.scalef
+        plot = Plot(self.rigid.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
+                    ox=self.ox, oy=self.oy, scale=scale, fps=self.rigid.fps)
+        plot.plotx()
+        plot.plotdrv()
+        plot.plotdrv2()
+        plot.intgr()
+        plot.show()
+
+    def savedata(self):
+        """
+        Saves the tracked data to a CSV file.
+        """
+        if len(self.rigid.trackpts) < 1:
+            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+            return
+
+        filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if not filepath:
+            return
+                
+        scale = 1
+        if self.scruler is not None:
+            scale = self.scruler.scalef
+        plot = Plot(self.rigid.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
+                    ox=self.ox, oy=self.oy, scale=scale, fps=self.rigid.fps)
+
+        datalist = plot.dataprocessed()
+        
+        with open(filepath, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            for data in datalist:
+                writer.writerow(["Frame", "Centroid X (real units)", "Centroid Y (real units)"])
+                for i in range(plot.samplecount):
+                    cx, cy = data[i]
+                    writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
+        messagebox.showinfo("Success", "Tracked data saved successfully.")

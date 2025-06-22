@@ -50,7 +50,7 @@ class CollisionApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-collision.mp4')
-        self.collision = Collision(trackpath=self._trackpath)
+        self.collision = Collision(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
         
 
     def load_video(self, videopath):
@@ -174,9 +174,11 @@ class CollisionApp(App):
         if self.scruler is not None:
             scale = self.scruler.scalef
         plot = Plot(self.collision.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale)
+                    ox=self.ox, oy=self.oy, scale=scale, fps=self.collision.fps)
         plot.plotx()
         plot.plotdrv()
+        plot.plotdrv2()
+        plot.intgr()
         plot.show()
 
 

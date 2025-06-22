@@ -10,31 +10,46 @@ import numpy as np
 from media import VideoReader
 
 class Experiment:
-    def __init__(self):
+    def __init__(self, vwidth=900, vheight=600):
         
-        # if not sys.stdout or not sys.stdout.isatty():
+        if not sys.stdout or not sys.stdout.isatty():
             # Create a logs directory if it doesn't exist
-        if not os.path.exists("logs"):
-            os.makedirs("logs")
+            if not os.path.exists("logs"):
+                os.makedirs("logs")
 
-        # Redirect standard output and standard error to log files
-        sys.stdout = open("logs/stdout.log", "a")
-        sys.stderr = open("logs/stderr.log", "a")
+            # Redirect standard output and standard error to log files
+            sys.stdout = open("logs/stdout.log", "a")
+            sys.stderr = open("logs/stderr.log", "a")
         
         self._vidreader = None
         self.fwidth = None
         self.fheight = None
         self.fcount = 0
         
+        self.vwidth = vwidth
+        self.vheight = vheight
+        
         self.active_duration = []
 
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
+        
+    
+    def resize(self):
+        """Resize frame shape to videoview height."""
+        if self.fheight <= self.vheight:
+            return self.fwidth, self.fheight
+        
+        self.aspratio = self.fwidth/self.fheight
+
+        self.fheight = self.vheight
+        self.fwidth = floor(self.aspratio * self.fheight)
 
     def add_video(self, video_path):
         self._vidreader = VideoReader(video_path)
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
+        self.fps = self._vidreader.fps
         print('frame count: ', self.fcount)
 
 

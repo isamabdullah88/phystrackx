@@ -2,7 +2,7 @@ from tkinter import *
 import customtkinter as ctk
 from PIL import Image, ImageTk
 
-from .SlidingFrictionApp import SlidingFrictionApp
+from .RigidApp import SlidingFrictionApp
 from .CollisionApp import CollisionApp
 from core import abspath
 # customtkinter.set_appearance_mode("dark")

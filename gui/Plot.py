@@ -18,14 +18,16 @@ class Plot:
         self._fps = 24
         self._fwidth = fwidth
         self._fheight = fheight
-        self._ox = ox
-        self._oy = oy
         self._vwidth = vwidth
         self._vheight = vheight
         self._scale = scale
         
-        samplecount = self._data[0].shape[0]
-        self._t = np.linspace(0, samplecount/fps, samplecount)
+        # Flip y-axis for correct orientation
+        self._ox = ox
+        self._oy = self._vheight - oy
+        
+        self.samplecount = self._data[0].shape[0]
+        self._t = np.linspace(0, self.samplecount/fps, self.samplecount)
         plt.style.use(theme)
         
         # Transform
@@ -35,7 +37,12 @@ class Plot:
             
             datax, datay = self.transform(data[:,0], data[:,1])
             datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
+            
             self._datatr.append(datatr)
+            
+    def dataprocessed(self):
+        """Returns processed data after transformation"""
+        return self._datatr
         
     def transform(self, x, y):
         """Applies transformation according to videoview, image frame and user specified frame"""
@@ -44,7 +51,6 @@ class Plot:
         
         # Invert y coordinates
         y = self._fheight - y
-        self._oy = self._vheight - self._oy
         
         # Transform
         x = x - (self._ox - fvx)
@@ -59,15 +65,41 @@ class Plot:
     def plotx(self):
         self.plot(self._datatr, title="Data")
         
-    def plotdrv(self):        
+    def intgr(self):
+        dataintr = []
+        
+        for i in range(self._datanum):
+            
+            x_intg = np.cumsum(self._datatr[i][:,0]).reshape(-1,1) * (self._t[1] - self._t[0])
+            y_intg = np.cumsum(self._datatr[i][:,1]).reshape(-1,1) * (self._t[1] - self._t[0])
+            
+            dataintr.append(np.hstack((x_intg,y_intg)).reshape(-1, 2))
+        
+        self.plot(dataintr, title="Integral")
+    
+    def plotdrv(self):
         datadrv = []
         
         for i in range(self._datanum):
-            dx = np.gradient(np.squeeze(self._datatr[i][:,0])).reshape(-1, 1)
-            dy = np.gradient(np.squeeze(self._datatr[i][:,1])).reshape(-1, 1)
-            datadrv.append(np.hstack((dx,dy)))
+            dx_dt = np.gradient(self._datatr[i][:,0], self._t).reshape(-1, 1)
+            dy_dt = np.gradient(self._datatr[i][:,1], self._t).reshape(-1, 1)
+            datadrv.append(np.hstack((dx_dt,dy_dt)).reshape(-1, 2))
         
-        self.plot(datadrv, title="Derivative")
+        self.plot(datadrv, title="1st Derivative")
+        
+    def plotdrv2(self):
+        datadrv = []
+        
+        for i in range(self._datanum):
+            dx_dt = np.gradient(self._datatr[i][:,0], self._t)
+            dx2_dt = np.gradient(dx_dt, self._t)
+            
+            dy_dt = np.gradient(self._datatr[i][:,1], self._t)
+            dy2_dt = np.gradient(dy_dt, self._t)
+            
+            datadrv.append(np.vstack((dx2_dt,dy2_dt)).reshape(-1, 2))
+        
+        self.plot(datadrv, title="2nd Derivative")
         
     def plot(self, trackpts, title="Data"):
 
@@ -79,7 +111,6 @@ class Plot:
             xcoords = trackpt[:, 0]
             ycoords = trackpt[:, 1]
 
-            # title = r"$\mathbf{T_" + str(i+1) + r"}$"
             axes[i][0].plot(self._t, xcoords, '-m')
             axes[i][0].set_xlabel(r"$\mathbf{t}$")
             axes[i][0].set_ylabel(r"$\mathbf{x}$")
@@ -103,3 +134,13 @@ class Plot:
         
     def show(self):
         plt.show()
+        
+        
+if __name__ == "__main__":
+    data = [np.random.rand(100, 2) * 100]
+    plot = Plot(data, 640, 480, 640, 480)
+    plot.plotx()
+    # plot.plotdrv()
+    # plot.plotdrv2()
+    plot.intgr()
+    plot.show()

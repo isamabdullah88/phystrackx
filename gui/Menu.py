@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .Rigid import Rigid
+from .RigidApp import RigidApp
 from .NonRigid import NonRigid
 from core import abspath
 
@@ -32,21 +32,19 @@ class MenuScreen:
 
         # === Create grid of icon buttons ===
         
-        img = Image.open(abspath("assets/rigid.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        # img = ImageTk.PhotoImage(img)
-        img = ctk.CTkImage(dark_image=img, size=(80, 80))
-        butnrgd = ctk.CTkButton(center_frame, image=img, text="",
-                                          width=80, height=80, compound="left",
-                                          command=self.rigid)
-        butnrgd.grid(row=0, column=0, padx=10, pady=10)
+        self.button(center_frame, "assets/rigid.png", self.rigid, 0, 0)
+        
+        self.button(center_frame, "assets/nonrigid.png", self.nonrigid, 0, 1)
 
-        img = Image.open(abspath("assets/nonrigid.png")).resize((80, 80), Image.Resampling.LANCZOS)
-        # img = ImageTk.PhotoImage(img)
-        img = ctk.CTkImage(dark_image=img, size=(80, 80))
-        butnnrgd = ctk.CTkButton(center_frame, image=img, text="",
-                                          width=80, height=80, compound="left", fg_color="#D35B58",
-                                          command=self.nonrigid)
-        butnnrgd.grid(row=0, column=1, padx=10, pady=10)
+    def button(self, frame, imgpath, command, row, col, btnsize=80):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(dark_image=img, size=(btnsize, btnsize))
+        button = ctk.CTkButton(frame, image=img, text="", width=btnsize, height=btnsize,
+                               compound="left", command=command)
+        button.grid(row=row, column=col, padx=10, pady=10)
 
     def displogo(self, root):
         # Load the image
@@ -79,12 +77,17 @@ class MenuScreen:
     def rigid(self):
         self.root.after_cancel(self._tid)  # Stop the text animation
         # self.root.destroy()
+        self.clear_screen()
         
-        rigid = Rigid(self.root)
+        rigid = RigidApp(self.root)
         
 
     def nonrigid(self):
         self.root.after_cancel(self._tid)  # Stop the text animation
-        self.root.destroy()
+        # self.root.destroy()
         
-        NonRigid()
+        NonRigid(self.root)
+        
+    def clear_screen(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()

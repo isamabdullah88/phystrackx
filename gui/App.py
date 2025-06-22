@@ -24,6 +24,19 @@ class App:
         self.ox = self.oy = None
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
+        
+    def button(self, imgpath, command):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        # img = ImageTk.PhotoImage(img)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
+        button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                               image=img, command=command)
+        button.pack(padx=5, pady=5)
+        # Store the image reference to prevent garbage collection
+        button.image = img
 
     def toolbar(self):
         
@@ -44,20 +57,13 @@ class App:
             ("assets/axis.png", self.markaxes),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
+            ("assets/save.png", self.savedata),
             ("assets/back.png", self.tomenu)
         ]
         
         for imgpath, command in buttons:
-            img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-            # img = ImageTk.PhotoImage(img)
-            img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
-            button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                   image=img, command=command)
-            button.pack(padx=5, pady=5)
-            # Store the image reference to prevent garbage collection
-            button.image = img
-            
-        # scroll_toolbar.pack()
+           
+            self.button(imgpath, command)
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
@@ -77,8 +83,9 @@ class App:
     
     def markaxes(self):
         
-        self._x = self.videoview.create_text(0, 0, text="x", fill="red", font=("Arial", 15, "bold"))
-        self._y = self.videoview.create_text(0, 0, text="y", fill="blue", font=("Arial", 15, "bold"))
+        self.videoview.delete("oval")  # Remove old oval if exists
+        self.videoview.delete("axes")  # Remove old axes if exists
+        
         
         def onmove(event):
             """ Update the axes to follow the mouse cursor. """
@@ -89,8 +96,10 @@ class App:
             self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
             self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
             
-            self.videoview.coords(self._x, self.vwidth-50, y+10)
-            self.videoview.coords(self._y, x-10, self.vheight-50)
+            # self.videoview.coords(self._x, self.vwidth-50, y+10)
+            # self.videoview.coords(self._y, x-10, self.vheight-50)
+            self.videoview.create_text(self.vwidth-50, y+10, text="x", fill="red", font=("Arial", 15, "bold"), tags="axes")
+            self.videoview.create_text(x-10, self.vheight-50, text="y", fill="blue", font=("Arial", 15, "bold"), tags="axes")
 
         def onclick(event):
             """ Store the clicked coordinates and draw a point. """
@@ -99,13 +108,13 @@ class App:
             self.ox = x
             self.oy = y
             
-            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
+            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", tags="oval")  # Draw a small dot
 
             self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Button>")
+            self.videoview.unbind("<Button-1>")
 
         self.videoview.bind("<Motion>", onmove)
-        self.videoview.bind("<Button>", onclick)
+        self.videoview.bind("<Button-1>", onclick)
 
 
     def resizeframe(self, frame, fwidth, fheight):
@@ -126,14 +135,17 @@ class App:
         return frame
 
     def plot(self):
-        self.plotx()
-
-    def plotx(self):
+        pass
+    
+    def savedata(self):
+        """
+        Placeholder for saving data functionality.
+        This method should implement the logic to save the tracked data.
+        """
         pass
 
     def onclose(self):
         self.root.destroy()
-
 
     def strack(self):
         """

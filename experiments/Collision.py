@@ -6,23 +6,11 @@ from .Experiment import Experiment
 from core.Rect import NormalizedRect
 
 class Collision(Experiment):
-    def __init__(self, trackpath):
-        super().__init__()
+    def __init__(self, trackpath, vwidth=900, vheight=600):
+        super().__init__(vwidth, vheight)
         
         self._trackpath = trackpath
         self.trackpts = []
-        
-    
-    def resize(self):
-        """Resize frame shape to lower"""
-        if self.fheight <= 360:
-            return self.fwidth, self.fheight
-        
-        self.aspratio = self.fwidth/self.fheight
-
-        self.fheight = 360
-        self.fwidth = floor(self.aspratio * self.fheight)
-    
     
     def track(self, rects:list[NormalizedRect], startidx=0, endidx=0):
         

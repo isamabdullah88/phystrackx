@@ -6,24 +6,12 @@ import matplotlib.pyplot as plt
 from .Experiment import Experiment
 from core.Rect import NormalizedRect, PixelRect
 
-class SlidingFriction(Experiment):
-    def __init__(self, trackpath):
-        super().__init__()
+class Rigid(Experiment):
+    def __init__(self, trackpath, vwidth=900, vheight=600):
+        super().__init__(vwidth, vheight)
         
         self._trackpath = trackpath
-        self.trackpts = []
-        
-    
-    def resize(self):
-        """Resize frame shape to lower"""
-        if self.fheight <= 360:
-            return self.fwidth, self.fheight
-        
-        self.aspratio = self.fwidth/self.fheight
-
-        self.fheight = 360
-        self.fwidth = floor(self.aspratio * self.fheight)
-    
+        self.trackpts = []    
     
     def track(self, rects:list[NormalizedRect], startidx=0, endidx=0):
         
@@ -65,6 +53,7 @@ class SlidingFriction(Experiment):
         fprev = None
         for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount-1):
             frame = self._vidreader.read()
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             if fprev is None:
@@ -91,7 +80,7 @@ class SlidingFriction(Experiment):
 
 
 if __name__ == '__main__':
-    sliding_friction = SlidingFriction('track-sfriction.mp4')
+    sliding_friction = Rigid('track-sfriction.mp4')
     sliding_friction.add_video("R1.mp4")
     
     rects = [PixelRect(284, 52, 23, 20)]
