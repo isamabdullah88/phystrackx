@@ -11,7 +11,7 @@ class GUI:
         self.hegiht = 800
 
     def start(self):
-        
+
         root = customtkinter.CTk()
         root.geometry(f"{self.width}x{self.hegiht}")
         menu = MenuScreen(root)
