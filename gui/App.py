@@ -57,7 +57,7 @@ class App:
             ("assets/axis.png", self.markaxes),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
-            ("assets/plot.png", self.savedata),
+            ("assets/save.png", self.savedata),
             ("assets/back.png", self.tomenu)
         ]
         
