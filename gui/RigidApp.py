@@ -11,9 +11,7 @@ from .App import App
 from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components import SpinnerPopup
-from .components import CutSeekBar
-from .components import ScaleRuler
+from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar
 import csv
 
 class RigidApp(App):
@@ -33,6 +31,11 @@ class RigidApp(App):
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
         self.scroll_toolbar.pack()
+        
+        # Progress bar for tracking
+        self._progressbarh = 20
+        self.progress = ctk.IntVar()
+        self.progress.set(0)
         
         self.scruler = None
         self._rcoords = None
@@ -165,6 +168,15 @@ class RigidApp(App):
         self.videoview.bind("<ButtonRelease-1>", onrelease)
         
     
+    def update_progress(self):
+        pc = self.progress.get()
+        self.progressbar.set(pc)
+        
+        if pc < 100:
+            self.root.after(100, self.update_progress)
+        else:
+            self.progressbar.set(100)
+            
 
     def strack(self):
         """
@@ -174,19 +186,25 @@ class RigidApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
+        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight-self._progressbarh)
+        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
 
-        def trackbg(popup):
+        def trackbg(popup, progressbar):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
             
-            self.rigid.track(self._rects, self._ocrs, startidx, endidx)
+            self.rigid.track(self._rects, self._ocrs, startidx, endidx, self.progress)
             
             self.root.after(0, popup.destroy())
+            self.root.after(0, progressbar.destroy())
 
             self.load_video(self._trackpath)
 
-        threading.Thread(target=trackbg, args=(self.popup,)).start()
+        threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
+        # threading.Thread(target=trackbg, args=(self.progressbar,)).start()
+        
+        self.update_progress()
+        
         
     def tomenu(self):
         """Clears almost everything"""

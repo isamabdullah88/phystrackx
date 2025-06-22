@@ -30,7 +30,7 @@ class Rigid(Experiment):
         cv2.putText(frame, txt, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         
     
-    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], startidx=0, endidx=0):
+    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], startidx=0, endidx=0, progress=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
         # Import for OCR detection
@@ -103,6 +103,9 @@ class Rigid(Experiment):
             fprev = fgray.copy()
             
             self._videowriter.write(frame)
+            
+            if progress is not None:
+                progress.set((i / (fcount - 1)) * 100)
             
         self._videowriter.release()
 
