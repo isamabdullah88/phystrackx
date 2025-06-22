@@ -3,7 +3,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .Rigid import Rigid
+from .Rigid import RigidApp
 from .NonRigid import NonRigid
 from core import abspath
 
@@ -79,8 +79,9 @@ class MenuScreen:
     def rigid(self):
         self.root.after_cancel(self._tid)  # Stop the text animation
         # self.root.destroy()
+        self.clear_screen()
         
-        rigid = Rigid(self.root)
+        rigid = RigidApp(self.root)
         
 
     def nonrigid(self):
@@ -88,3 +89,7 @@ class MenuScreen:
         self.root.destroy()
         
         NonRigid()
+        
+    def clear_screen(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
