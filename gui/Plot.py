@@ -37,7 +37,7 @@ class Plot:
             
             datax, datay = self.transform(data[:,0], data[:,1])
             datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
-            print("Data shape: ", datatr.shape)
+            
             self._datatr.append(datatr)
         
     def transform(self, x, y):
@@ -103,14 +103,10 @@ class Plot:
 
         for i in range(self._datanum):
             trackpt = trackpts[i]
-            print("Track point shape: ", trackpt.shape)
             
             xcoords = trackpt[:, 0]
             ycoords = trackpt[:, 1]
-            print('X-coordinates:', xcoords.shape, 'Y-coordinates:', ycoords.shape)
-            print('Time vector:', self._t.shape)
 
-            # title = r"$\mathbf{T_" + str(i+1) + r"}$"
             axes[i][0].plot(self._t, xcoords, '-m')
             axes[i][0].set_xlabel(r"$\mathbf{t}$")
             axes[i][0].set_ylabel(r"$\mathbf{x}$")
@@ -137,11 +133,6 @@ class Plot:
         
         
 if __name__ == "__main__":
-    # a = np.arange(10)
-    # b = np.cumsum(a)
-    # plt.plot(a)
-    # plt.plot(b)
-    # plt.show()
     data = [np.random.rand(100, 2) * 100]
     plot = Plot(data, 640, 480, 640, 480)
     plot.plotx()
@@ -149,6 +140,3 @@ if __name__ == "__main__":
     # plot.plotdrv2()
     plot.intgr()
     plot.show()
-    # plt.figure()
-    # plt.plot(np.cumsum(data[0][:,0]))
-    # plt.show()
