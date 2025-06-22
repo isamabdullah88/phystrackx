@@ -28,6 +28,8 @@ class RigidApp(App):
         
         self.button("assets/rectanglebd.png", self.drawrect)
         
+        self.button("assets/ocr.png", self.drawocr)
+        
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
         self.scroll_toolbar.pack()
@@ -35,6 +37,7 @@ class RigidApp(App):
         self.scruler = None
         self._rcoords = None
         self._rects = []
+        self._ocrs = []
         
         tempdir = './temp'
         if not os.path.exists(tempdir):
@@ -123,6 +126,45 @@ class RigidApp(App):
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
+        
+    
+    def drawocr(self):
+        """Draws rectangle for OCR"""
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self._ctkbox = None
+        
+        def ondown(event):
+            
+            self._rcoords = (event.x, event.y)
+            
+            self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            
+        def inrect(event):
+            sx, sy = self._rcoords
+            ex, ey = (event.x, event.y)
+
+            self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
+            
+        def onrelease(event):
+            sx, sy = self._rcoords
+            ex, ey = (event.x, event.y)
+
+            rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
+            self._ocrs.append(rect.pix2norm(self.fwidth, self.fheight))
+            
+            self.videoview.unbind("<Button-1>")
+            self.videoview.unbind("<B1-Motion>")
+            self.videoview.unbind("<ButtonRelease-1>")
+            
+
+        self.videoview.bind("<Button-1>", ondown)
+        self.videoview.bind("<B1-Motion>", inrect)
+        self.videoview.bind("<ButtonRelease-1>", onrelease)
+        
+    
 
     def strack(self):
         """
@@ -137,7 +179,8 @@ class RigidApp(App):
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.rigid.track(self._rects, startidx, endidx)
+            
+            self.rigid.track(self._rects, self._ocrs, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
