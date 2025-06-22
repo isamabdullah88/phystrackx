@@ -107,28 +107,6 @@ class BalloonApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    # def markaxes(self):
-
-    #     def update_axes(event):
-    #         """ Update the axes to follow the mouse cursor. """
-    #         self.videoview.delete("axes")  # Remove old axes
-    #         x, y = event.x, event.y  # Get mouse position
-
-    #         # Draw new axes centered on mouse position
-    #         self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-    #         self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
-
-    #     def store_click(event):
-    #         """ Store the clicked coordinates and draw a point. """
-    #         x, y = event.x, event.y
-
-    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
-
-    #         self.videoview.unbind("<Motion>")
-    #         self.videoview.unbind("<Button>")
-
-    #     self.videoview.bind("<Motion>", update_axes)
-    #     self.videoview.bind("<Button>", store_click)
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 

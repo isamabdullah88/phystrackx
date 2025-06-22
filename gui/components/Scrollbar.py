@@ -2,11 +2,10 @@
 import customtkinter as ctk
 
 class ScrollBar:
-    def __init__(self, root, width=200, height=200, padx=10, pady=10):
+    def __init__(self, root, width=200, height=200):
         self.width = width - 20
         self.height = height
-        self.padx = padx
-        self.pady = pady
+        
         toolbar = ctk.CTkFrame(root, width=width, height=height)
         toolbar.pack_propagate(False)
         toolbar.pack(side=ctk.LEFT)
