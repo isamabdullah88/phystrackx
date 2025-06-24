@@ -1,10 +1,12 @@
 from math import floor
 import customtkinter as ctk
+import tkinter as tk
 import cv2
-from PIL import Image, ImageTk
+from PIL import Image
+import numpy as np
 
 from tkinter import filedialog
-from .components import ScrollBar
+from .components import ScrollBar, Axes
 from core import abspath
 
 class App:
@@ -32,6 +34,9 @@ class App:
         
         # Global Coordinate Frame
         self.ox = self.oy = None
+        self.theta = 0
+        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
+        
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
@@ -47,6 +52,8 @@ class App:
         button.pack(padx=5, pady=5)
         # Store the image reference to prevent garbage collection
         button.image = img
+        
+        return button
 
     def toolbar(self):
         
@@ -82,39 +89,45 @@ class App:
             self.load_video(videopath)
     
     def markaxes(self):
+        self.axes.markaxes()
+        # self.videoview.delete("oval")  # Remove old oval if exists
+        # self.videoview.delete("axes")  # Remove old axes if exists
         
-        self.videoview.delete("oval")  # Remove old oval if exists
-        self.videoview.delete("axes")  # Remove old axes if exists
         
-        
-        def onmove(event):
-            """ Update the axes to follow the mouse cursor. """
-            self.videoview.delete("axes")  # Remove old axes
-            x, y = event.x, event.y  # Get mouse position
-
-            # Draw new axes centered on mouse position
-            self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
-            self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
+        # def onmove(event):
+        #     """ Update the axes to follow the mouse cursor. """
+        #     self.videoview.delete("axes")  # Remove old axes
+        #     x, y = event.x, event.y  # Get mouse position
             
-            # self.videoview.coords(self._x, self.vwidth-50, y+10)
-            # self.videoview.coords(self._y, x-10, self.vheight-50)
-            self.videoview.create_text(self.vwidth-50, y+10, text="x", fill="red", font=("Arial", 15, "bold"), tags="axes")
-            self.videoview.create_text(x-10, self.vheight-50, text="y", fill="blue", font=("Arial", 15, "bold"), tags="axes")
-
-        def onclick(event):
-            """ Store the clicked coordinates and draw a point. """
-            x, y = event.x, event.y
             
-            self.ox = x
-            self.oy = y
+        #     x1 = self.vwidth * np.cos(np.deg2rad(self.theta)) + self.vheight * np.sin(np.deg2rad(self.theta))
+        #     y1 = -self.vwidth * np.sin(np.deg2rad(self.theta)) + self.vheight * np.cos(np.deg2rad(self.theta))
+
+        #     # Draw new axes centered on mouse position
+        #     self.videoview.create_line(0, y, self.vwidth, y, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+        #     self.videoview.create_line(x, self.vheight, x, 0, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
             
-            self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", tags="oval")  # Draw a small dot
+        #     # self.videoview.coords(self._x, self.vwidth-50, y+10)
+        #     # self.videoview.coords(self._y, x-10, self.vheight-50)
+        #     self.videoview.create_text(self.vwidth-50, y+10, text="x", fill="red", font=("Arial", 15, "bold"), tags="axes")
+        #     self.videoview.create_text(x-10, self.vheight-50, text="y", fill="blue", font=("Arial", 15, "bold"), tags="axes")
 
-            self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Button-1>")
+        # def onclick(event):
+        #     """ Store the clicked coordinates and draw a point. """
+        #     x, y = event.x, event.y
+            
+        #     self.ox = x
+        #     self.oy = y
+            
+        #     self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", tags="oval")  # Draw a small dot
 
-        self.videoview.bind("<Motion>", onmove)
-        self.videoview.bind("<Button-1>", onclick)
+        #     self.videoview.unbind("<Motion>")
+        #     self.videoview.unbind("<Button-1>")
+            
+        #     self.rotatebtn.pack()
+
+        # self.videoview.bind("<Motion>", onmove)
+        # self.videoview.bind("<Button-1>", onclick)
 
 
     def resizeframe(self, frame, fwidth, fheight):
