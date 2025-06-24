@@ -102,7 +102,7 @@ class RigidApp(App):
         def ondown(event):
             # if self._ctkbox is not None:
             #     self.videoview.delete(self._ctkbox)
-            self._ctbox = None
+            # self._ctbox = None
             
             self._rcoords = (event.x, event.y)
             
@@ -129,8 +129,8 @@ class RigidApp(App):
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", inrect)
         self.videoview.bind("<ButtonRelease-1>", onrelease)
-        
-    
+
+
     def drawocr(self):
         """Draws rectangle for OCR"""
         if self.rigid.fcount < 10:
