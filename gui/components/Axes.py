@@ -11,7 +11,7 @@ class Axes:
         self.theta = tk.DoubleVar(value=0)  # Angle of rotation in degrees
         
         self.ox = 0
-        self.oy = 0
+        self.oy = self.vheight
         
         self.slider = ttk.Scale(self.root, from_=-180, to=0, orient='horizontal', variable=self.theta,
                             command=self.rotate)
