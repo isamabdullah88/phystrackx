@@ -53,23 +53,6 @@ class Plot:
         x = x + fvx
         y = y + fvy
         
-        """
-        # Invert y coordinates
-        y = self._vheight - y
-        oy = self._vheight - oy
-        
-        # Translate to canvas origin
-        x = x - ox
-        y = y - oy
-        
-        # Rotate coordinates
-        x, y = axes.rotatez(x, y)
-        
-        # Translate back
-        x = x + ox
-        y = y + oy
-        """
-        
         x, y = axes.canvas2reg(x, y, ox, oy)
         
         # Inverse rotate points

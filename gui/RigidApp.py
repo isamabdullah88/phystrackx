@@ -69,13 +69,6 @@ class RigidApp(App):
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
-        
-        # Default coordinate system
-        if self.ox is None:
-            self.ox = self.fx
-        
-        if self.oy is None:
-            self.oy = self.fy + self.fheight
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
@@ -99,11 +92,7 @@ class RigidApp(App):
         """Draws rectangle with simple lines"""
         self._ctkbox = None
         
-        def ondown(event):
-            # if self._ctkbox is not None:
-            #     self.videoview.delete(self._ctkbox)
-            # self._ctbox = None
-            
+        def ondown(event):            
             self._rcoords = (event.x, event.y)
             
             self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
@@ -228,8 +217,8 @@ class RigidApp(App):
         scale = 1
         if self.scruler is not None:
             scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale, fps=self.rigid.fps)
+        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+                self.fheight, scale=scale, fps=self.rigid.fps)
         plot.plotx()
         plot.plotdrv()
         plot.plotdrv2()
@@ -251,8 +240,8 @@ class RigidApp(App):
         scale = 1
         if self.scruler is not None:
             scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                    ox=self.ox, oy=self.oy, scale=scale, fps=self.rigid.fps)
+        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth, self.fheight,
+                scale=scale, fps=self.rigid.fps)
 
         datalist = plot.dataprocessed()
         

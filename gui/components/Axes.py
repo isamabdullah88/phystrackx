@@ -10,6 +10,7 @@ class Axes:
         self.vheight = vheight
         self.theta = tk.DoubleVar(value=0)  # Angle of rotation in degrees
         
+        # Default frame is regular frame from bottom left corner
         self.ox = 0
         self.oy = self.vheight
         
