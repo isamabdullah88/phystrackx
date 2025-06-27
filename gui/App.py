@@ -56,8 +56,10 @@ class App:
         
         
         # ==== LEFT TOOLBAR PANEL ====
-        self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight)
-        self.scrollframe = self.scroll_toolbar.scrollframe
+        # self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight)
+        # self.scrollframe = self.scroll_toolbar.scrollframe
+        self.scrollframe = ctk.CTkScrollableFrame(self.root, width=self.twidth-20, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
+        self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
             ("assets/open-video.png", self.openvideo),
