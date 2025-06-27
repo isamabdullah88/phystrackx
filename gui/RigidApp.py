@@ -12,6 +12,7 @@ from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
 from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar
+from .plugins import Filters
 import csv
 
 class RigidApp(App):
@@ -31,6 +32,8 @@ class RigidApp(App):
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
         # self.scroll_toolbar.pack()
+        self.filters = Filters(self.scrollframe, self.updateframe)
+        self.button("assets/plugin.png", self.appfilter)
         
         # Progress bar for tracking
         self._progressbarh = 20
@@ -61,10 +64,10 @@ class RigidApp(App):
         """Displays the first frame in videoviewer."""
         fwidth = self.rigid.fwidth
         fheight = self.rigid.fheight
-        frame = self.resizeframe(frame, fwidth, fheight)
-        self.fheight, self.fwidth = frame.shape[:2]
+        self.frame = self.resizeframe(frame, fwidth, fheight)
+        self.fheight, self.fwidth = self.frame.shape[:2]
         
-        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        img = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
@@ -72,15 +75,17 @@ class RigidApp(App):
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
 
-    def updateframe(self):
+    def updateframe(self, frame=None):
         """Updates the frame displayed in the video view based on the slider position."""
+        if frame is None:
+            frame = self.rigid.frame(index=self.seekbar.idx)
+            fwidth = self.rigid.fwidth
+            fheight = self.rigid.fheight
+            self.frame = self.resizeframe(frame, fwidth, fheight)
+        else:
+            self.frame = frame
 
-        frame = self.rigid.frame(index=self.seekbar.idx)
-        fwidth = self.rigid.fwidth
-        fheight = self.rigid.fheight
-        frame = self.resizeframe(frame, fwidth, fheight)
-
-        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
+        img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
@@ -253,3 +258,14 @@ class RigidApp(App):
                     cx, cy = data[i]
                     writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
         messagebox.showinfo("Success", "Tracked data saved successfully.")
+        
+        
+    def appfilter(self):
+        """
+        Opens a popup to select a filter type and apply it to the video frame.
+        """
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
+            return
+        
+        self.filters.spawnfilter(self.frame)
