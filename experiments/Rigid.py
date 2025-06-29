@@ -89,7 +89,7 @@ class Rigid(Experiment):
             for j,p0 in enumerate(ptstrack):
                 p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
                 x, y = self.pts2pt(p1)
-                cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=2)
+                # cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=2)
                 ptstrack[j] = p1
                 
                 self.trackpts[j].append([x,y])
