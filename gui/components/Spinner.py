@@ -6,26 +6,26 @@ import numpy as np
 from core import abspath
 
 class SpinnerPopup:
-    def __init__(self, canvas, width, height):
+    def __init__(self, canvas, vwidth, vheight):
         self.running = True
         self.canvas = canvas
 
 
         # Load animated GIF
-        self.frames = [ImageTk.PhotoImage(self.prsframe(img, width, height)) for img in \
+        self.frames = [ImageTk.PhotoImage(self.prsframe(img, vwidth, vheight)) for img in \
             ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
-        self.imgview = self.canvas.create_image(width//2, height//2, image=self.frames[0],
+        self.imgview = self.canvas.create_image(vwidth//2, vheight//2, image=self.frames[0],
                                                 anchor="center")
 
         self.index = 0
-        self.animate()
+        self.pack()
 
-    def animate(self):
+    def pack(self):
         if not self.running:
             return
         self.index = (self.index + 1) % len(self.frames)
         self.canvas.itemconfig(self.imgview, image=self.frames[self.index])
-        self.canvas.after(50, self.animate)
+        self.canvas.after(50, self.pack)
 
     def destroy(self):
         self.running = False

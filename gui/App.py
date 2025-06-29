@@ -30,6 +30,10 @@ class App:
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh
         
+        # Video frame dimensions
+        self.fwidth = self.vwidth
+        self.fheight = self.vheight
+        
         self.toolbar()
         
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)

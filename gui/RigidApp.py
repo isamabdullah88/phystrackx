@@ -35,7 +35,8 @@ class RigidApp(App):
         
         self.filters = Filters(self.scrollframe, self.updateframe)
         
-        self.rect = Rect(self.videoview, self.vwidth, self.vheight)
+        self.trects = Rect(self.videoview, self.vwidth, self.vheight)
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
         
         # Progress bar for tracking
         self._progressbarh = 20
@@ -44,8 +45,6 @@ class RigidApp(App):
         
         self.fx = self.fy = 0
         self.scruler = None
-        # self._rcoords = None
-        # self._rects = []
         self._ocrs = []
         
         tempdir = './temp'
@@ -98,75 +97,15 @@ class RigidApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        self.rect.drawrect(self.rigid.fwidth, self.rigid.fheight, self.fx, self.fy)
+        self.trects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
         
-    # def drawrect(self):
-    #     """Draws rectangle with simple lines"""
-    #     self._ctkbox = None
-        
-    #     def ondown(event):            
-    #         self._rcoords = (event.x, event.y)
-            
-    #         self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
-            
-    #     def inrect(event):
-    #         sx, sy = self._rcoords
-    #         ex, ey = (event.x, event.y)
-
-    #         self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
-            
-    #     def onrelease(event):
-    #         sx, sy = self._rcoords
-    #         ex, ey = (event.x, event.y)
-
-    #         rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
-    #         self._rects.append(rect.pix2norm(self.fwidth, self.fheight))
-            
-    #         self.videoview.unbind("<Button-1>")
-    #         self.videoview.unbind("<B1-Motion>")
-    #         self.videoview.unbind("<ButtonRelease-1>")
-            
-
-    #     self.videoview.bind("<Button-1>", ondown)
-    #     self.videoview.bind("<B1-Motion>", inrect)
-    #     self.videoview.bind("<ButtonRelease-1>", onrelease)
-
-
     def drawocr(self):
         """Draws rectangle for OCR"""
         if self.rigid.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        self._ctkbox = None
-        
-        def ondown(event):
-            
-            self._rcoords = (event.x, event.y)
-            
-            self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
-            
-        def inrect(event):
-            sx, sy = self._rcoords
-            ex, ey = (event.x, event.y)
-
-            self.videoview.coords(self._ctkbox, sx, sy, ex, ey)
-            
-        def onrelease(event):
-            sx, sy = self._rcoords
-            ex, ey = (event.x, event.y)
-
-            rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy)
-            self._ocrs.append(rect.pix2norm(self.fwidth, self.fheight))
-            
-            self.videoview.unbind("<Button-1>")
-            self.videoview.unbind("<B1-Motion>")
-            self.videoview.unbind("<ButtonRelease-1>")
-            
-
-        self.videoview.bind("<Button-1>", ondown)
-        self.videoview.bind("<B1-Motion>", inrect)
-        self.videoview.bind("<ButtonRelease-1>", onrelease)
+        self.ocrrects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
         
     
     def update_progress(self):
@@ -188,8 +127,8 @@ class RigidApp(App):
             return
         
         # Clear previous rectangles and OCRs
-        self.rect.delrects()
-        self._ocrs.clear()
+        self.trects.delrects()
+        self.ocrrects.delrects()
         
         self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight-self._progressbarh)
         self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
@@ -198,7 +137,7 @@ class RigidApp(App):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
             
-            self.rigid.track(self.rect.rects, self._ocrs, startidx, endidx, self.progress)
+            self.rigid.track(self.trects.rects, self.ocrrects.rects, startidx, endidx, self.progress)
             
             self.root.after(0, popup.destroy())
             self.root.after(0, progressbar.destroy())
@@ -206,7 +145,6 @@ class RigidApp(App):
             self.load_video(self._trackpath)
 
         threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
-        # threading.Thread(target=trackbg, args=(self.progressbar,)).start()
         
         self.update_progress()
         
@@ -269,7 +207,6 @@ class RigidApp(App):
                     cx, cy = data[i]
                     writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
         messagebox.showinfo("Success", "Tracked data saved successfully.")
-        
         
     def appfilter(self):
         """

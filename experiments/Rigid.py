@@ -77,7 +77,7 @@ class Rigid(Experiment):
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount-1):
+        for i in tqdm(range(1, fcount-1), desc="Rigid", total=fcount-1):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
