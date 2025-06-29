@@ -44,15 +44,6 @@ class Axes:
         if x1 > self.vwidth: x1 = self.vwidth
         if y1 > self.vheight: y1 = self.vheight
         
-        # l0 = np.sqrt((x0-sx0)**2 + (y0-sy0)**2)
-        # l1 = np.sqrt((x1-sx1)**2 + (y1-sy1)**2)
-        # l = min(l0, l1)
-        
-        # x0 = l * np.cos(np.deg2rad(angle)) + sx0
-        # y0 = l * np.sin(np.deg2rad(angle)) + sy0
-        # x1 = l * np.cos(np.deg2rad(angle + 90)) + sx1
-        # y1 = l * np.sin(np.deg2rad(angle + 90)) + sy1
-        
         self.canvas.create_line(sx0, sy0, x0, y0, fill="red", arrow=tk.LAST, width=2, tags="axes")  # X-axis
         self.canvas.create_line(sx1, sy1, x1, y1, fill="blue", arrow=tk.LAST, width=2, tags="axes")  # Y-axis
 
@@ -109,51 +100,16 @@ class Axes:
         x1 = 0
         y1 = self.vheight
         
-        # ox, oy = self.canvas2reg(self.ox, self.oy)  # Convert origin to regular coordinates
-        # x0, y0 = self.canvas2reg(x0, y0)  # Convert to regular coordinates
-        # x1, y1 = self.canvas2reg(x1, y1)  # Convert to regular coordinates
-        
-        # x0 -= ox
-        # y0 -= oy
-        # x1 -= ox
-        # y1 -= oy
-        
         # Rotate x-axis point
         theta = np.deg2rad(self.theta.get())
         xp0, yp0 = self.rotatez(x0, y0, theta)
-        # xp0 += ox
-        # yp0 += oy
         
         # Rotate y-axis point
         xp1, yp1 = self.rotatez(x1, y1, theta)
         
-        
-        # xp1 += ox
-        # yp1 += oy
-        
-        # def startpt(x, y):
-        #     """ Calculate the starting point for the axes based on the center and end points. """
-        #     if abs(x - self.ox) < 1e-3:  # Avoid division by zero
-        #         sx = self.ox
-        #         sy = 0
-        #     else:
-        #         m = -(y-self.oy)/(x-self.ox)
-        #         b = m*self.ox - self.oy
-        #         sx = 0
-        #         sy = m*sx + b
-            
-        #     return sx, sy
-        
-        # Transforming back into tkinter coordinates
-        # ox, oy = self.reg2canvas(ox, oy)
         xp0, yp0 = self.reg2canvas(xp0, yp0, self.ox, self.oy)
         xp1, yp1 = self.reg2canvas(xp1, yp1, self.ox, self.oy)
         
-        dot = (xp0-self.ox)*(xp1-self.ox) + (yp0-self.oy)*(yp1-self.oy)
-        if abs(dot) > 1e-10:
-            print('Dot: ', dot)
-        
-
         self.drawaxes((self.ox, self.oy), (self.ox, self.oy), (xp0, yp0), (xp1, yp1))
         
     
@@ -162,7 +118,6 @@ class Axes:
         self.canvas.delete("axes")  # Remove old axes
         tx, ty = event.x, event.y  # Get mouse position
         
-        # print('tx, ty: ', tx, ty)
         # Points in regular coordinates
         # X-axis point
         xf0 = self.vwidth
@@ -178,14 +133,6 @@ class Axes:
         
         # Y-axis point
         xc1, yc1 = self.reg2canvas(xf1, yf1, tx, ty)
-        # x = x - self.ox
-        # y = y - self.oy
-        
-        # self.canvas2reg(tx, ty)
-        
-        # x += self.ox
-        # y += self.oy
-        
         
         self.drawaxes((tx, ty), (tx, ty), (xc0, yc0), (xc1, yc1))
 
