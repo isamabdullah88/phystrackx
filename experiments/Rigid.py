@@ -1,19 +1,44 @@
 from tqdm import tqdm
 import cv2
 import numpy as np
-from math import floor
-import matplotlib.pyplot as plt
 from .Experiment import Experiment
-from core.Rect import NormalizedRect, PixelRect
+from core import NormalizedRect, PixelRect
+from PIL import Image, ImageDraw, ImageFont
+
 
 class Rigid(Experiment):
     def __init__(self, trackpath, vwidth=900, vheight=600):
         super().__init__(vwidth, vheight)
         
         self._trackpath = trackpath
-        self.trackpts = []    
+        self.trackpts = []
+        
+    def ocr(self, frame, rect, pytesseract):            
+        """Performs OCR detection on the specified rectangle in the frame."""
+        x, y, w, h = rect.totuple()
+        framep = frame.copy()[y:y+h, x:x+w]
+        # Convert to grayscale
+        gray = cv2.cvtColor(framep.copy(), cv2.COLOR_BGR2GRAY)
+
+        # Optional: thresholding to improve contrast
+        # plt.imshow(gray)
+        # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
+        
+        custom_config = r'--oem 3 --psm 6 outputbase digits'
+        txt = pytesseract.image_to_string(gray, config=custom_config)
+        
+        cv2.putText(frame, txt, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        
     
-    def track(self, rects:list[NormalizedRect], startidx=0, endidx=0):
+    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], startidx=0, endidx=0, progress=None):
+        """Tracks the specified rectangles in the video and performs OCR detection if specified."""
+        
+        # Import for OCR detection
+        if len(ocrrect) > 0:
+            import pytesseract
+            import platform
+            if platform.system() == 'Windows':
+                pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
         
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -38,7 +63,8 @@ class Rigid(Experiment):
         
         frame = self._vidreader.read()
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
+        
+        
         for rect in rects:
             rect = rect.norm2pix(self.fwidth, self.fheight)
 
@@ -51,7 +77,7 @@ class Rigid(Experiment):
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount-1), desc="Sliding Friction", total=fcount-1):
+        for i in tqdm(range(1, fcount-1), desc="Rigid", total=fcount-1):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -68,9 +94,18 @@ class Rigid(Experiment):
                 
                 self.trackpts[j].append([x,y])
             
+            
+            # Do OCR detection if specified
+            for rect in ocrrect:
+                rectp = rect.norm2pix(self.fwidth, self.fheight)
+                self.ocr(frame, rectp, pytesseract)
+            
             fprev = fgray.copy()
             
             self._videowriter.write(frame)
+            
+            if progress is not None:
+                progress.set((i / (fcount - 1)) * 100)
             
         self._videowriter.release()
 

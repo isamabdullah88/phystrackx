@@ -1,9 +1,10 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from .components import Axes
 
 class Plot:
-    def __init__(self, data:list[float], vwidth, vheight, fwidth, fheight, ox=0, oy=0, fps=24,
+    def __init__(self, data:list[float], axes:Axes , vwidth, vheight, fwidth, fheight, fps=24,
                  scale=1, theme='ggplot'):
         """
         data: list of numpy arrays. Each array should have shape N,2.
@@ -15,16 +16,13 @@ class Plot:
         """
         self._data = data
         self._datanum = len(data)
-        self._fps = 24
+        self._fps = fps
         self._fwidth = fwidth
         self._fheight = fheight
         self._vwidth = vwidth
         self._vheight = vheight
         self._scale = scale
-        
-        # Flip y-axis for correct orientation
-        self._ox = ox
-        self._oy = self._vheight - oy
+        self.axes = axes
         
         self.samplecount = self._data[0].shape[0]
         self._t = np.linspace(0, self.samplecount/fps, self.samplecount)
@@ -35,7 +33,7 @@ class Plot:
         for i in range(self._datanum):
             data = self._data[i]
             
-            datax, datay = self.transform(data[:,0], data[:,1])
+            datax, datay = self.transform(data[:,0], data[:,1], axes)
             datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
             
             self._datatr.append(datatr)
@@ -44,17 +42,22 @@ class Plot:
         """Returns processed data after transformation"""
         return self._datatr
         
-    def transform(self, x, y):
+    def transform(self, x, y, axes: Axes):
         """Applies transformation according to videoview, image frame and user specified frame"""
         fvx = self._vwidth/2 - self._fwidth/2
         fvy = self._vheight/2 - self._fheight/2
+        ox = self.axes.ox
+        oy = self.axes.oy
         
-        # Invert y coordinates
-        y = self._fheight - y
+        # In canvas coordinates
+        x = x + fvx
+        y = y + fvy
         
-        # Transform
-        x = x - (self._ox - fvx)
-        y = y - (self._oy - fvy)
+        x, y = axes.canvas2reg(x, y, ox, oy)
+        
+        # Inverse rotate points
+        theta = -np.deg2rad(self.axes.theta.get())
+        x, y = axes.rotatez(x, y, theta)
         
         if self._scale is not None:
             x = x * self._scale
@@ -115,19 +118,19 @@ class Plot:
             axes[i][0].set_xlabel(r"$\mathbf{t}$")
             axes[i][0].set_ylabel(r"$\mathbf{x}$")
             axes[i][0].set_title(title + r" - $\mathbf{x}$")
-            # axes[i][0].set_aspect('equal')
+            axes[i][0].set_aspect('equal')
             
             axes[i][1].plot(self._t, ycoords, '-g')
             axes[i][1].set_xlabel(r"$\mathbf{t}$")
             axes[i][1].set_ylabel(r"$\mathbf{y}$")
             axes[i][1].set_title(title + r" - $\mathbf{y}$")
-            # axes[i][1].set_aspect('equal')
+            axes[i][1].set_aspect('equal')
             
             axes[i][2].plot(xcoords, ycoords, '-r')
             axes[i][2].set_xlabel(r"$\mathbf{x}$")
             axes[i][2].set_ylabel(r"$\mathbf{y}$")
             axes[i][2].set_title(title + r" - $\mathbf{x}$ vs $\mathbf{y}$")
-            # axes[i][2].set_aspect('equal')
+            axes[i][2].set_aspect('equal')
             
         plt.tight_layout()
         # plt.show()
