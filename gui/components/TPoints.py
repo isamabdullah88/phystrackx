@@ -6,18 +6,15 @@ from core import abspath
 
 class FPoint:
     """Class to manage single point clickable"""
-    def __init__(self, canvas, pt, fx, fy, vwidth, vheight, button, tidx, fidx, disable=False):
+    def __init__(self, canvas, pt, fx, fy, button, disable=False):
         self.canvas = canvas
         self.x, self.y = pt.copy()
         self.x += fx
         self.y += fy
-        self.vwidth = vwidth
-        self.vheight = vheight
+        
         self.disable = disable
         self.button = button
         
-        self.tidx = tidx
-        self.fidx = fidx
         self.btnsize = 30
         
     def draw(self):
@@ -29,14 +26,6 @@ class FPoint:
             self.x - 6, self.y - 6, self.x + 6, self.y + 6,
             fill='red', outline='black', width=1, tags="points"
         )
-        
-        self.canvas.tag_bind(self.cpt, '<Button-1>', self.selectpt)
-        
-    def selectpt(self, event):
-        self.canvas.itemconfig(self.cpt, fill='green', width=2)
-        self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-        
-    
         
 
 class TPoints:
@@ -69,8 +58,6 @@ class TPoints:
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
         button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
                             image=img)
-        # button.pack(padx=5, pady=5)
-        # Store the image reference to prevent garbage collection
         button.image = img
         
         return button
@@ -85,11 +72,8 @@ class TPoints:
         
         for i, tpt in enumerate(tpts):
             for j, pt in enumerate(tpt):
-                x, y = pt.copy()
-                self.tpts[i].append([x, y])
+                self.tpts[i].append(FPoint(self.canvas, pt, fx, fy, self.button))
                 
-        self.fx = fx
-        self.fy = fy
 
     def drawpoint(self, fidx):
         """Draws a point by frame index."""
@@ -101,40 +85,31 @@ class TPoints:
             if tpts[fidx] is None:
                 continue
             
-            x, y = tpts[fidx].copy()
-            x += self.fx
-            y += self.fy
+            tpt = tpts[fidx]
+            tpt.draw()
             
-            cpt = self.canvas.create_oval(
-                x - 6, y - 6, x + 6, y + 6,
-                fill='red', outline='black', width=1, tags="points"
-            )
+            self.currpt.append([tpt.cpt, i, fidx])
             
-            # self.canvas.tag_bind(self.cpt, '<Button-1>', self.selectpt)
-            self.currpt.append([cpt, i, fidx])
-            
-            # self.currpt["cpts"].append(cpt)
-            # self.currpt["tidx"].append(i)
-            # self.currpt["fidx"] = fidx
-            
-            
-            
-            
-                
-    def onclick(self, event):
-        cid = self.canvas.find_withtag("current")
-        print('cid: ', cid)
-        if cid:
-            self.sltdpt["cpt"] = cid[0]
-        
+    def matchid(self, id):
         for item in self.currpt:
-            id = item[0]
-            if id == self.sltdpt["cpt"]:
-                self.sltdpt["tidx"] = item[1]
-                self.sltdpt["fidx"] = item[2]
-                
-                self.canvas.itemconfig(id, fill='green', width=2)
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+            idp = item[0]
+            
+            if id == idp:
+                return item
+            
+        return None
+
+    def onclick(self, event):
+        cid = self.canvas.find_withtag("current")[0]
+        
+        id, tidx, fidx = self.matchid(cid)
+        
+        self.sltdpt["cpt"] = cid
+        self.sltdpt["tidx"] = tidx
+        self.sltdpt["fidx"] = fidx
+
+        self.canvas.itemconfig(id, fill='green', width=2)
+        self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
     
     def removept(self):
         self.canvas.delete(self.sltdpt["cpt"])
@@ -142,5 +117,4 @@ class TPoints:
         self.tpts[self.sltdpt["tidx"]][self.sltdpt["fidx"]] = None
         
         self.button.pack_forget()
-        
         
