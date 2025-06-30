@@ -18,6 +18,11 @@ class Axes:
                             command=self.rotate)
         self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider, tags="slider")
         self.canvas.itemconfigure("slider", state="hidden")  # Hide the slider initially
+        
+    def clear(self):
+        """Clear GUI elements"""
+        self.canvas.delete("slider")
+        self.canvas.delete("axes")
     
     def markaxes(self):
     
