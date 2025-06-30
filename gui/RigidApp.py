@@ -59,7 +59,7 @@ class RigidApp(App):
         self.rigid.add_video(videopath)
         
         self.seekbar.setcount(self.rigid.fcount)
-
+        
         self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
 
         frame1 = self.rigid.frame(0)
@@ -135,7 +135,8 @@ class RigidApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        # Clear previous rectangles and OCRs
+        # Clear previous Axes, rectangles and OCRs
+        self.axes.clear()
         self.trects.delrects()
         self.ocrrects.delrects()
         
