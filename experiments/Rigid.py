@@ -71,9 +71,12 @@ class Rigid(Experiment):
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = 255
             
-            p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=5, qualityLevel=0.5, minDistance=10, blockSize=5, mask=mask)
-            p0 = np.array(p0, dtype=np.float32).reshape(-1, 1, 2)
+            p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=100, qualityLevel=0.4, minDistance=5, blockSize=5, mask=mask)
+            if p0 is None:
+                continue
             
+            p0 = np.array(p0, dtype=np.float32).reshape(-1, 1, 2)
+        
             ptstrack.append(p0)
             
         fprev = None
@@ -87,10 +90,22 @@ class Rigid(Experiment):
                 continue
 
             for j,p0 in enumerate(ptstrack):
-                p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
-                x, y = self.pts2pt(p1)
-                # cv2.circle(frame, (x, y), radius=5, color=(0,255,0), thickness=2)
-                ptstrack[j] = p1
+                p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None)
+                
+                if p1 is not None:
+                    p1p = p1.copy()[st == 1].reshape(-1,1,2)
+                
+                # for p in p1:
+                #     a, b = p.ravel()
+                #     cv2.circle(frame, (int(a), int(b)), radius=5, color=(0,255,0), thickness=2)
+                    
+                # for p in p1p:
+                #     a, b = p.ravel()
+                #     cv2.circle(frame, (int(a), int(b)), radius=5, color=(255,0,0), thickness=2)
+                
+                x, y = self.pts2pt(p1p)
+                cv2.circle(frame, (x, y), radius=5, color=(0,0,255), thickness=2)
+                ptstrack[j] = p1p
                 
                 self.trackpts[j].append([x,y])
             

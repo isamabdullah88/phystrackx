@@ -95,9 +95,10 @@ class App:
         self.axes.markaxes()
 
     def resizeframe(self, frame, fwidth, fheight):
+        """Resize frame shape to minimum of videoview height and width."""
         if (fwidth > self.vwidth):
             ratio = fheight/fwidth
-            fwidth = self.cwidth
+            fwidth = self.vwidth
             fheight = floor(fwidth * ratio)
             
             frame = cv2.resize(frame, (fwidth, fheight))
