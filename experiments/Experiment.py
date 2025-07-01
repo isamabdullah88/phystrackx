@@ -35,14 +35,17 @@ class Experiment:
         
     
     def resize(self):
-        """Resize frame shape to videoview height."""
-        if self.fheight <= self.vheight:
-            return self.fwidth, self.fheight
-        
-        self.aspratio = self.fwidth/self.fheight
+        """Resize frame shape to minimum of videoview height and width."""
+        if (self.fwidth > self.vwidth):
+                ratio = self.fheight/self.fwidth
+                self.fwidth = self.vwidth
+                self.fheight = floor(self.fwidth * ratio)
+                
 
-        self.fheight = self.vheight
-        self.fwidth = floor(self.aspratio * self.fheight)
+        if (self.fheight > self.vheight):
+            ratio = self.fwidth/self.fheight
+            self.fheight = self.vheight
+            self.fwidth = floor(self.fheight*ratio)
 
     def add_video(self, video_path):
         self._vidreader = VideoReader(video_path)
@@ -130,8 +133,5 @@ class Experiment:
         """Convert points to single mean point. pts should have have (x, y) coordinates"""
         pts = pts.reshape(-1, 2)
         
-        if pts.shape[0] == 1:
-            return np.squeeze(pts).astype(np.int32)
-        
-        x, y = np.mean(np.squeeze(pts), axis=0)
+        x, y = np.mean(pts, axis=0)
         return floor(x), floor(y)

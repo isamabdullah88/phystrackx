@@ -11,7 +11,7 @@ from .App import App
 from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect
+from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints
 from .plugins import Filters
 import csv
 
@@ -38,6 +38,8 @@ class RigidApp(App):
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
         
+        self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
+        
         # Progress bar for tracking
         self._progressbarh = 20
         self.progress = ctk.IntVar()
@@ -45,7 +47,6 @@ class RigidApp(App):
         
         self.fx = self.fy = 0
         self.scruler = None
-        self._ocrs = []
         
         tempdir = './temp'
         if not os.path.exists(tempdir):
@@ -58,6 +59,8 @@ class RigidApp(App):
         self.rigid.add_video(videopath)
         
         self.seekbar.setcount(self.rigid.fcount)
+        
+        self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
 
         frame1 = self.rigid.frame(0)
         self.dispframe(frame1)
@@ -76,6 +79,9 @@ class RigidApp(App):
         self.fy = floor(self.vheight/2 - self.fheight/2)
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        
+        # draw tracked points
+        self.tpoints.drawpoint(0)
 
     def updateframe(self, frame=None):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -91,6 +97,9 @@ class RigidApp(App):
         self.photo = ImageTk.PhotoImage(image=img)
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
+        
+        # draw tracked points
+        self.tpoints.drawpoint(self.seekbar.idx)
 
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
@@ -126,7 +135,8 @@ class RigidApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        # Clear previous rectangles and OCRs
+        # Clear previous Axes, rectangles and OCRs
+        self.axes.clear()
         self.trects.delrects()
         self.ocrrects.delrects()
         
@@ -157,8 +167,6 @@ class RigidApp(App):
         self.rigid = Rigid(trackpath=self._trackpath)
         
         self.scruler = None
-        # self._rcoords = None
-        # self._rects = []
         
         self.seekbar.setcount(100)
         
