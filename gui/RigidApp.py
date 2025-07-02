@@ -11,7 +11,7 @@ from .App import App
 from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints
+from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints, SubToolbar
 from .plugins import Filters
 import csv
 
@@ -23,13 +23,13 @@ class RigidApp(App):
         """
         super().__init__(root)
         
-        self.button("assets/ruler.png", self.scale)
+        self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        self.button("assets/rectanglebd.png", self.drawrect)
+        self.subtoolbar.button("assets/plugins/filters.png", self.appfilters).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/crop.png", self.drawocr).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         
-        self.button("assets/ocr.png", self.drawocr)
-        
-        self.button("assets/plugin.png", self.appfilter)
+        self.button("assets/plugin.png", self.plugins)
         
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
@@ -216,7 +216,7 @@ class RigidApp(App):
                     writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
         messagebox.showinfo("Success", "Tracked data saved successfully.")
         
-    def appfilter(self):
+    def plugins(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.
         """
@@ -224,4 +224,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
             return
         
+        self.subtoolbar.toggle()
+        
+    def appfilters(self):
         self.filters.spawnfilter(self.frame)

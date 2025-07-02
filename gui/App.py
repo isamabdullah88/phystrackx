@@ -22,10 +22,11 @@ class App:
         
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
         
-        self.twidth = floor(self.cwidth * 0.10)
+        self.twidth = floor(self.cwidth * 0.1)
         self.theight = self.cheight
         self.seekbarh = floor(self.cheight * 0.1)
         self.btnsize = self.twidth - 40
+        print('button size: ', self.btnsize)
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh
@@ -57,17 +58,16 @@ class App:
         return button
 
     def toolbar(self):
+        """Toolbar frame"""
         
-        
-        # ==== LEFT TOOLBAR PANEL ====
-        # self.scroll_toolbar = ScrollBar(self.root, width=self.twidth, height=self.theight)
-        # self.scrollframe = self.scroll_toolbar.scrollframe
         self.scrollframe = ctk.CTkScrollableFrame(self.root, width=self.twidth-20, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
             ("assets/open-video.png", self.openvideo),
             ("assets/axis.png", self.markaxes),
+            ("assets/ruler.png", self.scale),
+            ("assets/rectanglebd.png", self.drawrect),
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
             ("assets/save.png", self.savedata),
@@ -82,6 +82,7 @@ class App:
         self.vidframe.pack(side=ctk.LEFT)
         
         self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
+        self.videoview.pack_propagate(False)
         self.videoview.pack(side=ctk.TOP, expand=False)
 
 
@@ -93,7 +94,37 @@ class App:
     
     def markaxes(self):
         self.axes.markaxes()
+        
+    def scale(self):
+        pass
+    
+    def drawrect(self):
+        pass
 
+    def strack(self):
+        """
+        Implements Lucas-Kanade optical flow tracking for marked points across video frames.
+        This method processes the entire video sequence and tracks the motion of selected points.
+        """
+        pass
+    
+    def plot(self):
+        pass
+    
+    def savedata(self):
+        """
+        Placeholder for saving data functionality.
+        This method should implement the logic to save the tracked data.
+        """
+        pass
+
+    def onclose(self):
+        self.root.destroy()
+
+    def tomenu(self):
+        self.videoview.delete("all")
+        
+    
     def resizeframe(self, frame, fwidth, fheight):
         """Resize frame shape to minimum of videoview height and width."""
         if (fwidth > self.vwidth):
@@ -111,27 +142,3 @@ class App:
             frame = cv2.resize(frame, (fwidth, fheight))
 
         return frame
-
-    def plot(self):
-        pass
-    
-    def savedata(self):
-        """
-        Placeholder for saving data functionality.
-        This method should implement the logic to save the tracked data.
-        """
-        pass
-
-    def onclose(self):
-        self.root.destroy()
-
-    def strack(self):
-        """
-        Implements Lucas-Kanade optical flow tracking for marked points across video frames.
-        This method processes the entire video sequence and tracks the motion of selected points.
-        """
-        pass
-    
-
-    def tomenu(self):
-        self.videoview.delete("all")
