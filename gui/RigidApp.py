@@ -159,9 +159,9 @@ class RigidApp(App):
         self.update_progress()
         
         
-    def tomenu(self):
+    def clear(self):
         """Clears almost everything"""
-        super().tomenu()
+        super().clear()
         
         del self.rigid
         self.rigid = Rigid(trackpath=self._trackpath)

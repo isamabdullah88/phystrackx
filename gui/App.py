@@ -71,7 +71,7 @@ class App:
             ("assets/start.png", self.strack),
             ("assets/plot.png", self.plot),
             ("assets/save.png", self.savedata),
-            ("assets/back.png", self.tomenu)
+            ("assets/clear.png", self.clear)
         ]
         
         for imgpath, command in buttons:
@@ -121,7 +121,7 @@ class App:
     def onclose(self):
         self.root.destroy()
 
-    def tomenu(self):
+    def clear(self):
         self.videoview.delete("all")
         
     

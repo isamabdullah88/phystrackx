@@ -184,9 +184,9 @@ class BalloonApp(App):
 
 
 
-    def tomenu(self):
+    def clear(self):
         """Clears almost everything"""
-        super().tomenu()
+        super().clear()
         
         del self.balloon
         self.balloon = Balloon(trackpath=self._trackpath)
