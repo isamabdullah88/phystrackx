@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from .Experiment import Experiment
 from core import NormalizedRect, PixelRect
-from PIL import Image, ImageDraw, ImageFont
+from gui.plugins import Crop, Filters
 
 
 class Rigid(Experiment):
@@ -30,7 +30,7 @@ class Rigid(Experiment):
         cv2.putText(frame, txt, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         
     
-    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], startidx=0, endidx=0, progress=None):
+    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
         # Import for OCR detection
@@ -40,11 +40,18 @@ class Rigid(Experiment):
             if platform.system() == 'Windows':
                 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
         
+        if len(crop.rects) > 0:
+            crwidth = crop.rects[0].width
+            crheight = crop.rects[0].height
+        else:
+            crwidth = self.fwidth
+            crheight = self.fheight
+        
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         self.resize()
         self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-                                            (self.fwidth, self.fheight))
+                                            (crwidth, crheight))
         
         if endidx == 0:
             fcount = self._vidreader.fcount - startidx
@@ -62,16 +69,25 @@ class Rigid(Experiment):
         self.trackpts = [[] for _ in rects]
         
         frame = self._vidreader.read()
+        frame = cv2.resize(frame, (self.fwidth, self.fheight))
+        
+        # Apply transformations to frame
+        frame = filters.appfilter(frame)
+        frame = crop.appcrop(frame)
+        
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
         
         for rect in rects:
-            rect = rect.norm2pix(self.fwidth, self.fheight)
+            rect = rect.norm2pix(crwidth, crheight)
+            print('rect: ', rect.totuple())
 
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = 255
+            cv2.imwrite('mask.png', mask)
             
             p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=100, qualityLevel=0.4, minDistance=5, blockSize=5, mask=mask)
+            print('p0: ', p0)
             if p0 is None:
                 continue
             
@@ -83,6 +99,11 @@ class Rigid(Experiment):
         for i in tqdm(range(1, fcount-1), desc="Rigid", total=fcount-1):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            
+            # Apply transformations to frame
+            frame = filters.appfilter(frame)
+            frame = crop.appcrop(frame)
+            
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             if fprev is None:
@@ -91,6 +112,7 @@ class Rigid(Experiment):
 
             for j,p0 in enumerate(ptstrack):
                 p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None)
+                print('p1: ', p1)
                 
                 if p1 is not None:
                     p1p = p1.copy()[st == 1].reshape(-1,1,2)
@@ -112,7 +134,7 @@ class Rigid(Experiment):
             
             # Do OCR detection if specified
             for rect in ocrrect:
-                rectp = rect.norm2pix(self.fwidth, self.fheight)
+                rectp = rect.norm2pix(crwidth, crheight)
                 self.ocr(frame, rectp, pytesseract)
             
             fprev = fgray.copy()

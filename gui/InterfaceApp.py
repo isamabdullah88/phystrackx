@@ -61,7 +61,7 @@ class InterfaceApp(App):
 
 
 
-    def load_video(self, videopath):
+    def loadvideo(self, videopath):
         self.interface.add_video(videopath)
         
         self.seekbar.setcount(self.interface.fcount)
@@ -200,7 +200,7 @@ class InterfaceApp(App):
             
             self.root.after(0, popup.destroy())
 
-            self.load_video(self._trackpath)
+            self.loadvideo(self._trackpath)
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
 

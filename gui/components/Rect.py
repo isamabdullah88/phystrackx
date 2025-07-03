@@ -15,7 +15,7 @@ class Rect:
         self._ctkrects = []
         
         self.btnsize = 30
-        self.button = self.plcbutton("assets/bin.png", self.delrect, btnsize=self.btnsize)
+        self.button = self.plcbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
     def plcbutton(self, imgpath, command, btnsize=30):
         """
@@ -26,13 +26,12 @@ class Rect:
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
         button = ctk.CTkButton(self.videoview, text="", width=btnsize, height=btnsize,
                             image=img, command=command)
-        # button.pack(padx=5, pady=5)
-        # Store the image reference to prevent garbage collection
+        
         button.image = img
         
         return button
         
-    def delrect(self):
+    def clearrect(self):
         """Deletes the last drawn rectangle"""
         if self._ctkrects:
             self.videoview.delete(self._ctkrects[-1])
@@ -43,13 +42,15 @@ class Rect:
             else:
                 self.button.place_forget()
                 
-    def delrects(self):
+    def clearrects(self):
         """Deletes all drawn rectangles"""
         for rect in self._ctkrects:
             self.videoview.delete(rect)
-        # self.rects.clear()
         self._ctkrects.clear()
         self.button.place_forget()
+        
+    def cleardata(self):
+        self.rects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
         """Draws rectangle with simple lines"""
@@ -77,6 +78,8 @@ class Rect:
             self.videoview.itemconfig(self._ctkbox, outline="green")
 
             rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)
+            print('On release rect: ', rect.totuple())
+            print('fx, fy: ', (fx, fy))
             self.rects.append(rect.pix2norm(fwidth, fheight))
             
             self.videoview.unbind("<Button-1>")

@@ -63,7 +63,7 @@ class BalloonApp(App):
 
 
 
-    def load_video(self, videopath):
+    def loadvideo(self, videopath):
         self.balloon.add_video(videopath)
         
         self.seekbar.setcount(self.balloon.fcount)
@@ -178,7 +178,7 @@ class BalloonApp(App):
             
             self.root.after(0, popup.destroy())
 
-            self.load_video(self._trackpath)
+            self.loadvideo(self._trackpath)
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
 

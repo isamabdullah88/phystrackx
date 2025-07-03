@@ -6,8 +6,8 @@ from itertools import groupby
 from math import floor
 import cv2
 import numpy as np
-
 from media import VideoReader
+from gui.plugins import Crop
 
 class Experiment:
     def __init__(self, vwidth=900, vheight=600):
@@ -47,12 +47,17 @@ class Experiment:
             self.fheight = self.vheight
             self.fwidth = floor(self.fheight*ratio)
 
-    def add_video(self, video_path):
+    def add_video(self, video_path, crop:Crop):
         self._vidreader = VideoReader(video_path)
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
+        
+        if len(crop.rects) > 0:
+            self.fwidth = crop.rects[0].width
+            self.fheight = crop.rects[0].height
+            
         print('frame count: ', self.fcount)
 
 

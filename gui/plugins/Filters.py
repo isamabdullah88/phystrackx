@@ -1,12 +1,11 @@
 import customtkinter as ctk
 import cv2
 import numpy as np
-from PIL import Image
 from typing import Callable
 from core import FilterTypes
 
 class Filters:
-    def __init__(self, toolbar, updateframe:Callable[[[np.ndarray]], None]):
+    def __init__(self, toolbar, updateframe:Callable[[np.ndarray], None]):
         self.toolbar = toolbar
         self.updateframe = updateframe
         
@@ -32,6 +31,9 @@ class Filters:
     def filter(self):
         self.fpopup.destroy()
         self.updateframe()
+        
+    def clear(self):
+        self.fvar.set(FilterTypes.NONE.name)
         
         
     def appfilter(self, frame):

@@ -90,7 +90,7 @@ class App:
         videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
-            self.load_video(videopath)
+            self.loadnwvideo(videopath)
     
     def markaxes(self):
         self.axes.markaxes()
