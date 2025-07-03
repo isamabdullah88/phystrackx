@@ -15,7 +15,7 @@ class SubToolbar:
         # Example content
         # Load your image using PIL
         img = Image.open("assets/plugin.png")  # Replace with your image path
-        imgtk = ctk.CTkImage(light_image=img, dark_image=img, size=(floor(self.btnsize), floor(self.btnsize)))
+        imgtk = ctk.CTkImage(light_image=img, dark_image=img, size=(floor(self.btnsize/2), floor(self.btnsize/2)))
         ctk.CTkLabel(self.frame, text="", image=imgtk).pack(pady=5)
 
         # Stick to top-left corner of canvas using create_window

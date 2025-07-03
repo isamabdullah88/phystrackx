@@ -28,6 +28,7 @@ class RigidApp(App):
         self.subtoolbar.button("assets/plugins/filters.png", self.appfilters).pack(pady=2)
         self.subtoolbar.button("assets/plugins/crop.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/geometry.png", self.drawocr).pack(pady=2)
         
         self.button("assets/plugin.png", self.plugins)
         

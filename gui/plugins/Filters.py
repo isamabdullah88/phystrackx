@@ -33,22 +33,9 @@ class Filters:
         for ftype in self.ftypes:
             radio = ctk.CTkRadioButton(self.fpopup, text=ftype[0], variable=self.fvar, value=ftype[0])
             radio.pack(pady=5)
-                
-            # icon = ctk.CTkImage(Image.open(ftype[1]), size=(20, 20))
-            # self.radioicon(self.fpopup, icon, ftype[0], ftype[0])
 
         applybtn = ctk.CTkButton(self.fpopup, text="Apply", command=self.filter)
         applybtn.pack(pady=10)
-        
-    # def radioicon(self, frame, image, text, value):
-    #     row = ctk.CTkFrame(frame)
-    #     row.pack(pady=5, anchor="w")
-
-    #     icon = ctk.CTkLabel(row, image=image, text="")
-    #     icon.pack(side="left", padx=5)
-
-    #     radio = ctk.CTkRadioButton(row, text=text, variable=self.fvar, value=value)
-    #     radio.pack(side="left")
         
     def filter(self):
         """
