@@ -16,12 +16,10 @@ class Filters:
     def spawnfilter(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.
-        """
-        # self.frame = frame
-        
+        """        
         self.fpopup = ctk.CTkToplevel(self.toolbar)
         self.fpopup.title("Select Filter")
-        self.fpopup.geometry("300x200")
+        self.fpopup.geometry("250x300")
 
         
         for ftype in self.ftypes:
@@ -33,7 +31,6 @@ class Filters:
         
     def filter(self):
         self.fpopup.destroy()
-        # fltframe = self.appfilter(self.frame)
         self.updateframe()
         
         

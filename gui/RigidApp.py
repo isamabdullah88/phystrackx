@@ -26,7 +26,7 @@ class RigidApp(App):
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
         self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/crop.png", self.drawocr).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/geometry.png", self.drawocr).pack(pady=2)
         
@@ -38,6 +38,7 @@ class RigidApp(App):
         
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
+        self.crects = Rect(self.videoview, self.vwidth, self.vheight)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         
@@ -63,27 +64,14 @@ class RigidApp(App):
         
         self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
 
-        # frame = self.rigid.frame(0)
         self.resize(self.rigid.fwidth, self.rigid.fheight)
-        
-        # self.fheight, self.fwidth = self.frame.shape[:2]
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
 
         self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
         
-        # self.dispframe(frame1)
         self.updateframe()
-
-    # def dispframe(self, frame=None):
-    #     """Displays the first frame in videoviewer."""
-        
-    #     img = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
-    #     self.photo = ImageTk.PhotoImage(image=img)
-        
-        # draw tracked points
-        # self.tpoints.drawpoint(0)
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -107,6 +95,14 @@ class RigidApp(App):
     def drawrect(self):
         """Draws rectangle with simple lines"""
         self.trects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
+        
+    def drawcrop(self):
+        """Crop for crop plugin. This crop the all frames of video"""
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.crects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
         
     def drawocr(self):
         """Draws rectangle for OCR"""
