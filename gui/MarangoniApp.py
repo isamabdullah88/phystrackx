@@ -168,9 +168,9 @@ class MarangoniApp(App):
 
 
 
-    def tomenu(self):
+    def clear(self):
         """Clears almost everything"""
-        super().tomenu()
+        super().clear()
         
         del self.marangoni
         self.marangoni = Marangoni(trackpath=self._trackpath)

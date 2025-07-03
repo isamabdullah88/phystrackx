@@ -205,9 +205,9 @@ class InterfaceApp(App):
         threading.Thread(target=trackbg, args=(self.popup,)).start()
 
 
-    def tomenu(self):
+    def clear(self):
         """Clears almost everything"""
-        super().tomenu()
+        super().clear()
         
         del self.interface
         self.interface = Interface(trackpath=self._trackpath)

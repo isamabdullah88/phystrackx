@@ -175,3 +175,4 @@ cython_debug/
 
 temp/
 outputs/
+assets-archive/

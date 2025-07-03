@@ -205,9 +205,9 @@ class CollisionApp(App):
 
         threading.Thread(target=trackbg, args=(self.popup,)).start()
         
-    def tomenu(self):
+    def clear(self):
         """Clears almost everything"""
-        super().tomenu()
+        super().clear()
         
         del self.collision
         self.collision = Collision(trackpath=self._trackpath)
