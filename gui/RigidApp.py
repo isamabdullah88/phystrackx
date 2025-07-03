@@ -25,7 +25,7 @@ class RigidApp(App):
         
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        self.subtoolbar.button("assets/plugins/filters.png", self.appfilters).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
         self.subtoolbar.button("assets/plugins/crop.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/geometry.png", self.drawocr).pack(pady=2)
@@ -63,36 +63,35 @@ class RigidApp(App):
         
         self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
 
-        frame1 = self.rigid.frame(0)
-        self.dispframe(frame1)
-
-    def dispframe(self, frame=None):
-        """Displays the first frame in videoviewer."""
-        fwidth = self.rigid.fwidth
-        fheight = self.rigid.fheight
-        self.frame = self.resizeframe(frame, fwidth, fheight)
-        self.fheight, self.fwidth = self.frame.shape[:2]
+        # frame = self.rigid.frame(0)
+        self.resize(self.rigid.fwidth, self.rigid.fheight)
         
-        img = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
-        self.photo = ImageTk.PhotoImage(image=img)
+        # self.fheight, self.fwidth = self.frame.shape[:2]
         
         self.fx = floor(self.vwidth/2 - self.fwidth/2)
         self.fy = floor(self.vheight/2 - self.fheight/2)
 
-        self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
+        
+        # self.dispframe(frame1)
+        self.updateframe()
+
+    # def dispframe(self, frame=None):
+    #     """Displays the first frame in videoviewer."""
+        
+    #     img = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
+    #     self.photo = ImageTk.PhotoImage(image=img)
         
         # draw tracked points
-        self.tpoints.drawpoint(0)
+        # self.tpoints.drawpoint(0)
 
-    def updateframe(self, frame=None):
+    def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
-        if frame is None:
-            frame = self.rigid.frame(index=self.seekbar.idx)
-            fwidth = self.rigid.fwidth
-            fheight = self.rigid.fheight
-            self.frame = self.resizeframe(frame, fwidth, fheight)
-        else:
-            self.frame = frame
+        frame = self.rigid.frame(index=self.seekbar.idx)
+        
+        self.frame = self.resizef(frame)
+        
+        self.frame = self.filters.appfilter(self.frame)
 
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -227,5 +226,5 @@ class RigidApp(App):
         
         self.subtoolbar.toggle()
         
-    def appfilters(self):
-        self.filters.spawnfilter(self.frame)
+    def filter(self):
+        self.filters.spawnfilter()

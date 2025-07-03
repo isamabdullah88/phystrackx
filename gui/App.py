@@ -125,20 +125,27 @@ class App:
         self.videoview.delete("all")
         
     
-    def resizeframe(self, frame, fwidth, fheight):
-        """Resize frame shape to minimum of videoview height and width."""
+    def resize(self, fwidth, fheight):
+        """Resizes shape to minimum of videoview height and width."""
         if (fwidth > self.vwidth):
             ratio = fheight/fwidth
             fwidth = self.vwidth
             fheight = floor(fwidth * ratio)
             
-            frame = cv2.resize(frame, (fwidth, fheight))
+            # frame = cv2.resize(frame, (fwidth, fheight))
 
         if (fheight > self.vheight):
             ratio = fwidth/fheight
             fheight = self.vheight
             fwidth = floor(fheight*ratio)
             
-            frame = cv2.resize(frame, (fwidth, fheight))
+            # frame = cv2.resize(frame, (fwidth, fheight))
 
+        self.fwidth = fwidth
+        self.fheight = fheight
+        # return fwidth, fheight
+        
+    def resizef(self, frame):
+        """Resizes frame according to current fwidth and fheight"""
+        frame = cv2.resize(frame, (self.fwidth, self.fheight))
         return frame

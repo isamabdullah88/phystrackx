@@ -3,63 +3,61 @@ import cv2
 import numpy as np
 from PIL import Image
 from typing import Callable
+from core import FilterTypes
 
 class Filters:
     def __init__(self, toolbar, updateframe:Callable[[[np.ndarray]], None]):
         self.toolbar = toolbar
         self.updateframe = updateframe
-        # self.vidview = vidview
         
-        self.ftypes = [
-            ("Gray", "assets/plugins/gray.png"),
-            ("Gaussian Blur", "assets/plugins/gblur.png"),
-            ("Median Blur", "assets/plugins/mblur.png"),
-            ("Bilateral Filter", "assets/plugins/bfilter.png"),
-            ("Canny Edge Detection", "assets/plugins/canny.png"),
-        ]
+        self.ftypes = FilterTypes
+        self.fvar = ctk.StringVar(value=self.ftypes.NONE.name)  # Default to None
         
-    def spawnfilter(self, frame:np.ndarray):
+    def spawnfilter(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.
         """
-        self.frame = frame
+        # self.frame = frame
         
         self.fpopup = ctk.CTkToplevel(self.toolbar)
         self.fpopup.title("Select Filter")
         self.fpopup.geometry("300x200")
 
-        self.fvar = ctk.StringVar(value=self.ftypes[0][0])  # Default to the first filter type
         
         for ftype in self.ftypes:
-            radio = ctk.CTkRadioButton(self.fpopup, text=ftype[0], variable=self.fvar, value=ftype[0])
+            radio = ctk.CTkRadioButton(self.fpopup, text=ftype.label, variable=self.fvar, value=ftype.name)
             radio.pack(pady=5)
 
         applybtn = ctk.CTkButton(self.fpopup, text="Apply", command=self.filter)
         applybtn.pack(pady=10)
         
     def filter(self):
+        self.fpopup.destroy()
+        # fltframe = self.appfilter(self.frame)
+        self.updateframe()
+        
+        
+    def appfilter(self, frame):
         """
         Applies the selected filter to the current video frame.
         """
         ftype = self.fvar.get()
 
-        if ftype == "Gray":
-            fltframe = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+        if ftype == FilterTypes.MONOCHROME.name:
+            fltframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             fltframe = cv2.cvtColor(fltframe, cv2.COLOR_GRAY2BGR)
-        elif ftype == "Gaussian Blur":
-            fltframe = cv2.GaussianBlur(self.frame, (5, 5), 0)
-        elif ftype == "Median Blur":
-            fltframe = cv2.medianBlur(self.frame, 5)
-        elif ftype == "Bilateral Filter":
-            fltframe = cv2.bilateralFilter(self.frame, 9, 75, 75)
-        elif ftype == "Canny Edge Detection":
-            fltframe = cv2.Canny(self.frame, 100, 200)
+        elif ftype == FilterTypes.GAUSSIANBLUR.name:
+            fltframe = cv2.GaussianBlur(frame, (5, 5), 0)
+        elif ftype == FilterTypes.MEDIANBLUR.name:
+            fltframe = cv2.medianBlur(frame, 5)
+        elif ftype == FilterTypes.BILATERALFILTER.name:
+            fltframe = cv2.bilateralFilter(frame, 9, 75, 75)
+        elif ftype == FilterTypes.CANNYEDGE.name:
+            fltframe = cv2.Canny(frame, 100, 200)
         else:
-            fltframe = self.frame
+            fltframe = frame
 
-        self.updateframe(fltframe)
-
-        self.fpopup.destroy()
+        return fltframe
         
     
     
