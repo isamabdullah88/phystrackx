@@ -5,7 +5,7 @@ from .components import Axes
 
 class Plot:
     def __init__(self, data:list[float], axes:Axes , vwidth, vheight, fwidth, fheight, fps=24,
-                 scale=1, theme='ggplot'):
+                scale=1, theme='ggplot'):
         """
         data: list of numpy arrays. Each array should have shape N,2.
         ox, oy: origin of user specified coordinate axes.
@@ -15,8 +15,8 @@ class Plot:
         vheight: Height of videoview frame.
         """
         self._data = data
-        self._datanum = len(data)
-        self._fps = fps
+        self.datanum = len(data)
+        self.fps = fps
         self._fwidth = fwidth
         self._fheight = fheight
         self._vwidth = vwidth
@@ -30,7 +30,7 @@ class Plot:
         
         # Transform
         self._datatr = []
-        for i in range(self._datanum):
+        for i in range(self.datanum):
             data = self._data[i]
             
             datax, datay = self.transform(data[:,0], data[:,1], axes)
@@ -71,7 +71,7 @@ class Plot:
     def intgr(self):
         dataintr = []
         
-        for i in range(self._datanum):
+        for i in range(self.datanum):
             
             x_intg = np.cumsum(self._datatr[i][:,0]).reshape(-1,1) * (self._t[1] - self._t[0])
             y_intg = np.cumsum(self._datatr[i][:,1]).reshape(-1,1) * (self._t[1] - self._t[0])
@@ -83,7 +83,7 @@ class Plot:
     def plotdrv(self):
         datadrv = []
         
-        for i in range(self._datanum):
+        for i in range(self.datanum):
             dx_dt = np.gradient(self._datatr[i][:,0], self._t).reshape(-1, 1)
             dy_dt = np.gradient(self._datatr[i][:,1], self._t).reshape(-1, 1)
             datadrv.append(np.hstack((dx_dt,dy_dt)).reshape(-1, 2))
@@ -93,7 +93,7 @@ class Plot:
     def plotdrv2(self):
         datadrv = []
         
-        for i in range(self._datanum):
+        for i in range(self.datanum):
             dx_dt = np.gradient(self._datatr[i][:,0], self._t)
             dx2_dt = np.gradient(dx_dt, self._t)
             
@@ -106,9 +106,9 @@ class Plot:
         
     def plot(self, trackpts, title="Data"):
 
-        _, axes = plt.subplots(self._datanum, 3, figsize=(10, 5), squeeze=False)
+        _, axes = plt.subplots(self.datanum, 3, figsize=(10, 5), squeeze=False)
 
-        for i in range(self._datanum):
+        for i in range(self.datanum):
             trackpt = trackpts[i]
             
             xcoords = trackpt[:, 0]
