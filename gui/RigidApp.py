@@ -9,10 +9,10 @@ from math import floor
 
 from .App import App
 from experiments.Rigid import Rigid
-from core.Rect import PixelRect
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
     SubToolbar, Save)
+from experiments.components import OCRData
 from .plugins import Filters, Crop
 
 class RigidApp(App):
@@ -125,7 +125,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        self.ocrrects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
+        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
         
     
     def update_progress(self):
@@ -185,19 +185,9 @@ class RigidApp(App):
         self.clearcomponents()
         # super().clear()
     
-    def gen_plotdata(self):
-        """Evolve raw data into plot data"""
-        if self.pdata is None:    
-            scale = 1
-            if self.scruler is not None:
-                scale = self.scruler.scalef
-                
-            self.pdata = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-                    self.fheight, scale=scale, fps=self.rigid.fps)
-    
     def plot(self):
-        if len(self.rigid.trackpts) == 0:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+            messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
         self.gen_plotdata() 
@@ -212,13 +202,14 @@ class RigidApp(App):
         """
         Saves the tracked data to a CSV file.
         """
-        if len(self.rigid.trackpts) == 0:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+            messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
             return
         
         self.gen_plotdata()
+        ocrdata = OCRData(self.rigid.texts)
         
-        save = Save(self.pdata, None)
+        save = Save(self.pdata, ocrdata)
         save.askfilepath()
         save.savedata()
         
@@ -236,3 +227,14 @@ class RigidApp(App):
         
     def filter(self):
         self.filters.spawnfilter()
+        
+    
+    def gen_plotdata(self):
+        """Evolve raw data into plot data"""
+        if self.pdata is None:    
+            scale = 1
+            if self.scruler is not None:
+                scale = self.scruler.scalef
+                
+            self.pdata = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+                    self.fheight, scale=scale, fps=self.rigid.fps)
