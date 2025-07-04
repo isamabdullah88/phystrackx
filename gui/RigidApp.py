@@ -12,9 +12,8 @@ from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar)
+    SubToolbar, Save)
 from .plugins import Filters, Crop
-import csv
 
 class RigidApp(App):
     def __init__(self, root):
@@ -42,6 +41,7 @@ class RigidApp(App):
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
+        self.pdata = None
         
         # TODO: Move this var to inside progressbar class.
         # Progress bar for tracking
@@ -81,7 +81,7 @@ class RigidApp(App):
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        print('rigid pts: ', self.rigid.trackpts)
+        # print('rigid pts: ', self.rigid.trackpts)
         self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
 
         self.resize(self.rigid.fwidth, self.rigid.fheight)
@@ -119,16 +119,12 @@ class RigidApp(App):
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
         frame = self.rigid.frame(index=self.seekbar.idx)
-        
-        # print('fx, fy: ', self.crop.fx, self.crop.fy)
-        # print('fw, fh: ', self.crop.fwidth, self.crop.fheight)
         frame = self.resizef(frame, self.crop.fwidth, self.crop.fheight)
         
         # Apply filter
         frame = self.filters.appfilter(frame)
         # Apply crop
         self.frame = self.crop.appcrop(frame)
-        # cv2.imwrite('frame.png', self.frame)
 
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
@@ -144,16 +140,10 @@ class RigidApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        # if len(self.crop.rects) > 0:
-        #     crwidth = self.crop.rects[0].width
-        #     crheight = self.crop.rects[0].height
-        # else:
-        #     crwidth = self.fwidth
-        #     crheight = self.fheight
-        # print('fwidth, fheight: ', (self.fwidth, self.fheight))
-        # print('crwidth, crheight: ', (crwidth, crheight))
-        # print('updated (in drawrect) fx, fy: ', (self.fx, self.fy))
-        self.videoview.create_oval(self.crop.crpx-5, self.crop.crpy-5, self.crop.crpx+5, self.crop.crpy+5, fill="red", outline="black")
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
         self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
         
     def drawcrop(self):
@@ -229,51 +219,64 @@ class RigidApp(App):
         self.rigid.trackpts.clear()
         self.clearcomponents()
         # super().clear()
-        
+    
+    def gen_plotdata(self):
+        """Evolve raw data into plot data"""
+        if self.pdata is None:    
+            scale = 1
+            if self.scruler is not None:
+                scale = self.scruler.scalef
+                
+            self.pdata = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+                    self.fheight, scale=scale, fps=self.rigid.fps)
     
     def plot(self):
         if len(self.rigid.trackpts) == 0:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        scale = 1
-        if self.scruler is not None:
-            scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-                self.fheight, scale=scale, fps=self.rigid.fps)
-        plot.plotx()
-        plot.plotdrv()
-        plot.plotdrv2()
-        plot.intgr()
-        plot.show()
+        self.gen_plotdata() 
+            
+        self.pdata.plotx()
+        self.pdata.plotdrv()
+        self.pdata.plotdrv2()
+        self.pdata.intgr()
+        self.pdata.show()
 
     def savedata(self):
         """
         Saves the tracked data to a CSV file.
         """
-        if len(self.rigid.trackpts) < 10:
+        if len(self.rigid.trackpts) == 0:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
-        if not filepath:
-            return
+        # filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        # if not filepath:
+        #     return
                 
-        scale = 1
-        if self.scruler is not None:
-            scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                scale=scale, fps=self.rigid.fps)
+        # scale = 1
+        # if self.scruler is not None:
+        #     scale = self.scruler.scalef
+        # plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth, self.fheight,
+        #         scale=scale, fps=self.rigid.fps)
+        self.gen_plotdata()
 
-        datalist = plot.dataprocessed()
+        # datalist = self.pdata.data()
         
-        with open(filepath, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            for data in datalist:
-                writer.writerow(["Frame", "Centroid X (real units)", "Centroid Y (real units)"])
-                for i in range(plot.samplecount):
-                    cx, cy = data[i]
-                    writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
+        save = Save(self.pdata, None)
+        save.askfilepath()
+        save.savedata()
+        
+        # with open(filepath, mode='w', newline='') as file:
+        #     writer = csv.writer(file)
+        #     for data in datalist:
+        #         writer.writerow(["Frame", "Centroid X (real units)", "Centroid Y (real units)"])
+        #         for i in range(plot.samplecount):
+        #             cx, cy = data[i]
+        #             writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
+        
+        
         messagebox.showinfo("Success", "Tracked data saved successfully.")
         
     def plugins(self):
