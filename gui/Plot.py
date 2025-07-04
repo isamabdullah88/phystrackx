@@ -38,7 +38,7 @@ class Plot:
             
             self._datatr.append(datatr)
             
-    def dataprocessed(self):
+    def data(self):
         """Returns processed data after transformation"""
         return self._datatr
         

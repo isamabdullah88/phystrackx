@@ -6,7 +6,7 @@ from PIL import Image
 import numpy as np
 
 from tkinter import filedialog
-from .components import Axes, FOrigin
+from .components import Axes
 from core import abspath
 
 class App:
@@ -26,7 +26,6 @@ class App:
         self.theight = self.cheight
         self.seekbarh = floor(self.cheight * 0.1)
         self.btnsize = self.twidth - 40
-        print('button size: ', self.btnsize)
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh
@@ -38,7 +37,6 @@ class App:
         self.toolbar()
         
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
-        # self.forigin = FOrigin(self.vwidth, self.vheight, 0, 0)
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
@@ -131,19 +129,14 @@ class App:
             ratio = fheight/fwidth
             fwidth = self.vwidth
             fheight = floor(fwidth * ratio)
-            
-            # frame = cv2.resize(frame, (fwidth, fheight))
 
         if (fheight > self.vheight):
             ratio = fwidth/fheight
             fheight = self.vheight
             fwidth = floor(fheight*ratio)
-            
-            # frame = cv2.resize(frame, (fwidth, fheight))
 
         self.fwidth = fwidth
         self.fheight = fheight
-        # return fwidth, fheight
         
     def resizef(self, frame, fwidth, fheight):
         """Resizes frame according to current fwidth and fheight"""
