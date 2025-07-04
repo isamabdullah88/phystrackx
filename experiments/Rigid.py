@@ -40,12 +40,11 @@ class Rigid(Experiment):
             if platform.system() == 'Windows':
                 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
         
-        if len(crop.rects) > 0:
-            crwidth = crop.rects[0].width
-            crheight = crop.rects[0].height
-        else:
-            crwidth = self.fwidth
-            crheight = self.fheight
+        crwidth = self.fwidth
+        crheight = self.fheight
+        if crop.crprect is not None:
+            crwidth = crop.crprect.width
+            crheight = crop.crprect.height
         
         # Tracking
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
@@ -80,14 +79,11 @@ class Rigid(Experiment):
         
         for rect in rects:
             rect = rect.norm2pix(crwidth, crheight)
-            print('rect: ', rect.totuple())
 
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = 255
-            cv2.imwrite('mask.png', mask)
             
             p0 = cv2.goodFeaturesToTrack(fgray, maxCorners=100, qualityLevel=0.4, minDistance=5, blockSize=5, mask=mask)
-            print('p0: ', p0)
             if p0 is None:
                 continue
             
@@ -112,21 +108,11 @@ class Rigid(Experiment):
 
             for j,p0 in enumerate(ptstrack):
                 p1, st, err = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None)
-                print('p1: ', p1)
                 
                 if p1 is not None:
                     p1p = p1.copy()[st == 1].reshape(-1,1,2)
                 
-                # for p in p1:
-                #     a, b = p.ravel()
-                #     cv2.circle(frame, (int(a), int(b)), radius=5, color=(0,255,0), thickness=2)
-                    
-                # for p in p1p:
-                #     a, b = p.ravel()
-                #     cv2.circle(frame, (int(a), int(b)), radius=5, color=(255,0,0), thickness=2)
-                
                 x, y = self.pts2pt(p1p)
-                cv2.circle(frame, (x, y), radius=5, color=(0,0,255), thickness=2)
                 ptstrack[j] = p1p
                 
                 self.trackpts[j].append([x,y])
@@ -153,7 +139,7 @@ class Rigid(Experiment):
 
 if __name__ == '__main__':
     sliding_friction = Rigid('track-sfriction.mp4')
-    sliding_friction.add_video("R1.mp4")
+    sliding_friction.addvideo("R1.mp4")
     
     rects = [PixelRect(284, 52, 23, 20)]
     sliding_friction.track(rects, 100, 450)

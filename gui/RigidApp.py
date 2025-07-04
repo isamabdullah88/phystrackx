@@ -12,8 +12,8 @@ from experiments.Rigid import Rigid
 from core.Rect import PixelRect
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Crop)
-from .plugins import Filters
+    SubToolbar)
+from .plugins import Filters, Crop
 import csv
 
 class RigidApp(App):
@@ -39,97 +39,102 @@ class RigidApp(App):
         
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
-        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.updateparams)
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         
+        # TODO: Move this var to inside progressbar class.
         # Progress bar for tracking
         self._progressbarh = 20
         self.progress = ctk.IntVar()
         self.progress.set(0)
         
-        self.fx = self.fy = 0
+        # TODO: Restructure this to make more consistent
         self.scruler = None
         
+        # TODO: Make this handle more gracefully
         tempdir = './temp'
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
         self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
 
-    def updateparams(self):
-        """Fundamental parameters"""
-        if len(self.crop.rects) > 0:
-            rect = self.crop.rects[0]
-            self.fx = floor(self.vwidth/2 - rect.width/2)
-            self.fy = floor(self.vheight/2 - rect.height/2)
-            print('updated fx, fy: ', (self.fx, self.fy))
-        else:
-            self.fx = floor(self.vwidth/2 - self.fwidth/2)
-            self.fy = floor(self.vheight/2 - self.fheight/2)
+    # def updateparams(self):
+    #     """Fundamental parameters"""
+    #     if len(self.crop.rects) > 0:
+    #         rect = self.crop.rects[0]
+    #         self.fx = floor(self.vwidth/2 - rect.width/2)
+    #         self.fy = floor(self.vheight/2 - rect.height/2)
+    #         print('updated fx, fy: ', (self.fx, self.fy))
+    #     else:
+    #         self.fx = floor(self.vwidth/2 - self.fwidth/2)
+    #         self.fy = floor(self.vheight/2 - self.fheight/2)
 
-    def loadnwvideo(self, videopath):
+    def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
-        self.clear()
+        if clear:
+            self.clear()
+        else:
+            self.clearcomponents()
         
-        self.rigid.add_video(videopath, self.crop)
-        
-        self.seekbar.setcount(self.rigid.fcount)
-        
-        print('track points: ', self.rigid.trackpts)
-        self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
-
-        self.resize(self.rigid.fwidth, self.rigid.fheight)
-        
-        self.fx = floor(self.vwidth/2 - self.fwidth/2)
-        self.fy = floor(self.vheight/2 - self.fheight/2)
-        print('fx: ', self.fx)
-        print('fy: ', self.fy)
-
-        self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
-        
-        self.updateframe()
-        
-    def loadvideo(self, videopath):
-        """Loads locally modified video (like tracked video)"""
-        self.clearcomponents()
-        
-        self.rigid.add_video(videopath, self.crop)
+        self.rigid.addvideo(videopath)
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        print('track points: ', self.rigid.trackpts)
-        self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
+        print('rigid pts: ', self.rigid.trackpts)
+        self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
 
         self.resize(self.rigid.fwidth, self.rigid.fheight)
         
-        self.fx = floor(self.vwidth/2 - self.fwidth/2)
-        self.fy = floor(self.vheight/2 - self.fheight/2)
-        print('fx: ', self.fx)
-        print('fy: ', self.fy)
+        # print('fwidth, fheight: ', self.fwidth, self.fheight)
+        self.crop.set(self.fwidth, self.fheight)
+        # print('fx, fy: ', self.crop.fx, self.crop.fy)
+        # print('actual fx, fy: ', (self.vwidth/2-self.rigid.fwidth/2), (self.vheight/2-self.rigid.fheight/2))
 
-        self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
+        self.imgview = self.videoview.create_image(self.crop.fx, self.crop.fy, anchor='nw')
         
         self.updateframe()
+        
+    # def loadvideo(self, videopath):
+    #     """Loads locally modified video (like tracked video)"""
+    #     self.clearcomponents()
+        
+    #     self.rigid.addvideo(videopath, self.crop)
+        
+    #     self.seekbar.setcount(self.rigid.fcount)
+        
+    #     self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
+
+    #     self.resize(self.rigid.fwidth, self.rigid.fheight)
+        
+    #     self.fx = floor(self.vwidth/2 - self.fwidth/2)
+    #     self.fy = floor(self.vheight/2 - self.fheight/2)
+    #     print('fx: ', self.fx)
+    #     print('fy: ', self.fy)
+
+    #     self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
+        
+    #     self.updateframe()
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
         frame = self.rigid.frame(index=self.seekbar.idx)
         
-        frame = self.resizef(frame)
+        # print('fx, fy: ', self.crop.fx, self.crop.fy)
+        # print('fw, fh: ', self.crop.fwidth, self.crop.fheight)
+        frame = self.resizef(frame, self.crop.fwidth, self.crop.fheight)
         
         # Apply filter
         frame = self.filters.appfilter(frame)
         # Apply crop
         self.frame = self.crop.appcrop(frame)
-        cv2.imwrite('frame.png', self.frame)
+        # cv2.imwrite('frame.png', self.frame)
 
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
 
-        self.videoview.coords(self.imgview, self.fx, self.fy)
+        self.videoview.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.videoview.itemconfig(self.imgview, image=self.photo)
-        
         
         # draw tracked points
         self.tpoints.drawpoint(self.seekbar.idx)
@@ -139,17 +144,17 @@ class RigidApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        if len(self.crop.rects) > 0:
-            crwidth = self.crop.rects[0].width
-            crheight = self.crop.rects[0].height
-        else:
-            crwidth = self.fwidth
-            crheight = self.fheight
-        print('fwidth, fheight: ', (self.fwidth, self.fheight))
-        print('crwidth, crheight: ', (crwidth, crheight))
-        print('updated (in drawrect) fx, fy: ', (self.fx, self.fy))
-            
-        self.trects.drawrect(crwidth, crheight, self.fx, self.fy)
+        # if len(self.crop.rects) > 0:
+        #     crwidth = self.crop.rects[0].width
+        #     crheight = self.crop.rects[0].height
+        # else:
+        #     crwidth = self.fwidth
+        #     crheight = self.fheight
+        # print('fwidth, fheight: ', (self.fwidth, self.fheight))
+        # print('crwidth, crheight: ', (crwidth, crheight))
+        # print('updated (in drawrect) fx, fy: ', (self.fx, self.fy))
+        self.videoview.create_oval(self.crop.crpx-5, self.crop.crpy-5, self.crop.crpx+5, self.crop.crpy+5, fill="red", outline="black")
+        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
         
     def drawcrop(self):
         """Crop for crop plugin. This crop the all frames of video"""
@@ -157,7 +162,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        self.crop.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
+        self.crop.drawrect()
         
     def drawocr(self):
         """Draws rectangle for OCR"""
@@ -203,8 +208,7 @@ class RigidApp(App):
             self.root.after(0, popup.destroy())
             self.root.after(0, progressbar.destroy())
 
-            self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
-            self.loadvideo(self._trackpath)
+            self.loadvideo(self._trackpath, clear=False)
 
         threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
         
@@ -219,6 +223,7 @@ class RigidApp(App):
         self.ocrrects.cleardata()
         self.trects.cleardata()
         self.filters.clear()
+        self.axes.clear()
         
     def clear(self):
         self.rigid.trackpts.clear()
@@ -227,7 +232,7 @@ class RigidApp(App):
         
     
     def plot(self):
-        if len(self.rigid.trackpts) < 10:
+        if len(self.rigid.trackpts) == 0:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
