@@ -25,6 +25,7 @@ class RigidApp(App):
         
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
+        # TODO: Use enum for these
         self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
         self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
@@ -59,17 +60,6 @@ class RigidApp(App):
         self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
         self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
 
-    # def updateparams(self):
-    #     """Fundamental parameters"""
-    #     if len(self.crop.rects) > 0:
-    #         rect = self.crop.rects[0]
-    #         self.fx = floor(self.vwidth/2 - rect.width/2)
-    #         self.fy = floor(self.vheight/2 - rect.height/2)
-    #         print('updated fx, fy: ', (self.fx, self.fy))
-    #     else:
-    #         self.fx = floor(self.vwidth/2 - self.fwidth/2)
-    #         self.fy = floor(self.vheight/2 - self.fheight/2)
-
     def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
         if clear:
@@ -81,40 +71,15 @@ class RigidApp(App):
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        # print('rigid pts: ', self.rigid.trackpts)
         self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
 
         self.resize(self.rigid.fwidth, self.rigid.fheight)
-        
-        # print('fwidth, fheight: ', self.fwidth, self.fheight)
+
         self.crop.set(self.fwidth, self.fheight)
-        # print('fx, fy: ', self.crop.fx, self.crop.fy)
-        # print('actual fx, fy: ', (self.vwidth/2-self.rigid.fwidth/2), (self.vheight/2-self.rigid.fheight/2))
 
         self.imgview = self.videoview.create_image(self.crop.fx, self.crop.fy, anchor='nw')
         
         self.updateframe()
-        
-    # def loadvideo(self, videopath):
-    #     """Loads locally modified video (like tracked video)"""
-    #     self.clearcomponents()
-        
-    #     self.rigid.addvideo(videopath, self.crop)
-        
-    #     self.seekbar.setcount(self.rigid.fcount)
-        
-    #     self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
-
-    #     self.resize(self.rigid.fwidth, self.rigid.fheight)
-        
-    #     self.fx = floor(self.vwidth/2 - self.fwidth/2)
-    #     self.fy = floor(self.vheight/2 - self.fheight/2)
-    #     print('fx: ', self.fx)
-    #     print('fy: ', self.fy)
-
-    #     self.imgview = self.videoview.create_image(self.fx, self.fy, anchor='nw')
-        
-    #     self.updateframe()
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -250,32 +215,12 @@ class RigidApp(App):
         if len(self.rigid.trackpts) == 0:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
-
-        # filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
-        # if not filepath:
-        #     return
-                
-        # scale = 1
-        # if self.scruler is not None:
-        #     scale = self.scruler.scalef
-        # plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth, self.fheight,
-        #         scale=scale, fps=self.rigid.fps)
+        
         self.gen_plotdata()
-
-        # datalist = self.pdata.data()
         
         save = Save(self.pdata, None)
         save.askfilepath()
         save.savedata()
-        
-        # with open(filepath, mode='w', newline='') as file:
-        #     writer = csv.writer(file)
-        #     for data in datalist:
-        #         writer.writerow(["Frame", "Centroid X (real units)", "Centroid Y (real units)"])
-        #         for i in range(plot.samplecount):
-        #             cx, cy = data[i]
-        #             writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
-        
         
         messagebox.showinfo("Success", "Tracked data saved successfully.")
         
