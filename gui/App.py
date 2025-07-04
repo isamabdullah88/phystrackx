@@ -1,9 +1,7 @@
 from math import floor
 import customtkinter as ctk
-import tkinter as tk
 import cv2
 from PIL import Image
-import numpy as np
 
 from tkinter import filedialog
 from .components import Axes
