@@ -51,7 +51,7 @@ class MarangoniApp(App):
 
 
     def loadvideo(self, videopath):
-        self.marangoni.add_video(videopath)
+        self.marangoni.addvideo(videopath)
         
         self.seekbar.setcount(self.marangoni.fcount)
 

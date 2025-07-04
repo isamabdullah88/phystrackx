@@ -54,7 +54,7 @@ class CollisionApp(App):
         
 
     def loadvideo(self, videopath):
-        self.collision.add_video(videopath)
+        self.collision.addvideo(videopath)
         
         self.seekbar.setcount(self.collision.fcount)
 

@@ -78,7 +78,7 @@ class Collision(Experiment):
 
 if __name__ == '__main__':
     collision = Collision('track-collision.mp4')
-    collision.add_video("HeadOn.MP4")
+    collision.addvideo("HeadOn.MP4")
     
     rects = [
         NormalizedRect(3/320, 48/240, 27/320, 27/240),

@@ -64,7 +64,7 @@ class BalloonApp(App):
 
 
     def loadvideo(self, videopath):
-        self.balloon.add_video(videopath)
+        self.balloon.addvideo(videopath)
         
         self.seekbar.setcount(self.balloon.fcount)
 

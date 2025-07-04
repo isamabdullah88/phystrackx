@@ -6,7 +6,7 @@ from PIL import Image
 import numpy as np
 
 from tkinter import filedialog
-from .components import ScrollBar, Axes
+from .components import Axes, FOrigin
 from core import abspath
 
 class App:
@@ -38,7 +38,7 @@ class App:
         self.toolbar()
         
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
-        
+        # self.forigin = FOrigin(self.vwidth, self.vheight, 0, 0)
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
@@ -64,7 +64,7 @@ class App:
         self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
-            ("assets/open-video.png", self.openvideo),
+            ("assets/video.png", self.openvideo),
             ("assets/axis.png", self.markaxes),
             ("assets/ruler.png", self.scale),
             ("assets/rectanglebd.png", self.drawrect),
@@ -90,7 +90,7 @@ class App:
         videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
-            self.loadnwvideo(videopath)
+            self.loadvideo(videopath)
     
     def markaxes(self):
         self.axes.markaxes()
@@ -145,7 +145,7 @@ class App:
         self.fheight = fheight
         # return fwidth, fheight
         
-    def resizef(self, frame):
+    def resizef(self, frame, fwidth, fheight):
         """Resizes frame according to current fwidth and fheight"""
-        frame = cv2.resize(frame, (self.fwidth, self.fheight))
+        frame = cv2.resize(frame, (fwidth, fheight))
         return frame

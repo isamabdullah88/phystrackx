@@ -163,12 +163,12 @@ class Interface(Experiment):
 
 if __name__ == '__main__':
     # candle = Interface("candle-track.mp4")
-    # candle.add_video("Candle1.mp4")
+    # candle.addvideo("Candle1.mp4")
     # points = Points([0.45, 0.4796875, 0.5015625, 0.51875, 0.525, 0.521875, 0.5109375, 0.478125, 0.45],
     #                [0.41388888888888886, 0.41388888888888886, 0.41944444444444445, 0.4638888888888889, 0.5277777777777778, 0.5833333333333334, 0.6, 0.5972222222222222, 0.5944444444444444])
     # candle.track(points, None, 787, 2700)
     
     interface = Interface("interface-track.mp4")
-    interface.add_video("Interface.mp4")
+    interface.addvideo("Interface.mp4")
     points =  Points(x=[0.4423791821561338, 0.48698884758364314], y=[0.6145833333333334, 0.6145833333333334])
     interface.track(points, None, 165, 193)

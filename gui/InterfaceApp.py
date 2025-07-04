@@ -62,7 +62,7 @@ class InterfaceApp(App):
 
 
     def loadvideo(self, videopath):
-        self.interface.add_video(videopath)
+        self.interface.addvideo(videopath)
         
         self.seekbar.setcount(self.interface.fcount)
 

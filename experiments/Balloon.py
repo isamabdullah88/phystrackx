@@ -276,11 +276,11 @@ class Balloon(Experiment):
 
 if __name__ == '__main__':
     balloon = Balloon("balloon-track.mp4")
-    balloon.add_video("Balloon.mp4")
+    balloon.addvideo("Balloon.mp4")
     mask = cv2.imread("mask-balloon.png", 0)
     balloon.track(mask, None, 100, 500)
     
     balloon = Balloon("bubble-track.mp4")
-    balloon.add_video("Bubble-Laplace-Pressure.mp4")
+    balloon.addvideo("Bubble-Laplace-Pressure.mp4")
     mask = cv2.imread("bubble-mask.png", 0)
     balloon.track(mask, None, 925, 3200)
