@@ -24,7 +24,9 @@ class Plot:
         self._scale = scale
         self.axes = axes
         
-        self.samplecount = self._data[0].shape[0]
+        self.samplecount = 0
+        if self.datanum > 0:
+            self.samplecount = self._data[0].shape[0]
         self._t = np.linspace(0, self.samplecount/fps, self.samplecount)
         plt.style.use(theme)
         

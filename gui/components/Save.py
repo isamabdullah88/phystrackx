@@ -4,12 +4,15 @@ import csv
 import customtkinter as ctk
 from gui.Plot import Plot
 from .Axes import Axes
+from experiments.components import OCRData
 
 class Save:
-    def __init__(self, pdata:Plot, ocrdata):
+    def __init__(self, pdata:Plot, ocrdata:OCRData):
         self.pdata = pdata
         self.ocrdata = ocrdata
         self.filepath = None
+        
+        self.samplecount = max(self.pdata.samplecount, self.ocrdata.samplecount)
         
     
     def askfilepath(self):
@@ -28,33 +31,41 @@ class Save:
             ts = 0.0
             # Prep header
             header = ["T(s)"]
-            for i,data in enumerate(datalist):
+            for i in range(self.pdata.datanum):
                 header.extend([f"x{i+1}", f"y{i+1}"])
-            print('header: ', header)
+                
+            for i in range(self.ocrdata.datanum):
+                header.extend([f"text{i+1}"])
+
             writer.writerow(header)
             
             # Persist data into file
-            for i in range(self.pdata.samplecount):
+            for i in range(self.samplecount):
                 row = [f"{ts:.06f}"]
-                for tpoints in datalist:
-                    cx, cy = tpoints[i,:]
-                    row.extend([f"{cx:.02f}", f"{cy:.02f}"])
+                
+                if i < self.pdata.samplecount:
+                    for tpoints in datalist:
+                        cx, cy = tpoints[i,:]
+                        row.extend([f"{cx:.02f}", f"{cy:.02f}"])
+                
+                if i < self.ocrdata.samplecount:
+                    for tocr in self.ocrdata.data:
+                        txt = tocr[i]
+                        row.extend([txt])
                 
                 ts += dt
                 writer.writerow(row)
-                # for i in range(self.pdata.samplecount):
-                #     cx, cy = data[i]
-                #     writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
                     
                     
                     
 if __name__ == "__main__":
     import numpy as np
-    data = data = [np.random.rand(100, 2) * 100, np.random.rand(100, 2) * 100]
+    data = [np.random.rand(100, 2) * 100, np.random.rand(100, 2) * 100]
+    ocr = [["abc" for _ in range(100)]]
     axes = Axes(ctk.CTk(), None, 200, 200)
     plot = Plot(data, axes, 200, 200, 200, 200)
     
-    save = Save(plot, None)
+    save = Save(plot, ocr)
     # save.askfilepath()
     save.filepath = "test.csv"
     save.savedata()
