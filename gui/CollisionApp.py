@@ -53,8 +53,8 @@ class CollisionApp(App):
         self.collision = Collision(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
         
 
-    def load_video(self, videopath):
-        self.collision.add_video(videopath)
+    def loadvideo(self, videopath):
+        self.collision.addvideo(videopath)
         
         self.seekbar.setcount(self.collision.fcount)
 
@@ -199,7 +199,7 @@ class CollisionApp(App):
             
             self.root.after(0, popup.destroy())
 
-            self.load_video(self._trackpath)
+            self.loadvideo(self._trackpath)
 
             # self.track_coords_button.configure(state=ctk.NORMAL)  # Enable coordinates button
 

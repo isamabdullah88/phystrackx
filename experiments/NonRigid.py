@@ -21,7 +21,7 @@ class NonRigid():
 
         self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
 
-    def add_video(self, video_path):
+    def addvideo(self, video_path):
         self._vidreader = VideoReader(video_path)
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
@@ -234,7 +234,7 @@ class NonRigid():
 
 if __name__ == '__main__':
     nonrigid = NonRigid()
-    nonrigid.add_video("../Marangoni.MOV")
+    nonrigid.addvideo("../Marangoni.MOV")
 
     # nonrigid.crop_intime()
     nonrigid.track()

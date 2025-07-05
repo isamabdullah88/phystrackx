@@ -68,6 +68,9 @@ class TPoints:
         if not isinstance(tpts, list):
             raise TypeError("tpts must be a list of points.")
         
+        if len(tpts) == 0:
+            return
+        
         self.tpts = [[] for _ in range(len(tpts))]
         
         for i, tpt in enumerate(tpts):

@@ -1,12 +1,10 @@
 from math import floor
 import customtkinter as ctk
-import tkinter as tk
 import cv2
 from PIL import Image
-import numpy as np
 
 from tkinter import filedialog
-from .components import ScrollBar, Axes
+from .components import Axes
 from core import abspath
 
 class App:
@@ -26,7 +24,6 @@ class App:
         self.theight = self.cheight
         self.seekbarh = floor(self.cheight * 0.1)
         self.btnsize = self.twidth - 40
-        print('button size: ', self.btnsize)
         
         self.vwidth = self.cwidth - self.twidth
         self.vheight = self.theight-self.seekbarh
@@ -38,7 +35,6 @@ class App:
         self.toolbar()
         
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
-        
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
@@ -64,7 +60,7 @@ class App:
         self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
-            ("assets/open-video.png", self.openvideo),
+            ("assets/video.png", self.openvideo),
             ("assets/axis.png", self.markaxes),
             ("assets/ruler.png", self.scale),
             ("assets/rectanglebd.png", self.drawrect),
@@ -90,7 +86,7 @@ class App:
         videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if videopath:
-            self.load_video(videopath)
+            self.loadvideo(videopath)
     
     def markaxes(self):
         self.axes.markaxes()
@@ -125,20 +121,22 @@ class App:
         self.videoview.delete("all")
         
     
-    def resizeframe(self, frame, fwidth, fheight):
-        """Resize frame shape to minimum of videoview height and width."""
+    def resize(self, fwidth, fheight):
+        """Resizes shape to minimum of videoview height and width."""
         if (fwidth > self.vwidth):
             ratio = fheight/fwidth
             fwidth = self.vwidth
             fheight = floor(fwidth * ratio)
-            
-            frame = cv2.resize(frame, (fwidth, fheight))
 
         if (fheight > self.vheight):
             ratio = fwidth/fheight
             fheight = self.vheight
             fwidth = floor(fheight*ratio)
-            
-            frame = cv2.resize(frame, (fwidth, fheight))
 
+        self.fwidth = fwidth
+        self.fheight = fheight
+        
+    def resizef(self, frame, fwidth, fheight):
+        """Resizes frame according to current fwidth and fheight"""
+        frame = cv2.resize(frame, (fwidth, fheight))
         return frame

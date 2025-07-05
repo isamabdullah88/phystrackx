@@ -7,3 +7,4 @@ from .Axes import Axes
 from .Rect import Rect
 from .TPoints import TPoints
 from .SubToolbar import SubToolbar
+from .Save import Save

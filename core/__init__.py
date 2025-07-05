@@ -1,4 +1,4 @@
 from .Rect import PixelRect, NormalizedRect, Points
-from .Path import abspath
+from .Path import abspath, filexists
 from .Circle import Circle
-from .Utils import filexists
+from .FilterTypes import FilterTypes

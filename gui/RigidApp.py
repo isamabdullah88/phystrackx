@@ -9,11 +9,11 @@ from math import floor
 
 from .App import App
 from experiments.Rigid import Rigid
-from core.Rect import PixelRect
 from .Plot import Plot
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints, SubToolbar
-from .plugins import Filters
-import csv
+from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
+    SubToolbar, Save)
+from experiments.components import OCRData
+from .plugins import Filters, Crop
 
 class RigidApp(App):
     def __init__(self, root):
@@ -25,8 +25,9 @@ class RigidApp(App):
         
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        self.subtoolbar.button("assets/plugins/filters.png", self.appfilters).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/crop.png", self.drawocr).pack(pady=2)
+        # TODO: Use enum for these
+        self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/geometry.png", self.drawocr).pack(pady=2)
         
@@ -34,69 +35,66 @@ class RigidApp(App):
         
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
-        self.filters = Filters(self.scrollframe, self.updateframe)
+        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe)
         
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
+        self.pdata = None
         
+        # TODO: Move this var to inside progressbar class.
         # Progress bar for tracking
         self._progressbarh = 20
         self.progress = ctk.IntVar()
         self.progress.set(0)
         
-        self.fx = self.fy = 0
+        # TODO: Restructure this to make more consistent
         self.scruler = None
         
+        # TODO: Make this handle more gracefully
         tempdir = './temp'
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
         self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
-        
 
-    def load_video(self, videopath):
-        self.rigid.add_video(videopath)
+    def loadvideo(self, videopath, clear=True):
+        """Loads a new video from user click."""
+        if clear:
+            self.clear()
+        else:
+            self.clearcomponents()
+        
+        self.rigid.addvideo(videopath)
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        self.tpoints.addpoints(self.rigid.trackpts, self.fx, self.fy)
+        self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
 
-        frame1 = self.rigid.frame(0)
-        self.dispframe(frame1)
+        self.resize(self.rigid.fwidth, self.rigid.fheight)
 
-    def dispframe(self, frame=None):
-        """Displays the first frame in videoviewer."""
-        fwidth = self.rigid.fwidth
-        fheight = self.rigid.fheight
-        self.frame = self.resizeframe(frame, fwidth, fheight)
-        self.fheight, self.fwidth = self.frame.shape[:2]
+        self.crop.set(self.fwidth, self.fheight)
+
+        self.imgview = self.videoview.create_image(self.crop.fx, self.crop.fy, anchor='nw')
         
-        img = Image.fromarray(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
-        self.photo = ImageTk.PhotoImage(image=img)
-        
-        self.fx = floor(self.vwidth/2 - self.fwidth/2)
-        self.fy = floor(self.vheight/2 - self.fheight/2)
+        self.updateframe()
 
-        self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
-        
-        # draw tracked points
-        self.tpoints.drawpoint(0)
-
-    def updateframe(self, frame=None):
+    def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
-        if frame is None:
-            frame = self.rigid.frame(index=self.seekbar.idx)
-            fwidth = self.rigid.fwidth
-            fheight = self.rigid.fheight
-            self.frame = self.resizeframe(frame, fwidth, fheight)
-        else:
-            self.frame = frame
+        frame = self.rigid.frame(index=self.seekbar.idx)
+        frame = self.resizef(frame, self.crop.fwidth, self.crop.fheight)
+        
+        # Apply filter
+        frame = self.filters.appfilter(frame)
+        # Apply crop
+        self.frame = self.crop.appcrop(frame)
 
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
 
+        self.videoview.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.videoview.itemconfig(self.imgview, image=self.photo)
         
         # draw tracked points
@@ -107,7 +105,19 @@ class RigidApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
-        self.trects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        
+    def drawcrop(self):
+        """Crop for crop plugin. This crop the all frames of video"""
+        if self.rigid.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.crop.drawrect()
         
     def drawocr(self):
         """Draws rectangle for OCR"""
@@ -115,7 +125,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        self.ocrrects.drawrect(self.fwidth, self.fheight, self.fx, self.fy)
+        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
         
     
     def update_progress(self):
@@ -138,8 +148,8 @@ class RigidApp(App):
         
         # Clear previous Axes, rectangles and OCRs
         self.axes.clear()
-        self.trects.delrects()
-        self.ocrrects.delrects()
+        self.trects.clearrects()
+        self.ocrrects.clearrects()
         
         self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight-self._progressbarh)
         self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
@@ -148,73 +158,61 @@ class RigidApp(App):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
             
-            self.rigid.track(self.trects.rects, self.ocrrects.rects, startidx, endidx, self.progress)
+            self.rigid.track(self.trects.rects, self.ocrrects.rects, self.filters, self.crop, startidx, endidx, self.progress)
             
             self.root.after(0, popup.destroy())
             self.root.after(0, progressbar.destroy())
 
-            self.load_video(self._trackpath)
+            self.loadvideo(self._trackpath, clear=False)
 
         threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
         
         self.update_progress()
         
         
-    def clear(self):
-        """Clears almost everything"""
-        super().clear()
-        
-        del self.rigid
-        self.rigid = Rigid(trackpath=self._trackpath)
-        
+    def clearcomponents(self):
+        """Clear components"""
         self.scruler = None
-        
         self.seekbar.setcount(100)
+        self.crop.cleardata()
+        self.ocrrects.cleardata()
+        self.trects.cleardata()
+        self.filters.clear()
+        self.axes.clear()
         
+    def clear(self):
+        self.rigid.trackpts.clear()
+        self.clearcomponents()
+        # super().clear()
     
     def plot(self):
-        if len(self.rigid.trackpts) < 1:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+            messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
-        scale = 1
-        if self.scruler is not None:
-            scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-                self.fheight, scale=scale, fps=self.rigid.fps)
-        plot.plotx()
-        plot.plotdrv()
-        plot.plotdrv2()
-        plot.intgr()
-        plot.show()
+        self.gen_plotdata() 
+            
+        self.pdata.plotx()
+        self.pdata.plotdrv()
+        self.pdata.plotdrv2()
+        self.pdata.intgr()
+        self.pdata.show()
 
     def savedata(self):
         """
         Saves the tracked data to a CSV file.
         """
-        if len(self.rigid.trackpts) < 1:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+            messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
             return
-
-        filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
-        if not filepath:
-            return
-                
-        scale = 1
-        if self.scruler is not None:
-            scale = self.scruler.scalef
-        plot = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth, self.fheight,
-                scale=scale, fps=self.rigid.fps)
-
-        datalist = plot.dataprocessed()
         
-        with open(filepath, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            for data in datalist:
-                writer.writerow(["Frame", "Centroid X (real units)", "Centroid Y (real units)"])
-                for i in range(plot.samplecount):
-                    cx, cy = data[i]
-                    writer.writerow([i, f"{cx:.02f}", f"{cy:.02f}"])
+        self.gen_plotdata()
+        ocrdata = OCRData(self.rigid.texts)
+        
+        save = Save(self.pdata, ocrdata)
+        save.askfilepath()
+        save.savedata()
+        
         messagebox.showinfo("Success", "Tracked data saved successfully.")
         
     def plugins(self):
@@ -227,5 +225,16 @@ class RigidApp(App):
         
         self.subtoolbar.toggle()
         
-    def appfilters(self):
-        self.filters.spawnfilter(self.frame)
+    def filter(self):
+        self.filters.spawnfilter()
+        
+    
+    def gen_plotdata(self):
+        """Evolve raw data into plot data"""
+        if self.pdata is None:    
+            scale = 1
+            if self.scruler is not None:
+                scale = self.scruler.scalef
+                
+            self.pdata = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+                    self.fheight, scale=scale, fps=self.rigid.fps)

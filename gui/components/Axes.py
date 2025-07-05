@@ -14,10 +14,6 @@ class Axes:
         self.ox = 0
         self.oy = self.vheight
         
-        self.slider = ttk.Scale(self.root, from_=-180, to=0, orient='horizontal', variable=self.theta,
-                            command=self.rotate)
-        self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider, tags="slider")
-        self.canvas.itemconfigure("slider", state="hidden")  # Hide the slider initially
         
     def clear(self):
         """Clear GUI elements"""
@@ -148,9 +144,9 @@ class Axes:
         self.ox = x
         self.oy = y
 
-        self.canvas.create_oval(x-3, y-3, x+3, y+3, fill="red", tags="oval")  # Draw a small dot
-
         self.canvas.unbind("<Motion>")
         self.canvas.unbind("<Button-1>")
 
-        self.canvas.itemconfigure("slider", state="normal")  # Show the slider
+        self.slider = ttk.Scale(self.root, from_=-180, to=0, orient='horizontal', variable=self.theta,
+                            command=self.rotate)
+        self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider, tags="slider")
