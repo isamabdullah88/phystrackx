@@ -35,7 +35,7 @@ class RigidApp(App):
         
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
-        self.filters = Filters(self.scrollframe, self.updateframe)
+        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe)
         
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
