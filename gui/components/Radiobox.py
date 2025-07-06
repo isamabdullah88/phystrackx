@@ -40,7 +40,7 @@ class Radiobox(ctk.CTkToplevel):
             rb.grid(row=row, column=col, padx=15, pady=10, sticky="w")
 
         # Apply button
-        ctk.CTkButton(self, text="✓ Apply", command=lambda: self.callback(None), width=120, font=("Segoe UI", 18, "bold")).pack(pady=15)
+        ctk.CTkButton(self, text="✓ Apply", command=lambda: self.callback(None), width=120).pack(pady=15)
 
 
 class App(ctk.CTk):

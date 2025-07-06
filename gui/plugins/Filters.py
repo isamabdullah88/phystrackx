@@ -1,24 +1,27 @@
 import customtkinter as ctk
-from tkinter import ttk
 import cv2
-import numpy as np
+from PIL import Image
 from typing import Callable
-from core import FilterTypes
+from core import FilterTypes, abspath
 from gui.components import Radiobox, Slider
 
 class Filters:
-    def __init__(self, toolbar, canvas, vwidth, vheight, updateframe:Callable):
+    def __init__(self, toolbar, canvas, vwidth, vheight, updateframe:Callable, toggle:Callable):
         self.toolbar = toolbar
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
         self.updateframe = updateframe
+        self.toggle = toggle
         
         self.ftypes = FilterTypes
         self.fvar = ctk.StringVar(value=self.ftypes.NONE.name)  # Default to None
         self.bcvalue = ctk.IntVar(value=0) # Brightness and contrast value
         
         self.slider = None
+        
+        self.btnsize = 30
+        self.applybtn = self.plcbutton("assets/apply.png", self.onapplybtn, 80)
         
     def spawnfilter(self):
         """
@@ -53,6 +56,9 @@ class Filters:
         self.updateframe()
         self.radiobox.destroy()
         
+        # Apply button
+        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        
     def clear(self):
         self.fvar.set(FilterTypes.NONE.name)
         
@@ -74,6 +80,7 @@ class Filters:
             fltframe = cv2.bilateralFilter(frame, 9, 75, 75)
         elif ftype == FilterTypes.CANNYEDGE.name:
             fltframe = cv2.Canny(frame, 100, 200)
+            fltframe = cv2.cvtColor(fltframe, cv2.COLOR_GRAY2BGR)
         elif ftype == FilterTypes.BRIGHTNESS.name:
             fltframe = cv2.convertScaleAbs(frame, alpha=1, beta=self.slider.var.get())
         elif ftype == FilterTypes.CONTRAST.name:
@@ -84,4 +91,20 @@ class Filters:
         return fltframe
         
     
+    def plcbutton(self, imgpath, command, btnsize=30):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
+        
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
+                            image=img, command=command)
+        
+        button.image = img
+        
+        return button
     
+    def onapplybtn(self):
+        self.applybtn.place_forget()
+        self.toggle()

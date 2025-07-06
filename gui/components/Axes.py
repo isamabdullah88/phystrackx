@@ -1,6 +1,8 @@
 import numpy as np
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import ttk
+from PIL import Image
+from core import abspath
 
 class Axes:
     def __init__(self, root, canvas, vwidth, vheight):
@@ -8,11 +10,13 @@ class Axes:
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
-        self.theta = tk.DoubleVar(value=0)  # Angle of rotation in degrees
+        self.theta = ctk.DoubleVar(value=0)  # Angle of rotation in degrees
         
         # Default frame is regular frame from bottom left corner
         self.ox = 0
         self.oy = self.vheight
+        
+        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
         
         
     def clear(self):
@@ -45,8 +49,8 @@ class Axes:
         if x1 > self.vwidth: x1 = self.vwidth
         if y1 > self.vheight: y1 = self.vheight
         
-        self.canvas.create_line(sx0, sy0, x0, y0, fill="red", arrow=tk.LAST, width=2, tags="axes")  # X-axis
-        self.canvas.create_line(sx1, sy1, x1, y1, fill="blue", arrow=tk.LAST, width=2, tags="axes")  # Y-axis
+        self.canvas.create_line(sx0, sy0, x0, y0, fill="red", arrow=ctk.LAST, width=2, tags="axes")  # X-axis
+        self.canvas.create_line(sx1, sy1, x1, y1, fill="blue", arrow=ctk.LAST, width=2, tags="axes")  # Y-axis
 
         self.canvas.create_text(x0-15, y0-15, text="x", fill="red", font=("Arial", 15, "bold"), tags="axes")
         self.canvas.create_text(x1+15, y1-15, text="y", fill="blue", font=("Arial", 15, "bold"), tags="axes")
@@ -149,4 +153,25 @@ class Axes:
 
         self.slider = ttk.Scale(self.root, from_=-180, to=0, orient='horizontal', variable=self.theta,
                             command=self.rotate)
-        self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider, tags="slider")
+        self.canvas.create_window(self.vwidth - 180, self.vheight - 20, window=self.slider, tags="slider")
+        
+        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        
+    def onapply(self):
+        self.slider.destroy()
+        self.applybtn.destroy()
+        
+    
+    def plcbutton(self, imgpath, command, btnsize=30):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
+        
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
+                            image=img, command=command)
+        
+        button.image = img
+        
+        return button

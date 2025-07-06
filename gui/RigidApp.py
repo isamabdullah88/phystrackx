@@ -24,6 +24,7 @@ class RigidApp(App):
         """
         super().__init__(root)
         
+        # Plugins
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
         # TODO: Use enum for these
@@ -34,13 +35,14 @@ class RigidApp(App):
         
         self.button("assets/plugin.png", self.plugins)
         
+        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
+        
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
+        
+        # Main toolbar
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
-        
-        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe)
-        
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight)
-        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe)
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
@@ -143,7 +145,7 @@ class RigidApp(App):
         """
         Detects and tracks radius for the main rigid circle using classical techniques.
         """
-        if self.rigid.fcount < 10:
+        if (self.rigid.fcount < 10) or ((len(self.trects.rects) == 0) and (len(self.ocrrects.rects) == 0)):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         

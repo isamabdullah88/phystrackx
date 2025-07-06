@@ -10,7 +10,7 @@ class Slider:
         
         self.var = ctk.IntVar(value=self.start)
         self.slider = ttk.Scale(self.canvas, from_=self.start, to=self.end, orient='horizontal', variable=self.var, command=self.callback)
-        self.slider.pack(side="bottom")
+        self.slider.pack(side="bottom", pady=10)
         
         
     def destroy(self):
