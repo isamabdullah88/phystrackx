@@ -11,9 +11,10 @@ from .App import App
 from experiments.Rigid import Rigid
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Save)
+    SubToolbar, Save, OptionsPopup)
 from experiments.components import OCRData
 from .plugins import Filters, Crop
+from core import PlotTypes
 
 class RigidApp(App):
     def __init__(self, root):
@@ -191,12 +192,14 @@ class RigidApp(App):
             return
 
         self.gen_plotdata() 
-            
-        self.pdata.plotx()
-        self.pdata.plotdrv()
-        self.pdata.plotdrv2()
-        self.pdata.intgr()
-        self.pdata.show()
+        
+        OptionsPopup(self.videoview, PlotTypes, self.pdata.showplots)
+        
+        # self.pdata.plotx()
+        # self.pdata.plotdrv()
+        # self.pdata.plotdrv2()
+        # self.pdata.intgr()
+        # self.pdata.show()
 
     def savedata(self):
         """
