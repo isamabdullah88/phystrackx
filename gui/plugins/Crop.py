@@ -6,9 +6,9 @@ from PIL import Image
 from math import floor
 
 class Crop:
-    def __init__(self, videoview, vwidth, vheight, updateframe:Callable):
+    def __init__(self, canvas, vwidth, vheight, updateframe:Callable, toggle:Callable):
         
-        self.videoview = videoview
+        self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
         self.fwidth = vwidth
@@ -17,6 +17,7 @@ class Crop:
         self.crpheight = vheight
         
         self.updateframe = updateframe
+        self.toggle = toggle
         
         self.fx = self.fy = 0
         self.crpx = self.crpy = 0
@@ -46,7 +47,7 @@ class Crop:
         img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
         
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.videoview, text="", width=btnsize, height=btnsize,
+        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
                             image=img, command=command)
         
         button.image = img
@@ -56,7 +57,7 @@ class Crop:
     def clearrect(self):
         """Deletes the last drawn rectangle"""
         if self._ctkbox is not None:
-            self.videoview.delete(self._ctkbox)
+            self.canvas.delete(self._ctkbox)
             self.button.place_forget()
         
     def cleardata(self):
@@ -68,26 +69,26 @@ class Crop:
         def ondown(event):
             self.sx, self.sy = (event.x, event.y)
             
-            self._ctkbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
             
         def inrect(event):
             ex, ey = (event.x, event.y)
 
-            self.videoview.coords(self._ctkbox, self.sx, self.sy, ex, ey)
+            self.canvas.coords(self._ctkbox, self.sx, self.sy, ex, ey)
             
         def onrelease(event):
             ex, ey = (event.x, event.y)
             
-            self.videoview.itemconfig(self._ctkbox, outline="green")
+            self.canvas.itemconfig(self._ctkbox, outline="green")
 
             self.crpwidth = ex - self.sx
             self.crpheight = ey - self.sy
             
             self.crprect = PixelRect(self.sx-self.fx, self.sy-self.fy, self.crpwidth, self.crpheight)
             
-            self.videoview.unbind("<Button-1>")
-            self.videoview.unbind("<B1-Motion>")
-            self.videoview.unbind("<ButtonRelease-1>")
+            self.canvas.unbind("<Button-1>")
+            self.canvas.unbind("<B1-Motion>")
+            self.canvas.unbind("<ButtonRelease-1>")
             
             self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             
@@ -97,9 +98,9 @@ class Crop:
             self.crpy = floor(self.vheight/2 - self.crpheight/2)
             
 
-        self.videoview.bind("<Button-1>", ondown)
-        self.videoview.bind("<B1-Motion>", inrect)
-        self.videoview.bind("<ButtonRelease-1>", onrelease)
+        self.canvas.bind("<Button-1>", ondown)
+        self.canvas.bind("<B1-Motion>", inrect)
+        self.canvas.bind("<ButtonRelease-1>", onrelease)
         
         
     
@@ -108,6 +109,7 @@ class Crop:
         self.updateframe()
         self.button.place_forget()
         self.applybtn.place_forget()
+        self.toggle()
         
         
     def appcrop(self, frame):
