@@ -25,18 +25,7 @@ class Filters:
         Opens a popup to select a filter type and apply it to the video frame.
         """
         self.radiobox = Radiobox(self.canvas, self.vwidth, self.vheight, "Select Filter", 
-            FilterTypes, self.onapply, self.onselect) #[FilterTypes.BRIGHTNESS.name, FilterTypes.CONTRAST.name])
-        # self.fpopup = ctk.CTkToplevel(self.toolbar)
-        # self.fpopup.title("Select Filter")
-        # self.fpopup.geometry("250x300")
-
-        
-        # for ftype in self.ftypes:
-        #     radio = ctk.CTkRadioButton(self.fpopup, text=ftype.label, variable=self.fvar, value=ftype.name, command=self.onselect)
-        #     radio.pack(pady=5)
-
-        # applybtn = ctk.CTkButton(self.fpopup, text="Apply", command=self.filter)
-        # applybtn.pack(pady=10)
+            FilterTypes, self.onapply, self.onselect)
     
     
     def onselect(self):
@@ -45,16 +34,10 @@ class Filters:
             self.slider = None
             
         filter = self.radiobox.selected.get()
-        # print('filter: ', filter)
-        if filter == FilterTypes.BRIGHTNESS.name:
-            # self.slider = ttk.Scale(self.canvas, from_=1, to=100, orient='horizontal', variable=self.bcvalue, command=lambda: self.bcupdate(filter))
-            # self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
-            self.slider = Slider(self.radiobox, 0, 100, self.onupdate)
-            
         
+        if filter == FilterTypes.BRIGHTNESS.name:
+            self.slider = Slider(self.radiobox, 0, 100, self.onupdate)
         elif filter == FilterTypes.CONTRAST.name:
-            # self.slider = ttk.Scale(self.canvas, from_=1, to=10, orient='horizontal', variable=self.bcvalue, command=lambda: self.bcupdate(filter))
-            # self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
             self.slider = Slider(self.radiobox, 0, 10, self.onupdate)
             
     
@@ -65,13 +48,8 @@ class Filters:
     
     def onapply(self, event):
         filter = self.radiobox.selected.get()
-        print('filter: ', filter)
         self.fvar.set(filter)
         
-        # print('alpha/beta: ', self.slider.var.get())
-        # if self.slider:
-        #     self.slider.destroy()
-        # self.fpopup.destroy()
         self.updateframe()
         self.radiobox.destroy()
         

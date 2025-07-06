@@ -39,32 +39,8 @@ class Radiobox(ctk.CTkToplevel):
             col = idx % cols
             rb.grid(row=row, column=col, padx=15, pady=10, sticky="w")
 
-        # Confirm button
-        ctk.CTkButton(self, text="✓ Apply", command=lambda: self.callback(None), width=120).pack(pady=15)
-        
-    # def onselect(self):
-    #     if self.slider:
-    #         self.slider.destroy()
-    #         self.slider = None
-            
-        
-        # select = self.selected.get()
-        # print('selected: ', select)
-        # for option in self.soptions:
-        #     if select == option:
-                # self.slider = ttk.Scale(self, from_=1, to=100, orient='horizontal', variable=self.bcvalue, command=lambda event: self.callback(select))
-                # self.slider.pack(side="bottom")
-                
-                # self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
-        
-        # if filter == FilterTypes.CONTRAST.name:
-        #     self.slider = ttk.Scale(self.canvas, from_=1, to=10, orient='horizontal', variable=self.bcvalue, command=lambda: self.bcupdate(filter))
-        #     self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
-
-    # def onapply(self):
-    #     if self.callback:
-    #         self.callback(self.selected.get())
-    #     self.destroy()
+        # Apply button
+        ctk.CTkButton(self, text="✓ Apply", command=lambda: self.callback(None), width=120, font=("Segoe UI", 18, "bold")).pack(pady=15)
 
 
 class App(ctk.CTk):
@@ -77,7 +53,7 @@ class App(ctk.CTk):
 
     def open_popup(self):
         modes = ["Fast", "Balanced", "Accurate", "Experimental", "Legacy", "Disabled"]
-        RadioBox(self, title="Select Processing Mode", options=modes, default="Balanced", callback=self.handle_choice)
+        Radiobox(self, title="Select Processing Mode", options=modes, default="Balanced", callback=self.handle_choice)
 
     def handle_choice(self, selected_mode):
         print("Selected Mode:", selected_mode)
