@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from typing import Callable
 from core import FilterTypes
+from gui.components import Radiobox, Slider
 
 class Filters:
     def __init__(self, toolbar, canvas, vwidth, vheight, updateframe:Callable):
@@ -22,18 +23,20 @@ class Filters:
     def spawnfilter(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.
-        """        
-        self.fpopup = ctk.CTkToplevel(self.toolbar)
-        self.fpopup.title("Select Filter")
-        self.fpopup.geometry("250x300")
+        """
+        self.radiobox = Radiobox(self.canvas, self.vwidth, self.vheight, "Select Filter", 
+            FilterTypes, self.onapply, self.onselect) #[FilterTypes.BRIGHTNESS.name, FilterTypes.CONTRAST.name])
+        # self.fpopup = ctk.CTkToplevel(self.toolbar)
+        # self.fpopup.title("Select Filter")
+        # self.fpopup.geometry("250x300")
 
         
-        for ftype in self.ftypes:
-            radio = ctk.CTkRadioButton(self.fpopup, text=ftype.label, variable=self.fvar, value=ftype.name, command=self.onselect)
-            radio.pack(pady=5)
+        # for ftype in self.ftypes:
+        #     radio = ctk.CTkRadioButton(self.fpopup, text=ftype.label, variable=self.fvar, value=ftype.name, command=self.onselect)
+        #     radio.pack(pady=5)
 
-        applybtn = ctk.CTkButton(self.fpopup, text="Apply", command=self.filter)
-        applybtn.pack(pady=10)
+        # applybtn = ctk.CTkButton(self.fpopup, text="Apply", command=self.filter)
+        # applybtn.pack(pady=10)
     
     
     def onselect(self):
@@ -41,22 +44,36 @@ class Filters:
             self.slider.destroy()
             self.slider = None
             
-        if self.fvar.get() == FilterTypes.BRIGHTNESS.name:
-            self.slider = ttk.Scale(self.canvas, from_=1, to=100, orient='horizontal', variable=self.bcvalue, command=self.bcupdate)
-            self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
+        filter = self.radiobox.selected.get()
+        # print('filter: ', filter)
+        if filter == FilterTypes.BRIGHTNESS.name:
+            # self.slider = ttk.Scale(self.canvas, from_=1, to=100, orient='horizontal', variable=self.bcvalue, command=lambda: self.bcupdate(filter))
+            # self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
+            self.slider = Slider(self.radiobox, 0, 100, self.onupdate)
+            
         
-        if self.fvar.get() == FilterTypes.CONTRAST.name:
-            self.slider = ttk.Scale(self.canvas, from_=1, to=10, orient='horizontal', variable=self.bcvalue, command=self.bcupdate)
-            self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
+        elif filter == FilterTypes.CONTRAST.name:
+            # self.slider = ttk.Scale(self.canvas, from_=1, to=10, orient='horizontal', variable=self.bcvalue, command=lambda: self.bcupdate(filter))
+            # self.canvas.create_window(self.vwidth - 60, self.vheight - 20, window=self.slider)
+            self.slider = Slider(self.radiobox, 0, 10, self.onupdate)
             
     
-    def bcupdate(self, event):
+    def onupdate(self, event):
+        filter = self.radiobox.selected.get()
+        self.fvar.set(filter)
         self.updateframe()
     
-    def filter(self):
-        self.slider.destroy()
-        self.fpopup.destroy()
+    def onapply(self, event):
+        filter = self.radiobox.selected.get()
+        print('filter: ', filter)
+        self.fvar.set(filter)
+        
+        # print('alpha/beta: ', self.slider.var.get())
+        # if self.slider:
+        #     self.slider.destroy()
+        # self.fpopup.destroy()
         self.updateframe()
+        self.radiobox.destroy()
         
     def clear(self):
         self.fvar.set(FilterTypes.NONE.name)
@@ -80,9 +97,9 @@ class Filters:
         elif ftype == FilterTypes.CANNYEDGE.name:
             fltframe = cv2.Canny(frame, 100, 200)
         elif ftype == FilterTypes.BRIGHTNESS.name:
-            fltframe = cv2.convertScaleAbs(frame, alpha=1, beta=self.bcvalue.get())
+            fltframe = cv2.convertScaleAbs(frame, alpha=1, beta=self.slider.var.get())
         elif ftype == FilterTypes.CONTRAST.name:
-            fltframe = cv2.convertScaleAbs(frame, alpha=self.bcvalue.get(), beta=1)
+            fltframe = cv2.convertScaleAbs(frame, alpha=self.slider.var.get(), beta=1)
         else:
             fltframe = frame
 
