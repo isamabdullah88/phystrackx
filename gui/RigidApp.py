@@ -11,7 +11,7 @@ from .App import App
 from experiments.Rigid import Rigid
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Save, OptionsPopup)
+    SubToolbar, Save, Checkbox)
 from experiments.components import OCRData
 from .plugins import Filters, Crop
 from core import PlotTypes
@@ -193,7 +193,7 @@ class RigidApp(App):
 
         self.gen_plotdata() 
         
-        OptionsPopup(self.videoview, PlotTypes, self.pdata.showplots)
+        Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
         
         # self.pdata.plotx()
         # self.pdata.plotdrv()
