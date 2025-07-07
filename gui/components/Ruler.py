@@ -1,10 +1,14 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import simpledialog
 from math import floor
+from PIL import Image
+from core import abspath
 
 class ScaleRuler:
-    def __init__(self, canvas, cwidth, cheight):
+    def __init__(self, canvas, vwidth, vheight, cwidth, cheight):
         self.canvas = canvas
+        self.vwidth = vwidth
+        self.vheight = vheight
         self.width = 30
         self.height = 30
         self.p1 = [floor(cwidth/2)-floor(self.width/2), floor(cheight/2)]
@@ -17,9 +21,33 @@ class ScaleRuler:
         self.canvas.bind("<B1-Motion>", self.ondrag)
         self.canvas.bind("<ButtonRelease-1>", self.onrelease)
         self.canvas.bind("<Double-Button-1>", self.ondclick)
+        
+        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        
+    def plcbutton(self, imgpath, command, btnsize=30):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
+        
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
+                            image=img, command=command)
+        
+        button.image = img
+        
+        return button
 
     def ondclick(self, event):
         self.askscale()
+        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        
+    def onapply(self):
+        self.applybtn.destroy()
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<Double-Button-1>")
 
     def draw(self):
         self.canvas.delete("ruler")
@@ -85,9 +113,9 @@ class ScaleRuler:
 
 if __name__ == "__main__":
         
-    root = tk.Tk()
+    root = ctk.Tk()
     root.geometry("900x600")
-    canvas = tk.Canvas(root, width=900, height=600)
+    canvas = ctk.Canvas(root, width=900, height=600)
     canvas.pack()
     ScaleRuler(canvas, 900, 600)
     root.mainloop()
