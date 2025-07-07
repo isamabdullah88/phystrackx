@@ -14,9 +14,15 @@ class ProgressBar:
 
         # Background bar
         self.bholder = self.canvas.create_rectangle(0, self.height-self.bheight, self.width, self.height, fill=bg, outline='black')
+        self.canvas.itemconfigure(self.bholder, state="hidden")
 
         # Foreground progress bar (initially 0)
         self.bar = self.canvas.create_rectangle(0, self.height-self.bheight, 10, self.height, fill=fg, outline='')
+        self.canvas.itemconfigure(self.bar, state="hidden")
+        
+    def pack(self):
+        self.canvas.itemconfigure(self.bholder, state="normal")
+        self.canvas.itemconfigure(self.bar, state="normal")
 
     def set(self, percent):
         """Set progress between 0 and 100."""

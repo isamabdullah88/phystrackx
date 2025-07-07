@@ -10,7 +10,7 @@ from math import floor
 from .App import App
 from experiments.Balloon import Balloon
 from .Core import circilize, fcrop_coords
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler
+from .components import Spinner, CutSeekBar, ScaleRuler
 from core.Rect import PixelRect
 from core import abspath
 
@@ -169,7 +169,7 @@ class BalloonApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
 
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
+        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

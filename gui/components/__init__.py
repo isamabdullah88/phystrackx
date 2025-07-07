@@ -1,5 +1,5 @@
 from .Seekbar import CutSeekBar
-from .Spinner import SpinnerPopup
+from .Spinner import Spinner
 from .Scrollbar import ScrollBar
 from .Ruler import ScaleRuler
 from .Progressbar import ProgressBar

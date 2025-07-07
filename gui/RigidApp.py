@@ -10,7 +10,7 @@ from math import floor
 from .App import App
 from experiments.Rigid import Rigid
 from .Plot import Plot
-from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
+from .components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
     SubToolbar, Save, Checkbox, Label)
 from experiments.components import OCRData
 from .plugins import Filters, Crop
@@ -53,6 +53,9 @@ class RigidApp(App):
         self.progress = ctk.IntVar()
         self.progress.set(0)
         
+        self.spinner = Spinner(self.videoview, self.crop)
+        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
+        
         # TODO: Restructure this to make more consistent
         self.scruler = None
         
@@ -61,7 +64,7 @@ class RigidApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
+        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
 
     def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
@@ -74,7 +77,7 @@ class RigidApp(App):
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        # ctk.CTkLabel(self.videoview, text=str(self.rigid.fcount), font=("Segoe UI", 18, "bold")).place(x=10, y=10)
+        # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.rigid.fcount)).place(x=10, y=10)
         
         self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
@@ -157,25 +160,26 @@ class RigidApp(App):
         self.trects.clearrects()
         self.ocrrects.clearrects()
         
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight-self._progressbarh)
-        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
+        self.videoview.delete(self.imgview)
+        self.spinner.pack()
+        self.progressbar.pack()
 
-        def trackbg(popup, progressbar):
+        def trackbg(spinner, progressbar):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
             
             self.rigid.track(self.trects.rects, self.ocrrects.rects, self.filters, self.crop, startidx, endidx, self.progress)
             
-            self.root.after(0, popup.destroy())
+            self.root.after(0, spinner.destroy())
             self.root.after(0, progressbar.destroy())
 
             self.loadvideo(self._trackpath, clear=False)
 
-        threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
+        threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
         self.update_progress()
         
-    # TODO: Clear implementation of clear and abort while processing
+    # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
         """Clear components"""
         self.scruler = None
@@ -200,12 +204,6 @@ class RigidApp(App):
         self.gen_plotdata() 
         
         Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
-        
-        # self.pdata.plotx()
-        # self.pdata.plotdrv()
-        # self.pdata.plotdrv2()
-        # self.pdata.intgr()
-        # self.pdata.show()
 
     def savedata(self):
         """
@@ -226,7 +224,7 @@ class RigidApp(App):
         
     def plugins(self):
         """
-        Opens a popup to select a filter type and apply it to the video frame.
+        Opens a spinner to select a filter type and apply it to the video frame.
         """
         if self.rigid.fcount < 10:
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
@@ -236,7 +234,6 @@ class RigidApp(App):
         
     def filter(self):
         self.filters.spawnfilter()
-        
     
     def gen_plotdata(self):
         """Evolve raw data into plot data"""

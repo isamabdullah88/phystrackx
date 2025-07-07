@@ -9,7 +9,7 @@ from math import floor
 
 from .App import App
 from experiments.Interface import Interface
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler
+from .components import Spinner, CutSeekBar, ScaleRuler
 from core import PixelRect, Points, abspath
 
 class InterfaceApp(App):
@@ -191,7 +191,7 @@ class InterfaceApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
 
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
+        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

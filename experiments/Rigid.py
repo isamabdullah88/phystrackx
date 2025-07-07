@@ -4,30 +4,27 @@ import numpy as np
 from .Experiment import Experiment
 from core import NormalizedRect, PixelRect
 from gui.plugins import Crop, Filters
+from queue import Queue
 
 
 class Rigid(Experiment):
-    def __init__(self, trackpath, vwidth=900, vheight=600):
+    def __init__(self, trackpath, vwidth=900, vheight=600, tkqueue:Queue=None):
         super().__init__(vwidth, vheight)
         
         self._trackpath = trackpath
         self.trackpts = []
         self.texts = []
         
+        self.tkqueue = tkqueue
+        
     # TODO: Major reconstruction needed for OCR
     def ocr(self, frame, rect, pytesseract):
         """Performs OCR detection on the specified rectangle in the frame."""
-        x, y, w, h = rect.totuple()
-        # print('x,y,w,h: ', (x, y, w, h))
-        # framep = frame.copy()[y:y+h, x:x+w]
+        
         framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
-        # print('frame-crop: ', frame.shape)
+        
         # Convert to grayscale
         gray = cv2.cvtColor(framep, cv2.COLOR_BGR2GRAY)
-
-        # Optional: thresholding to improve contrast
-        # plt.imshow(gray)
-        # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
         
         custom_config = r'--oem 3 --psm 6 outputbase digits'
         text = pytesseract.image_to_string(gray, config=custom_config)
@@ -100,14 +97,13 @@ class Rigid(Experiment):
             ptstrack.append(p0)
             
         fprev = None
-        for i in tqdm(range(1, fcount-1), desc="Rigid", total=fcount-1):
+        for i in tqdm(range(0, fcount-1), desc="Rigid", total=fcount-1):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             
             # Apply transformations to frame
             frame = filters.appfilter(frame)
             frame = crop.appcrop(frame)
-            # print('frame: ', frame.shape)
             
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -135,10 +131,21 @@ class Rigid(Experiment):
             
             fprev = fgray.copy()
             
-            self._videowriter.write(frame)
+                
             
+            tkframe = frame.copy()
+            for pts in self.trackpts:
+                for j in range(max(0, i-30), i):
+                    x, y = pts[j]
+                    tkframe = cv2.circle(tkframe, (x, y), 5, (0,0,255), 1)
+            # Frontend variables
+            if self.tkqueue and (not self.tkqueue.full()):
+                self.tkqueue.put(tkframe)
+                
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
+                
+            self._videowriter.write(tkframe)
             
         self._videowriter.release()
 
