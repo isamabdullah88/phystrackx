@@ -117,7 +117,7 @@ class TPoints:
     def removept(self):
         self.canvas.delete(self.sltdpt["cpt"])
         self.button.place_forget()
-        self.tpts[self.sltdpt["tidx"]][self.sltdpt["fidx"]] = None
+        self.tpts.pop(self.sltdpt["tidx"])
         
         self.button.pack_forget()
         

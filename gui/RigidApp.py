@@ -11,7 +11,7 @@ from .App import App
 from experiments.Rigid import Rigid
 from .Plot import Plot
 from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Save, Checkbox)
+    SubToolbar, Save, Checkbox, Label)
 from experiments.components import OCRData
 from .plugins import Filters, Crop
 from core import PlotTypes
@@ -74,6 +74,9 @@ class RigidApp(App):
         
         self.seekbar.setcount(self.rigid.fcount)
         
+        # ctk.CTkLabel(self.videoview, text=str(self.rigid.fcount), font=("Segoe UI", 18, "bold")).place(x=10, y=10)
+        Label(self.videoview, text="Frame Count: " + str(self.rigid.fcount)).place(x=10, y=10)
+        
         self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
 
         self.resize(self.rigid.fwidth, self.rigid.fheight)
@@ -104,7 +107,7 @@ class RigidApp(App):
         self.tpoints.drawpoint(self.seekbar.idx)
 
     def scale(self):
-        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -172,7 +175,7 @@ class RigidApp(App):
         
         self.update_progress()
         
-        
+    # TODO: Clear implementation of clear and abort while processing
     def clearcomponents(self):
         """Clear components"""
         self.scruler = None
@@ -193,6 +196,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
+        # TODO: Remove points from plot data as well when user removed the point
         self.gen_plotdata() 
         
         Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
