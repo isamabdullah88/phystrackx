@@ -24,7 +24,7 @@ class FPoint:
         
         self.cpt = self.canvas.create_oval(
             self.x - 6, self.y - 6, self.x + 6, self.y + 6,
-            fill='red', outline='black', width=1, tags="points"
+            fill='magenta', outline='black', width=1, tags="points"
         )
         
 
