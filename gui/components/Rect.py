@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from core import abspath
 from core import PixelRect
+from .Label import Label
 
 class Rect:
     def __init__(self, canvas, vwidth, vheight, toggle=None):
@@ -12,6 +13,7 @@ class Rect:
         self._rcoords = None
         self._ctkbox = None
         self.rects = []
+        self.canvasrects = []
         self._ctkrects = []
         
         self.toggle = toggle
@@ -80,8 +82,9 @@ class Rect:
             self._ctkrects.append(self._ctkbox)
             self.canvas.itemconfig(self._ctkbox, outline="green")
 
-            rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)
-            
+            self.canvasrects.append(PixelRect(sx, sy, ex-sx, ey-sy))
+
+            rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)            
             self.rects.append(rect.pix2norm(fwidth, fheight))
             
             self.canvas.unbind("<Button-1>")
@@ -102,3 +105,8 @@ class Rect:
         
         if self.toggle:
             self.toggle()
+            
+        for i,rect in enumerate(self.canvasrects):
+            x, y, w, h = rect.totuple()
+            text = f"Rect-{i+1}: x={x:.0f}, y={y:.0f}, width={w:.0f}, height={h:.0f}"
+            Label(self.canvas, text=text).place(x=10, y=(i+1)*30)
