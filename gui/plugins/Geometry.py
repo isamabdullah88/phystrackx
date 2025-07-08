@@ -15,16 +15,21 @@ class Geometry:
         self.lines = []
         
         self.tkline = None
-        # self.tklines = []
-        # self.slt_tklines = []
         self.sltlines = []
         
-        # self.slt_lines = [] # selected point lines
         self.selected = False
+        
+        self.sltcolor = "#d4f3db"
+        self.unsltcolor = "#28a745"
+        self.dragcolor = "#4fcfbe"
+        
+        self.showbtn = False
         
         
     def pack(self):
         self.anglebtn = plcbutton(self.canvas, "assets/plugins/angle.png", self.cmpangle, 40)
+        self.distancebtn = plcbutton(self.canvas, "assets/plugins/distance.png", self.cmpdist, 40)
+        self.delbtn = plcbutton(self.canvas, "assets/bin.png", self.delline, 40)
         
         self.canvas.bind("<ButtonPress-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
@@ -36,16 +41,31 @@ class Geometry:
         
         clsline = self.pointonlines(spoint)
         if clsline:
-            self.canvas.itemconfigure(clsline.tkline, width=4, fill="#d4f3db")
-            self.sltlines.append(clsline)
             self.selected = True
+            print('clsline selected: ', clsline.selected)
+            if clsline.selected: # if already, selected, deselect
+                self.canvas.itemconfigure(clsline.tkline, width=3, fill=self.unsltcolor)
+                clsline.selected = False
+                self.sltlines.remove(clsline)
+                # self.selected = False
+            else:
+                print('selected')
+                if len(self.sltlines) >= 2:
+                    return
+                
+                self.canvas.itemconfigure(clsline.tkline, width=4, fill=self.sltcolor)
+                clsline.selected = True
+                self.sltlines.append(clsline)
+                print('sltlines: ', self.sltlines)
+                # self.selected = True
         else:
+            print('draw')
             self.selected = False
             self.spoint = spoint
-            self.tkline = self.canvas.create_line(event.x, event.y, event.x, event.y, fill="#4fcfbe", width=2)
+            self.tkline = self.canvas.create_line(event.x, event.y, event.x, event.y, fill=self.dragcolor, width=2)
         
     def ondrag(self, event):
-        if self.tkline:
+        if self.tkline and (not self.selected):
             self.canvas.coords(self.tkline, self.spoint[0], self.spoint[1], event.x, event.y)
             
             
@@ -53,12 +73,74 @@ class Geometry:
         if self.selected:
             return
         
+        print('released')
+        print('selected: ', self.selected)
+        
+        llength = math.sqrt((self.spoint[0]-event.x)**2 + (self.spoint[1]-event.y)**2)
+        if llength < 10:
+            self.canvas.delete(self.tkline)
+            return
+        
+        print('Line formation')
+        
         self.epoint = event.x, event.y
         self.canvas.coords(self.tkline, self.spoint[0], self.spoint[1], event.x, event.y)
-        self.canvas.itemconfigure(self.tkline, fill="#28a745", width=3)
+        self.canvas.itemconfigure(self.tkline, fill=self.unsltcolor, width=3)
         
         self.lines.append(Line(self.tkline, (self.spoint, self.epoint)))
-        self.anglebtn.place(x=self.vwidth-80, y=self.vheight-60)
+        
+        # Show buttons
+        if not self.showbtn:
+            self.showbtn = True
+            self.anglebtn.place(x=self.vwidth-80, y=self.vheight-180)
+            self.distancebtn.place(x=self.vwidth-80, y = self.vheight-120)
+            self.delbtn.place(x=self.vwidth-80, y=self.vheight-60)
+        
+    
+    def pointonlines(self, point):
+        # print('slc lines: ', self.sltlines)
+        # if len(self.sltlines) > 2:
+        #     return None
+        
+        print('lines: ', self.lines)
+        for cline in self.lines:
+            # exclude already selected lines
+            # if cline in self.sltlines:
+            #     continue
+            
+            ponline = self.pointonline(point, cline.line)
+            if ponline:
+                print('found line')
+                return cline
+        
+        return None
+        
+    def pointonline(self, point, line, threshold=6):
+        """Check if point is near a line segment."""
+        startl, endl = line
+        x0, y0 = point
+        x1, y1 = startl
+        x2, y2 = endl
+
+        dx = x2 - x1
+        dy = y2 - y1
+        if dx == dy == 0:
+            return False
+
+        t = max(0, min(1, ((x0 - x1) * dx + (y0 - y1) * dy) / float(dx*dx + dy*dy)))
+        proj_x = x1 + t * dx
+        proj_y = y1 + t * dy
+        dist = math.hypot(x0 - proj_x, y0 - proj_y)
+        return dist <= threshold
+    
+    def clear_sltlines(self):
+        """Deselects and clears selected lines toggling selected flag of each"""
+        for line in self.sltlines:
+            line.selected = False
+            self.canvas.itemconfigure(line.tkline, width=3, fill=self.unsltcolor)
+            
+        self.sltlines.clear()
+        self.selected = False
         
     def cmpangle(self):
         """Computes angle between two lines via dot product of vectors"""
@@ -92,41 +174,34 @@ class Geometry:
         self.canvas.create_text(mid_x, mid_y, text=f"{angle_deg:.2f}°", font=("Arial", 14), fill="red")
         
         # Clear
-        self.canvas.itemconfigure(self.sltlines[0].tkline, width=3, fill="#28a745")
-        self.canvas.itemconfigure(self.sltlines[1].tkline, width=3, fill="#28a745")
-        self.sltlines.clear()
-        self.selected = False
+        self.clear_sltlines()
         
         
-    def pointonlines(self, point):
-        if (len(self.lines) < 2) or (len(self.sltlines) >= 2):
+    def cmpdist(self):
+        """Computes distance of the selected line"""
+        if len(self.sltlines) != 1:
+            messagebox.showerror("Error", "Please select one line to get the distance.")
             return
         
-        for cline in self.lines:
-            # exclude already selected lines
-            if cline in self.sltlines:
-                continue
-            
-            ponline = self.pointonline(point, cline.line)
-            if ponline:
-                return cline
+        line = self.sltlines[0].line
+        p1, p2 = line
         
-        return None
+        dist = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+        mid_x = (p1[0] + p2[0]) // 2
+        mid_y = (p1[1] + p2[1]) // 2
         
-    def pointonline(self, point, line, threshold=6):
-        """Check if point is near a line segment."""
-        startl, endl = line
-        x0, y0 = point
-        x1, y1 = startl
-        x2, y2 = endl
-
-        dx = x2 - x1
-        dy = y2 - y1
-        if dx == dy == 0:
-            return False
-
-        t = max(0, min(1, ((x0 - x1) * dx + (y0 - y1) * dy) / float(dx*dx + dy*dy)))
-        proj_x = x1 + t * dx
-        proj_y = y1 + t * dy
-        dist = math.hypot(x0 - proj_x, y0 - proj_y)
-        return dist <= threshold
+        self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}px", font=("Arial", 14), fill="green")
+    
+        # Clear
+        self.clear_sltlines()
+        
+    def delline(self):
+        """Deletes selected line"""
+        if len(self.sltlines) == 0:
+            messagebox.showerror("Error", "No line selected to delete.")
+            return
+        
+        # Delete and disappear
+        self.canvas.delete(self.sltlines[-1].tkline)
+        self.sltlines.pop(-1)
+        self.lines.pop(-1)
