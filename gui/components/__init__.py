@@ -1,5 +1,5 @@
 from .Seekbar import CutSeekBar
-from .Spinner import SpinnerPopup
+from .Spinner import Spinner
 from .Scrollbar import ScrollBar
 from .Ruler import ScaleRuler
 from .Progressbar import ProgressBar
@@ -12,3 +12,4 @@ from .Checkbox import Checkbox
 from .Radiobox import Radiobox
 from .Slider import Slider
 from .Label import Label
+from .Titlebar import TitleBar

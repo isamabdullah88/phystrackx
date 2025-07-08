@@ -10,7 +10,7 @@ from math import floor
 from .App import App
 from experiments.Marangoni import Marangoni
 from .Core import circilize, fcrop_coords
-from .components import SpinnerPopup, CutSeekBar, ScaleRuler
+from .components import Spinner, CutSeekBar, ScaleRuler
 from core import abspath
 
 class MarangoniApp(App):
@@ -153,7 +153,7 @@ class MarangoniApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
+        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

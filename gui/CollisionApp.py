@@ -11,7 +11,7 @@ from .App import App
 from experiments.Collision import Collision
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components import SpinnerPopup
+from .components import Spinner
 from .components import CutSeekBar
 from .components import ScaleRuler
 from core import abspath
@@ -190,7 +190,7 @@ class CollisionApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight)
+        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx

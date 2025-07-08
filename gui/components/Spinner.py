@@ -1,30 +1,43 @@
 
 from math import floor
-from PIL import Image, ImageTk, ImageSequence
+from PIL import Image, ImageTk
 import customtkinter as ctk
+from customtkinter import CTkCanvas
 import numpy as np
-from core import abspath
+from gui.plugins import Crop
+from queue import Queue, Empty
+import cv2
 
-class SpinnerPopup:
-    def __init__(self, canvas, vwidth, vheight):
+class Spinner:
+    def __init__(self, canvas:CTkCanvas, crop:Crop=None):
         self.running = True
         self.canvas = canvas
-
+        self.queue = Queue(maxsize=5)
+        self.crop = crop
 
         # Load animated GIF
-        self.frames = [ImageTk.PhotoImage(self.prsframe(img, vwidth, vheight)) for img in \
-            ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
-        self.imgview = self.canvas.create_image(vwidth//2, vheight//2, image=self.frames[0],
-                                                anchor="center")
+        # self.frames = [ImageTk.PhotoImage(self.prsframe(img, vwidth, vheight)) for img in \
+        #     ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
+        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
+        self.canvas.itemconfigure(self.imgview, state="normal")
 
         self.index = 0
-        self.pack()
 
     def pack(self):
         if not self.running:
             return
-        self.index = (self.index + 1) % len(self.frames)
-        self.canvas.itemconfig(self.imgview, image=self.frames[self.index])
+        
+        try:
+            frame = self.queue.get_nowait()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame)
+            
+            self.imgtk = ImageTk.PhotoImage(img)
+            self.canvas.itemconfigure(self.imgview, image=self.imgtk)
+            self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
+        except Empty:
+            pass
+        
         self.canvas.after(50, self.pack)
 
     def destroy(self):
@@ -55,4 +68,4 @@ if __name__ == '__main__':
     root.title("Spinner Popup Example")
     canvas = ctk.CTkCanvas(root, width=900, height=600, bg="white")
     canvas.pack(fill="both", expand=True)
-    SpinnerPopup(canvas, 900, 600)
+    Spinner(canvas, 900, 600)

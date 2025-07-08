@@ -10,11 +10,12 @@ from math import floor
 from .App import App
 from experiments.Rigid import Rigid
 from .Plot import Plot
-from .components import (SpinnerPopup, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
+from .components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
     SubToolbar, Save, Checkbox, Label)
 from experiments.components import OCRData
-from .plugins import Filters, Crop
+from .plugins import Filters, Crop, Geometry
 from core import PlotTypes
+from .components.Titlebar import TitleBar
 
 class RigidApp(App):
     def __init__(self, root):
@@ -24,14 +25,16 @@ class RigidApp(App):
         """
         super().__init__(root)
         
-        # Plugins
+        self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
+        
+        # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
         # TODO: Use enum for these
         self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
         self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/geometry.png", self.drawocr).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
         
         self.button("assets/plugin.png", self.plugins)
         
@@ -39,7 +42,9 @@ class RigidApp(App):
         
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
-        # Main toolbar
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight)
+        
+        # Main toolbar ----------------------------------------------------------------------------
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight)
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
@@ -53,6 +58,9 @@ class RigidApp(App):
         self.progress = ctk.IntVar()
         self.progress.set(0)
         
+        self.spinner = Spinner(self.videoview, self.crop)
+        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
+        
         # TODO: Restructure this to make more consistent
         self.scruler = None
         
@@ -61,10 +69,12 @@ class RigidApp(App):
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight)
+        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
 
     def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
+        self.title = TitleBar(self.videoview, self.vwidth, "Video View")
+        
         if clear:
             self.clear()
         else:
@@ -74,7 +84,7 @@ class RigidApp(App):
         
         self.seekbar.setcount(self.rigid.fcount)
         
-        # ctk.CTkLabel(self.videoview, text=str(self.rigid.fcount), font=("Segoe UI", 18, "bold")).place(x=10, y=10)
+        # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.rigid.fcount)).place(x=10, y=10)
         
         self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
@@ -111,6 +121,8 @@ class RigidApp(App):
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
+        self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
+        
         if self.rigid.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
@@ -123,6 +135,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         self.crop.drawrect()
         
     def drawocr(self):
@@ -131,7 +144,13 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
         self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        
+    def dogeometry(self):
+        """Starts geomtry plugin"""
+        self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
+        self.geometry.pack()
         
     
     def update_progress(self):
@@ -152,30 +171,32 @@ class RigidApp(App):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
         # Clear previous Axes, rectangles and OCRs
         self.axes.clear()
         self.trects.clearrects()
         self.ocrrects.clearrects()
         
-        self.popup = SpinnerPopup(self.videoview, self.vwidth, self.vheight-self._progressbarh)
-        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
+        self.videoview.delete(self.imgview)
+        self.spinner.pack()
+        self.progressbar.pack()
 
-        def trackbg(popup, progressbar):
+        def trackbg(spinner, progressbar):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
             
             self.rigid.track(self.trects.rects, self.ocrrects.rects, self.filters, self.crop, startidx, endidx, self.progress)
             
-            self.root.after(0, popup.destroy())
+            self.root.after(0, spinner.destroy())
             self.root.after(0, progressbar.destroy())
 
             self.loadvideo(self._trackpath, clear=False)
 
-        threading.Thread(target=trackbg, args=(self.popup,self.progressbar)).start()
+        threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
         self.update_progress()
         
-    # TODO: Clear implementation of clear and abort while processing
+    # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
         """Clear components"""
         self.scruler = None
@@ -196,16 +217,11 @@ class RigidApp(App):
             messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
+        self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         # TODO: Remove points from plot data as well when user removed the point
         self.gen_plotdata() 
         
         Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
-        
-        # self.pdata.plotx()
-        # self.pdata.plotdrv()
-        # self.pdata.plotdrv2()
-        # self.pdata.intgr()
-        # self.pdata.show()
 
     def savedata(self):
         """
@@ -215,6 +231,7 @@ class RigidApp(App):
             messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
             return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
         self.gen_plotdata()
         ocrdata = OCRData(self.rigid.texts)
         
@@ -226,17 +243,21 @@ class RigidApp(App):
         
     def plugins(self):
         """
-        Opens a popup to select a filter type and apply it to the video frame.
+        Opens a spinner to select a filter type and apply it to the video frame.
         """
+        self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
+        # from core import abspath
+        # self.logo = ImageTk.PhotoImage(Image.open(abspath("./assets/logo.png")).resize((50, 50)))
+        # self.videoview.create_image(400, 200, image=self.logo, anchor="nw")
+        self.subtoolbar.toggle()
+        
+    def filter(self):
         if self.rigid.fcount < 10:
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
             return
         
-        self.subtoolbar.toggle()
-        
-    def filter(self):
+        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
         self.filters.spawnfilter()
-        
     
     def gen_plotdata(self):
         """Evolve raw data into plot data"""
