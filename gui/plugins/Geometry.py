@@ -47,19 +47,14 @@ class Geometry:
                 self.canvas.itemconfigure(clsline.tkline, width=3, fill=self.unsltcolor)
                 clsline.selected = False
                 self.sltlines.remove(clsline)
-                # self.selected = False
             else:
-                print('selected')
                 if len(self.sltlines) >= 2:
                     return
                 
                 self.canvas.itemconfigure(clsline.tkline, width=4, fill=self.sltcolor)
                 clsline.selected = True
                 self.sltlines.append(clsline)
-                print('sltlines: ', self.sltlines)
-                # self.selected = True
         else:
-            print('draw')
             self.selected = False
             self.spoint = spoint
             self.tkline = self.canvas.create_line(event.x, event.y, event.x, event.y, fill=self.dragcolor, width=2)
@@ -73,15 +68,10 @@ class Geometry:
         if self.selected:
             return
         
-        print('released')
-        print('selected: ', self.selected)
-        
         llength = math.sqrt((self.spoint[0]-event.x)**2 + (self.spoint[1]-event.y)**2)
         if llength < 10:
             self.canvas.delete(self.tkline)
             return
-        
-        print('Line formation')
         
         self.epoint = event.x, event.y
         self.canvas.coords(self.tkline, self.spoint[0], self.spoint[1], event.x, event.y)
@@ -98,19 +88,11 @@ class Geometry:
         
     
     def pointonlines(self, point):
-        # print('slc lines: ', self.sltlines)
-        # if len(self.sltlines) > 2:
-        #     return None
-        
-        print('lines: ', self.lines)
+        """Check if the point lies on any of the drawn line"""
         for cline in self.lines:
-            # exclude already selected lines
-            # if cline in self.sltlines:
-            #     continue
             
             ponline = self.pointonline(point, cline.line)
             if ponline:
-                print('found line')
                 return cline
         
         return None
@@ -203,5 +185,5 @@ class Geometry:
         
         # Delete and disappear
         self.canvas.delete(self.sltlines[-1].tkline)
-        self.sltlines.pop(-1)
-        self.lines.pop(-1)
+        line = self.sltlines.pop(-1)
+        self.lines.remove(line)

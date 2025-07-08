@@ -249,9 +249,6 @@ class RigidApp(App):
         Opens a spinner to select a filter type and apply it to the video frame.
         """
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
-        # from core import abspath
-        # self.logo = ImageTk.PhotoImage(Image.open(abspath("./assets/logo.png")).resize((50, 50)))
-        # self.videoview.create_image(400, 200, image=self.logo, anchor="nw")
         self.subtoolbar.toggle()
         
     def filter(self):
