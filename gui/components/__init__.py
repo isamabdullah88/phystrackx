@@ -12,3 +12,4 @@ from .Checkbox import Checkbox
 from .Radiobox import Radiobox
 from .Slider import Slider
 from .Label import Label
+from .Titlebar import TitleBar
