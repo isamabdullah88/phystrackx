@@ -3,7 +3,8 @@ import cv2
 from PIL import Image
 from typing import Callable
 from core import FilterTypes, abspath
-from gui.components import Radiobox, Slider
+from .Slider import Slider
+from .Radiobox import Radiobox
 
 class Filters:
     def __init__(self, toolbar, canvas, vwidth, vheight, updateframe:Callable, toggle:Callable):
@@ -107,4 +108,4 @@ class Filters:
     
     def onapplybtn(self):
         self.applybtn.place_forget()
-        self.toggle()
+        # self.toggle()

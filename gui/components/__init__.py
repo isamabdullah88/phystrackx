@@ -9,7 +9,7 @@ from .TPoints import TPoints
 from .SubToolbar import SubToolbar
 from .Save import Save
 from .Checkbox import Checkbox
-from .Radiobox import Radiobox
-from .Slider import Slider
+from ..plugins.Radiobox import Radiobox
+from ..plugins.Slider import Slider
 from .Label import Label
 from .Titlebar import TitleBar

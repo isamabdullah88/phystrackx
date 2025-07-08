@@ -137,6 +137,7 @@ class RigidApp(App):
         
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         self.crop.drawrect()
+        self.subtoolbar.toggle()
         
     def drawocr(self):
         """Draws rectangle for OCR"""
@@ -146,11 +147,13 @@ class RigidApp(App):
         
         self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
         self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.subtoolbar.toggle()
         
     def dogeometry(self):
         """Starts geomtry plugin"""
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
+        self.subtoolbar.toggle()
         
     
     def update_progress(self):
@@ -258,6 +261,7 @@ class RigidApp(App):
         
         self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
         self.filters.spawnfilter()
+        self.subtoolbar.toggle()
     
     def gen_plotdata(self):
         """Evolve raw data into plot data"""

@@ -1,7 +1,5 @@
 import customtkinter as ctk
-from tkinter import ttk
 from enum import Enum
-from .Slider import Slider
 
 class Radiobox(ctk.CTkToplevel):
     def __init__(self, canvas, vwidth, vheight, title="Select Option", options:Enum=None, callback=None, onselect=None):
