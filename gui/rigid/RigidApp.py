@@ -26,13 +26,11 @@ class RigidApp(App):
         """
         super().__init__(root)
         
-        self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
-        
         # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
         # TODO: Use enum for these
-        self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
         self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
@@ -106,7 +104,17 @@ class RigidApp(App):
             return
         
         self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+    
+    
+    def appfilter(self):
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
+            return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
+        self.filters.spawnfilter()
+        self.subtoolbar.toggle()
+    
     def drawcrop(self):
         """Crop for crop plugin. This crop the all frames of video"""
         if self.videoapp.fcount < 10:
@@ -215,14 +223,6 @@ class RigidApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()
         
-    def filter(self):
-        if self.videoapp.fcount < 10:
-            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
-            return
-        
-        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
-        self.filters.spawnfilter()
-        self.subtoolbar.toggle()
     
     def gen_plotdata(self):
         """Evolve raw data into plot data"""

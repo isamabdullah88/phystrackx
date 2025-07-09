@@ -1,7 +1,7 @@
 from customtkinter import CTkCanvas, IntVar
 from experiments import Rigid
 from .plugins import Crop, Filters
-from gui.components import Seekbar, Spinner, Rect
+from gui.components import CutSeekBar, Spinner, Rect
 
 import os
 import cv2
@@ -10,7 +10,7 @@ from PIL import Image, ImageTk
 
 class Video:
     """Class to handle video viewing, frame manipulations"""
-    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int, crop:Crop, seekbar:Seekbar, filters:Filters, spinner:Spinner):
+    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int, crop:Crop, seekbar:CutSeekBar, filters:Filters, spinner:Spinner):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
