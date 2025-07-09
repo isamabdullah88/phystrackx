@@ -42,7 +42,6 @@ class Geometry:
         clsline = self.pointonlines(spoint)
         if clsline:
             self.selected = True
-            print('clsline selected: ', clsline.selected)
             if clsline.selected: # if already, selected, deselect
                 self.canvas.itemconfigure(clsline.tkline, width=3, fill=self.unsltcolor)
                 clsline.selected = False
@@ -172,7 +171,7 @@ class Geometry:
         mid_x = (p1[0] + p2[0]) // 2
         mid_y = (p1[1] + p2[1]) // 2
         
-        self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}px", font=("Arial", 14), fill="green")
+        self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}px", font=("Arial", 14), fill="red")
     
         # Clear
         self.clear_sltlines()
