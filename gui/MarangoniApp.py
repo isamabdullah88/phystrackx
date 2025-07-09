@@ -9,20 +9,22 @@ from math import floor
 
 from .App import App
 from experiments.Marangoni import Marangoni
-from .Core import circilize, fcrop_coords
-from .components import Spinner, CutSeekBar, ScaleRuler
+from .components.CircleOverlay import circilize, fcrop_coords
+from .components import Spinner, CutSeekBar, ScaleRuler, SubToolbar, TitleBar, Label, Rect, Circle
+from .plugins import Crop, Filters, Geometry
 from core import abspath
+from .VideoApp import Video
 
 class MarangoniApp(App):
     def __init__(self, root):
         super().__init__(root)
 
-        img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=img, command=self.scale)
-        self.ruler.pack(padx=5, pady=5)
-        self.ruler.image = img
+        # img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
+        # self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+        #                               image=img, command=self.scale)
+        # self.ruler.pack(padx=5, pady=5)
+        # self.ruler.image = img
 
         img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
@@ -39,147 +41,186 @@ class MarangoniApp(App):
 
         # mask from user for tracking
         self._mask = None
-
-        tempdir = './temp'
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
-
-        self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
-
-        self.marangoni = Marangoni(trackpath=self._trackpath)
-
-
-
-    def loadvideo(self, videopath):
-        self.marangoni.addvideo(videopath)
         
-        self.seekbar.setcount(self.marangoni.fcount)
-
-        frame1 = self.marangoni.frame(0)
-        self.dispframe(frame1)
-
-    def dispframe(self, frame):
-        fwidth = self.marangoni.fwidth
-        fheight = self.marangoni.fheight
-        frame = self.resizeframe(frame, fwidth, fheight)
-        self.fheight, self.fwidth = frame.shape[:2]
-
-        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
-        self.photo = ImageTk.PhotoImage(image=img)
-        self._frame = frame
-
-        self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
-        self.fy = floor(self.cheight/2 - frame.shape[0]/2)
+        # Plugins ---------------------------------------------------------------------------------
+        self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        # Default coordinate system
-        if self.ox is None:
-            self.ox = self.fx
+        # TODO: Use enum for these
+        self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
+        self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
         
-        if self.oy is None:
-            self.oy = self.fy + self.fheight
+        self.button("assets/plugin.png", self.plugins)
+        
+        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
+        
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
+        
+        self.spinner = Spinner(self.videoview, self.crop)
+        
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight)
+        
+        # Main Toolbar ----------------------------------------------------------------------------
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
+        
+        self.circle = Circle(self.videoview, self.vwidth, self.vheight)
+        
+        
+        # Video Handler ---------------------------------------------------------------------------
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
+        # tempdir = './temp'
+        # if not os.path.exists(tempdir):
+        #     os.makedirs(tempdir)
 
-        self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
+        # self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+
+        # self.marangoni = Marangoni(trackpath=self._trackpath)
+
+
+
+    def loadvideo(self, videopath, clear=True):
+        """Loads a new video from user click."""
+        self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
+        if clear:
+            self.clear()
+        else:
+            self.clearcomponents()
+        
+        # Show frame count
+        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
+        
+        self.videoapp.loadvideo(videopath)
+        
+        self.resize(self.videoapp.fwidth, self.videoapp.fheight)
+
+        self.crop.set(self.fwidth, self.fheight)
+        
+        
+        self.seekbar.setcount(self.videoapp.fcount)
+        
+        # self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
+        
+        self.updateframe()
+
     def updateframe(self):
+        """Updates the frame displayed in the video view based on the slider position."""
+        self.videoapp.showframe()
         
-        frame = self.marangoni.frame(index=self.seekbar.idx)
-        fwidth = self.marangoni.fwidth
-        fheight = self.marangoni.fheight
+        # draw tracked points
+        # self.tpoints.drawpoint(self.seekbar.idx)
 
-        frame = self.resizeframe(frame, fwidth, fheight)
+    def scale(self):
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
+        
+    def drawcircle(self):
+        """Draws circle"""
+        self.circle.drawcircle(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
 
-        img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
-        self.photo = ImageTk.PhotoImage(image=img)
-        self._frame = frame
+    def drawrect(self):
+        """Draws rectangle with simple lines"""
+        self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
+        
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
 
-        self.videoview.itemconfig(self.imgview, image=self.photo)
-
-    # def markaxes(self):
-
-    #     def update_axes(event):
-    #         """ Update the axes to follow the mouse cursor. """
-    #         self.videoview.delete("axes")  # Remove old axes
-    #         x, y = event.x, event.y  # Get mouse position
-
-    #         # Draw new axes centered on mouse position
-    #         self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-    #         self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
-
-    #     def store_click(event):
-    #         """ Store the clicked coordinates and draw a point. """
-    #         x, y = event.x, event.y
-
-    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
-
-    #         self.videoview.unbind("<Motion>")
-    #         self.videoview.unbind("<Button>")
-
-    #     self.videoview.bind("<Motion>", update_axes)
-    #     self.videoview.bind("<Button>", store_click)
+    def plugins(self):
+        """
+        Opens a spinner to select a filter type and apply it to the video frame.
+        """
+        self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
+        self.subtoolbar.toggle()
+    
+    def appfilter(self):
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
+            return
+        
+        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
+        self.filters.spawnfilter()
+        self.subtoolbar.toggle()
+        
+    def drawcrop(self):
+        """Crop for crop plugin. This crop the all frames of video"""
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
+        self.crop.drawrect()
+        self.subtoolbar.toggle()
+        
+    def drawocr(self):
+        """Draws rectangle for OCR"""
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
+        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.subtoolbar.toggle()
+        
+    def dogeometry(self):
+        """Starts geomtry plugin"""
+        self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
+        self.geometry.pack()
+        self.subtoolbar.toggle()
+    
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
-    def drawcircle(self):
-        
-        def ondown(event):
-            self.ccoords = (event.x-self.fx, event.y-self.fy)
-            
-            self.photo = ImageTk.PhotoImage(circilize(10, 10))
-            
-            self.videoview.itemconfig(self.imgview, image=self.photo)
-            
-        def incircle(event):
-            ex = (event.x-self.fx)
-            ey = (event.y-self.fy)
 
-            frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
-
-            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            self.photo = ImageTk.PhotoImage(image=img)
-            self._mask = mask
-
-            self.videoview.itemconfig(self.imgview, image=self.photo)
-            
-
-        self.videoview.bind("<Button-1>", ondown)
-        self.videoview.bind("<B1-Motion>", incircle)
 
 
     def strack(self):
         """
         Detects and tracks radius for the main marangoni circle using classical techniques.
         """
-        if self.marangoni.fcount < 10:
+        if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
-        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.marangoni.track(self._mask, startidx, endidx)
+            self.videoapp.track(self._mask, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
-            self.loadvideo(self._trackpath)
+            self.loadvideo(self.videoapp.trackpath, clear=False)
 
-        threading.Thread(target=trackbg, args=(self.popup,)).start()
+        threading.Thread(target=trackbg, args=(self.spinner,)).start()
 
-
+    # TODO: Clear implementation of clear/abort while processing
+    def clearcomponents(self):
+        """Clear components"""
+        self.scruler = None
+        self.seekbar.setcount(100)
+        self.crop.cleardata()
+        self.ocrrects.cleardata()
+        # self.trects.cleardata()
+        self.filters.clear()
+        self.axes.clear()
 
     def clear(self):
         """Clears almost everything"""
-        super().clear()
+        # super().clear()
+        self.videoapp.trackpts.clear()
+        self.clearcomponents()
         
-        del self.marangoni
-        self.marangoni = Marangoni(trackpath=self._trackpath)
+        # del self.marangoni
+        # self.marangoni = Marangoni(trackpath=self._trackpath)
         
-        self.scruler = None
-        self._rcoords = None
-        self._rects = []
+        # self.scruler = None
+        # self._rcoords = None
+        # self._rects = []
         
-        self.seekbar.setcount(100)
+        # self.seekbar.setcount(100)
 
     def plotx(self):
         if len(self.marangoni.trackpts) < 1:

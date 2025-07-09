@@ -13,3 +13,4 @@ from ..plugins.Radiobox import Radiobox
 from ..plugins.Slider import Slider
 from .Label import Label
 from .Titlebar import TitleBar
+from .Circle import Circle
