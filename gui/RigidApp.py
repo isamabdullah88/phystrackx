@@ -53,12 +53,6 @@ class RigidApp(App):
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
         
-        # TODO: Move this var to inside progressbar class.
-        # Progress bar for tracking
-        # self._progressbarh = 20
-        # self.progress = ctk.IntVar()
-        # self.progress.set(0)
-        
         self.spinner = Spinner(self.videoview, self.crop)
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
@@ -67,11 +61,6 @@ class RigidApp(App):
         
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
-        # tempdir = './temp'
-        # if not os.path.exists(tempdir):
-        #     os.makedirs(tempdir)
-        # self._trackpath = os.path.join(tempdir, 'track-videoapp.mp4')
-        # self.videoapp = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
 
     def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
@@ -81,8 +70,6 @@ class RigidApp(App):
             self.clear()
         else:
             self.clearcomponents()
-        
-        # self.videoapp.addvideo(videopath)
         
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
@@ -97,26 +84,11 @@ class RigidApp(App):
         self.seekbar.setcount(self.videoapp.fcount)
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
-
-        # self.imgview = self.videoview.create_image(self.crop.fx, self.crop.fy, anchor='nw')
         
         self.updateframe()
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
-        # frame = self.videoapp.frame(index=self.seekbar.idx)
-        # frame = self.resizef(frame, self.crop.fwidth, self.crop.fheight)
-        
-        # Apply filter
-        # frame = self.filters.appfilter(frame)
-        # Apply crop
-        # self.frame = self.crop.appcrop(frame)
-
-        # img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
-        # self.photo = ImageTk.PhotoImage(image=img)
-
-        # self.videoview.coords(self.imgview, self.crop.crpx, self.crop.crpy)
-        # self.videoview.itemconfig(self.imgview, image=self.photo)
         self.videoapp.showframe()
         
         # draw tracked points
@@ -160,17 +132,6 @@ class RigidApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
         self.subtoolbar.toggle()
-        
-    
-    # def update_progress(self):
-    #     pc = self.progressbar.progress.get()
-    #     # self.progressbar.set(pc)
-        
-    #     if pc < 100:
-    #         self.root.after(100, self.update_progress)
-    #     else:
-    #         self.progressbar.set(100)
-            
 
     def strack(self):
         """
@@ -186,13 +147,10 @@ class RigidApp(App):
         self.trects.clearrects()
         self.ocrrects.clearrects()
         
-        # self.videoview.delete(self.imgview)
         self.spinner.pack()
         self.progressbar.pack()
 
         def trackbg(spinner, progressbar):
-            # startidx = self.seekbar.startidx
-            # endidx = self.seekbar.endidx
             
             self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
             
@@ -203,7 +161,6 @@ class RigidApp(App):
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
-        # self.update_progress()
         self.progressbar.update()
         
     # TODO: Clear implementation of clear/abort while processing
