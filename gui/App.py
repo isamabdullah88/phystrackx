@@ -1,10 +1,9 @@
 from math import floor
 import customtkinter as ctk
-import cv2
 from PIL import Image
 
 from tkinter import filedialog
-from .components import Axes
+from .components import Axes, TitleBar
 from core import abspath
 
 class App:
@@ -80,6 +79,9 @@ class App:
         self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         self.videoview.pack_propagate(False)
         self.videoview.pack(side=ctk.TOP, expand=False)
+        
+        # Title
+        self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
 
 
     def openvideo(self):

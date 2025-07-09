@@ -9,7 +9,7 @@ from math import floor
 
 from .App import App
 from experiments.Balloon import Balloon
-from .Core import circilize, fcrop_coords
+from .components.CircleOverlay import circilize, fcrop_coords
 from .components import Spinner, CutSeekBar, ScaleRuler
 from core.Rect import PixelRect
 from core import abspath

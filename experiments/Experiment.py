@@ -54,6 +54,8 @@ class Experiment:
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
         
+        self.resize()
+        
         # if len(crop.rects) > 0:
         #     self.fwidth = crop.rects[0].width
         #     self.fheight = crop.rects[0].height
