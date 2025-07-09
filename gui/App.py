@@ -136,7 +136,7 @@ class App:
         self.fwidth = fwidth
         self.fheight = fheight
         
-    def resizef(self, frame, fwidth, fheight):
-        """Resizes frame according to current fwidth and fheight"""
-        frame = cv2.resize(frame, (fwidth, fheight))
-        return frame
+    # def resizef(self, frame, fwidth, fheight):
+    #     """Resizes frame according to current fwidth and fheight"""
+    #     frame = cv2.resize(frame, (fwidth, fheight))
+    #     return frame
