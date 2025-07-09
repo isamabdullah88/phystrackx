@@ -42,7 +42,7 @@ class BalloonApp(App):
 
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
-        self.scroll_toolbar.pack()
+        # self.scroll_toolbar.pack()
         
         self.scruler = None
 
