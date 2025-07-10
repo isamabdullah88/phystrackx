@@ -192,7 +192,8 @@ class MarangoniApp(App):
         self.subtoolbar.toggle()
     
     def scale(self):
-        self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth,
+                                cheight=self.cheight)
 
 
 
