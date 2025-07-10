@@ -9,7 +9,9 @@ from math import floor
 
 from gui.App import App
 from experiments.nonrigid import Interface
-from gui.components import Spinner, CutSeekBar, ScaleRuler
+from gui.components.Spinner import Spinner
+from gui.components.Seekbar import CutSeekBar
+from gui.components.Ruler import ScaleRuler
 from core import PixelRect, Points, abspath
 
 class InterfaceApp(App):

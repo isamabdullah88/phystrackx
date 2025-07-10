@@ -1,21 +1,24 @@
 
-import os
-import cv2
 import threading
-import customtkinter as ctk
-from PIL import Image, ImageTk
 from tkinter import messagebox
-from math import floor
 
 from gui.App import App
-from experiments.rigid.Rigid import Rigid
-from .Plot import Plot
-from gui.components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Save, Checkbox, Label)
-from experiments.components import OCRData
+from gui.components.Spinner import Spinner
+from gui.components.Seekbar import CutSeekBar
+from gui.components.Ruler import ScaleRuler
+from gui.components.Progressbar import ProgressBar
+from gui.components.Rect import Rect
+from gui.components.TPoints import TPoints
+from gui.components.SubToolbar import SubToolbar
+from gui.components.Save import Save
+from gui.components.Checkbox import Checkbox
+from gui.components.Label import Label
+from gui.components.Titlebar import TitleBar
+from gui.components.ToolTip import ToolTip
 from gui.plugins import Filters, Crop, Geometry
+from experiments.components import OCRData
 from core import PlotTypes
-from gui.components import TitleBar
+from .Plot import Plot
 from .VideoApp import Video
 
 class RigidApp(App):
@@ -29,13 +32,26 @@ class RigidApp(App):
         # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        # TODO: Use enum for these
-        self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        buttons = [
+            ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
+            ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
+            ("assets/plugins/ocr.png", self.drawocr, "Draw to Apply OCR"),
+            ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool")
+        ]
         
-        self.button("assets/plugin.png", self.plugins)
+        for imgpath, command, tooltip in buttons:
+            self.btn = self.subtoolbar.mkbutton(imgpath, command)
+            ToolTip(self.btn, tooltip)
+        
+        # TODO: Use enum for these
+        # self.subtoolbar.mkbutton("assets/plugins/filters.png", self.appfilter).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        
+        self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
+        ToolTip(self.pluginsbth, "Plugins")
+        
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         

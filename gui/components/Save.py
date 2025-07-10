@@ -3,7 +3,6 @@
 import csv
 import customtkinter as ctk
 from gui.rigid import Plot
-from .Axes import Axes
 from experiments.components import OCRData
 
 class Save:
@@ -60,6 +59,7 @@ class Save:
                     
 if __name__ == "__main__":
     import numpy as np
+    from .Axes import Axes
     data = [np.random.rand(100, 2) * 100, np.random.rand(100, 2) * 100]
     ocr = [["abc" for _ in range(100)]]
     axes = Axes(ctk.CTk(), None, 200, 200)

@@ -1,10 +1,12 @@
 from math import floor
+from tkinter import filedialog
 import customtkinter as ctk
 from PIL import Image
 
-from tkinter import filedialog
-from .components import Axes, TitleBar
 from core import abspath
+from .components.Titlebar import TitleBar
+from .components.Axes import Axes
+from .components.ToolTip import ToolTip
 
 class App:
     def __init__(self, root):
@@ -37,7 +39,7 @@ class App:
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
-    def button(self, imgpath, command):
+    def mkbutton(self, imgpath, command):
         """
         Creates a button with an image and a command.
         """
@@ -59,18 +61,19 @@ class App:
         self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
-            ("assets/video.png", self.openvideo),
-            ("assets/axis.png", self.markaxes),
-            ("assets/ruler.png", self.scale),
-            ("assets/rectanglebd.png", self.drawrect),
-            ("assets/start.png", self.strack),
-            ("assets/plot.png", self.plot),
-            ("assets/save.png", self.savedata),
-            ("assets/clear.png", self.clear)
+            ("assets/video.png", self.openvideo, "Load Video File"),
+            ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
+            ("assets/ruler.png", self.scale, "Add Scale"),
+            ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
+            ("assets/start.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/clear.png", self.clear, "Clear Everything")
         ]
         
-        for imgpath, command in buttons:
-            self.button(imgpath, command)
+        for imgpath, command, tooltip in buttons:
+            self.btn = self.mkbutton(imgpath, command)
+            ToolTip(self.btn, tooltip)
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)

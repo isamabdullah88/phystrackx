@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from gui.components import Axes
+from gui.components.Axes import Axes
 from core import PlotTypes
 
 class Plot:

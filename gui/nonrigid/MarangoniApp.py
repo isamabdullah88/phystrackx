@@ -7,9 +7,16 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from gui.App import App
 from experiments.nonrigid import Marangoni
-from gui.components import Spinner, CutSeekBar, ScaleRuler, SubToolbar, TitleBar, Label, Rect, Circle
+from gui.App import App
+from gui.components.Spinner import Spinner
+from gui.components.Seekbar import CutSeekBar
+from gui.components.Ruler import ScaleRuler
+from gui.components.SubToolbar import SubToolbar
+from gui.components.Titlebar import TitleBar
+from gui.components.Label import Label
+from gui.components.Rect import Rect
+from gui.components.Circle import Circle
 from gui.plugins import Crop, Filters, Geometry
 from core import abspath
 from .VideoApp import Video

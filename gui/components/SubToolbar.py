@@ -34,7 +34,7 @@ class SubToolbar:
             self.canvas.coords(self.wid, 5, 5)
             self.enable = True
         
-    def button(self, imgpath, command):
+    def mkbutton(self, imgpath, command):
         """
         Creates a button with an image and a command.
         """

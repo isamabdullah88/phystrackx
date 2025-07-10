@@ -1,5 +1,4 @@
 from typing import Callable
-import numpy as np
 import customtkinter as ctk
 from core import PixelRect, abspath
 from PIL import Image
