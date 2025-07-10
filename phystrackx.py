@@ -1,6 +1,6 @@
 import customtkinter 
 
-from gui.Menu import MenuScreen
+from gui.menu import MenuScreen
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
