@@ -2,7 +2,7 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 from math import floor
-from .Experiment import Experiment
+from ..Experiment import Experiment
 from core.Rect import NormalizedRect
 
 class Collision(Experiment):

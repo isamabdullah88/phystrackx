@@ -7,9 +7,9 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Interface import Interface
-from .components import Spinner, CutSeekBar, ScaleRuler
+from gui.App import App
+from experiments.nonrigid import Interface
+from gui.components import Spinner, CutSeekBar, ScaleRuler
 from core import PixelRect, Points, abspath
 
 class InterfaceApp(App):

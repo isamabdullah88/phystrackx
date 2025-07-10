@@ -15,7 +15,7 @@ from tqdm import tqdm
 from skimage.segmentation import active_contour
 from skimage.filters import gaussian
 
-from .Experiment import Experiment
+from experiments.Experiment import Experiment
 from .Utils import ptsline
 from core import Points
 

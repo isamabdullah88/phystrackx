@@ -7,15 +7,15 @@ from PIL import Image, ImageTk
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Rigid import Rigid
+from gui.App import App
+from experiments.rigid.Rigid import Rigid
 from .Plot import Plot
-from .components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
+from gui.components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
     SubToolbar, Save, Checkbox, Label)
 from experiments.components import OCRData
-from .plugins import Filters, Crop, Geometry
+from gui.plugins import Filters, Crop, Geometry
 from core import PlotTypes
-from .components.Titlebar import TitleBar
+from gui.components import TitleBar
 from .VideoApp import Video
 
 class RigidApp(App):

@@ -7,13 +7,13 @@ from PIL import Image, ImageTk
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Collision import Collision
+from ..App import App
+from experiments.rigid.Collision import Collision
 from core.Rect import PixelRect
 from .Plot import Plot
-from .components import Spinner
-from .components import CutSeekBar
-from .components import ScaleRuler
+from ..components import Spinner
+from ..components import CutSeekBar
+from ..components import ScaleRuler
 from core import abspath
 
 class CollisionApp(App):

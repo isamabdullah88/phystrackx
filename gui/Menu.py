@@ -3,8 +3,8 @@ import customtkinter as ctk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-from .RigidApp import RigidApp
-from .NonRigid import NonRigid
+from .rigid import RigidApp
+from .nonrigid import NonRigid
 from core import abspath
 
 class MenuScreen:

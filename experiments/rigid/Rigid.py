@@ -1,14 +1,15 @@
 from tqdm import tqdm
 import cv2
 import numpy as np
-from .Experiment import Experiment
+from ..Experiment import Experiment
+from customtkinter import IntVar
 from core import NormalizedRect, PixelRect
 from gui.plugins import Crop, Filters
 from queue import Queue
 
 
 class Rigid(Experiment):
-    def __init__(self, trackpath, vwidth=900, vheight=600, tkqueue:Queue=None):
+    def __init__(self, trackpath, vwidth, vheight, tkqueue:Queue=None):
         super().__init__(vwidth, vheight)
         
         self._trackpath = trackpath
@@ -33,7 +34,7 @@ class Rigid(Experiment):
         return text
         
     
-    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress=None):
+    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress:IntVar=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
         # Import for OCR detection

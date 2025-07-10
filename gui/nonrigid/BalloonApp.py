@@ -7,10 +7,9 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Balloon import Balloon
-from .components.CircleOverlay import circilize, fcrop_coords
-from .components import Spinner, CutSeekBar, ScaleRuler
+from gui.App import App
+from experiments.nonrigid import Balloon
+from gui.components import Spinner, CutSeekBar, ScaleRuler
 from core.Rect import PixelRect
 from core import abspath
 

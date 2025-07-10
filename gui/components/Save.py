@@ -2,7 +2,7 @@
 
 import csv
 import customtkinter as ctk
-from gui.Plot import Plot
+from gui.rigid import Plot
 from .Axes import Axes
 from experiments.components import OCRData
 

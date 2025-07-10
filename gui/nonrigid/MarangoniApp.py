@@ -7,11 +7,10 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Marangoni import Marangoni
-from .components.CircleOverlay import circilize, fcrop_coords
-from .components import Spinner, CutSeekBar, ScaleRuler, SubToolbar, TitleBar, Label, Rect, Circle
-from .plugins import Crop, Filters, Geometry
+from gui.App import App
+from experiments.nonrigid import Marangoni
+from gui.components import Spinner, CutSeekBar, ScaleRuler, SubToolbar, TitleBar, Label, Rect, Circle
+from gui.plugins import Crop, Filters, Geometry
 from core import abspath
 from .VideoApp import Video
 

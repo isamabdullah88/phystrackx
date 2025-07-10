@@ -1,6 +1,6 @@
 from customtkinter import CTkCanvas, IntVar
 from experiments import Rigid
-from .plugins import Crop, Filters
+from gui.plugins import Crop, Filters
 from gui.components import CutSeekBar, Spinner, Rect
 
 import os

@@ -10,7 +10,7 @@ from media import VideoReader
 from gui.plugins import Crop
 
 class Experiment:
-    def __init__(self, vwidth=900, vheight=600):
+    def __init__(self, vwidth, vheight):
         
         if not sys.stdout or not sys.stdout.isatty():
             # Create a logs directory if it doesn't exist
