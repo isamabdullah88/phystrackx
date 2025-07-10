@@ -1,9 +1,8 @@
 
-
 import csv
 import customtkinter as ctk
-from gui.rigid import Plot
-from experiments.components import OCRData
+from gui.rigid.plot import Plot
+from experiments.components.ocr import OCRData
 
 class Save:
     def __init__(self, pdata:Plot, ocrdata:OCRData):

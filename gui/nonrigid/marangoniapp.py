@@ -8,18 +8,19 @@ from tkinter import messagebox
 from math import floor
 
 from experiments.nonrigid import Marangoni
-from gui.App import App
-from gui.components.Spinner import Spinner
-from gui.components.Seekbar import CutSeekBar
-from gui.components.Ruler import ScaleRuler
-from gui.components.SubToolbar import SubToolbar
-from gui.components.Titlebar import TitleBar
-from gui.components.Label import Label
-from gui.components.Rect import Rect
-from gui.components.Circle import Circle
+from gui.app import App
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
+from gui.components.subtoolbar import SubToolbar
+from gui.components.titlebar import TitleBar
+from gui.components.tooltip import ToolTip
+from gui.components.label import Label
+from gui.components.rect import Rect
+from gui.components.circle import Circle
 from gui.plugins import Crop, Filters, Geometry
 from core import abspath
-from .VideoApp import Video
+from .videoapp import Video
 
 class MarangoniApp(App):
     def __init__(self, root):
@@ -32,11 +33,14 @@ class MarangoniApp(App):
         # self.ruler.pack(padx=5, pady=5)
         # self.ruler.image = img
 
-        img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        self.boundary = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                                      image=img, command=self.drawcircle)
-        self.boundary.pack(padx=5, pady=5)
+        # img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
+        # self.boundary = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+        #                             image=img, command=self.drawcircle)
+        # self.boundary.pack(padx=5, pady=5)
+        self.btn = self.mkbutton("assets/marangoni.png", self.drawcircle)
+        ToolTip(self.btn, "Mark Circle")
+        
         self._idx = 0
 
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
@@ -52,12 +56,23 @@ class MarangoniApp(App):
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
         # TODO: Use enum for these
-        self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        buttons = [
+            ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
+            ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
+            ("assets/plugins/ocr.png", self.drawocr, "Draw to Apply OCR"),
+            ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool")
+        ]
         
-        self.button("assets/plugin.png", self.plugins)
+        for imgpath, command, tooltip in buttons:
+            self.btn = self.subtoolbar.mkbutton(imgpath, command)
+            ToolTip(self.btn, tooltip)
+        # self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
+        # self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
+        # self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
+        # self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        
+        btn = self.mkbutton("assets/plugin.png", self.plugins)
+        ToolTip(btn, "Plugins")
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         

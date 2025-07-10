@@ -3,8 +3,8 @@ import cv2
 from PIL import Image
 from typing import Callable
 from core import FilterTypes, abspath
-from .Slider import Slider
-from .Radiobox import Radiobox
+from .slider import Slider
+from .radiobox import Radiobox
 
 class Filters:
     def __init__(self, toolbar, canvas, vwidth, vheight, updateframe:Callable, toggle:Callable):

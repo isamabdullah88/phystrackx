@@ -1,3 +1,3 @@
-from .RigidApp import RigidApp
-from .Plot import Plot
-from .VideoApp import Video
+from .rigidapp import RigidApp
+from .plot import Plot
+from .videoapp import Video

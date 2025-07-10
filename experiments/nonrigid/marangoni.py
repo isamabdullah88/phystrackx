@@ -7,10 +7,11 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-from experiments import Experiment
-from filters import Smoothen
-from core import Circle
-from gui.plugins import Filters, Crop
+from experiments.experiment import Experiment
+from filters.smoothen import Smoothen
+from core.circle import Circle
+from gui.plugins.filters import Filters 
+from gui.plugins.crop import Crop
 from customtkinter import IntVar
 from queue import Queue
 

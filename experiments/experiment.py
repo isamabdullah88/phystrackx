@@ -6,8 +6,8 @@ from itertools import groupby
 from math import floor
 import cv2
 import numpy as np
-from media import VideoReader
-from gui.plugins import Crop
+from media.videoreader import VideoReader
+# from gui.plugins.crop import Crop
 
 class Experiment:
     def __init__(self, vwidth, vheight):

@@ -8,11 +8,11 @@ from tkinter import messagebox
 from math import floor
 
 from experiments.nonrigid import Balloon
-from gui.App import App
-from gui.components.Spinner import Spinner
-from gui.components.Seekbar import CutSeekBar
-from gui.components.Ruler import ScaleRuler
-from core.Rect import PixelRect
+from gui.app import App
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
+from core.rect import PixelRect
 from core import abspath
 
 class BalloonApp(App):

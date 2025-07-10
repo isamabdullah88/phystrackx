@@ -2,24 +2,26 @@
 import threading
 from tkinter import messagebox
 
-from gui.App import App
-from gui.components.Spinner import Spinner
-from gui.components.Seekbar import CutSeekBar
-from gui.components.Ruler import ScaleRuler
-from gui.components.Progressbar import ProgressBar
-from gui.components.Rect import Rect
-from gui.components.TPoints import TPoints
-from gui.components.SubToolbar import SubToolbar
-from gui.components.Save import Save
-from gui.components.Checkbox import Checkbox
-from gui.components.Label import Label
-from gui.components.Titlebar import TitleBar
-from gui.components.ToolTip import ToolTip
-from gui.plugins import Filters, Crop, Geometry
-from experiments.components import OCRData
+from gui.app import App
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
+from gui.components.progressbar import ProgressBar
+from gui.components.rect import Rect
+from gui.components.tpoints import TPoints
+from gui.components.subtoolbar import SubToolbar
+from gui.components.save import Save
+from gui.components.checkbox import Checkbox
+from gui.components.label import Label
+from gui.components.titlebar import TitleBar
+from gui.components.tooltip import ToolTip
+from gui.plugins.filters import Filters
+from gui.plugins.crop import Crop
+from gui.plugins.geometry import Geometry
+from experiments.components.ocr import OCRData
 from core import PlotTypes
-from .Plot import Plot
-from .VideoApp import Video
+from .plot import Plot
+from .videoapp import Video
 
 class RigidApp(App):
     def __init__(self, root):
@@ -51,7 +53,6 @@ class RigidApp(App):
         
         self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
         ToolTip(self.pluginsbth, "Plugins")
-        
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         

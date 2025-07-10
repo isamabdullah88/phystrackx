@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import cv2
 import numpy as np
-from ..Experiment import Experiment
+from experiments.experiment import Experiment
 from customtkinter import IntVar
 from core import NormalizedRect, PixelRect
 from gui.plugins import Crop, Filters

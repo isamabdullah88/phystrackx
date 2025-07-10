@@ -1,3 +1,3 @@
-from .rigid.Rigid import Rigid
-from .Experiment import Experiment
-from .nonrigid.Marangoni import Marangoni
+from .rigid.rigid import Rigid
+from .experiment import Experiment
+from .nonrigid.marangoni import Marangoni

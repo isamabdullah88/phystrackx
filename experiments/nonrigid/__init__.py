@@ -1,3 +1,3 @@
-from .Marangoni import Marangoni
-from .Interface import Interface
-from .Balloon import Balloon
+from .marangoni import Marangoni
+from .interface import Interface
+from .balloon import Balloon

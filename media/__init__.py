@@ -1,1 +1,1 @@
-from .VideoReader import VideoReader
+from .videoreader import VideoReader

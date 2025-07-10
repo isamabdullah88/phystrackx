@@ -4,9 +4,9 @@ import customtkinter as ctk
 from PIL import Image
 
 from core import abspath
-from .components.Titlebar import TitleBar
-from .components.Axes import Axes
-from .components.ToolTip import ToolTip
+from .components.titlebar import TitleBar
+from .components.axes import Axes
+from .components.tooltip import ToolTip
 
 class App:
     def __init__(self, root):

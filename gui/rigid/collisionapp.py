@@ -7,13 +7,13 @@ from PIL import Image, ImageTk
 from tkinter import messagebox
 from math import floor
 
-from ..App import App
-from experiments.rigid.Collision import Collision
-from core.Rect import PixelRect
-from .Plot import Plot
-from ..components import Spinner
-from ..components import CutSeekBar
-from ..components import ScaleRuler
+from gui.app import App
+from experiments.rigid.collision import Collision
+from core.rect import PixelRect
+from .plot import Plot
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
 from core import abspath
 
 class CollisionApp(App):
@@ -40,7 +40,7 @@ class CollisionApp(App):
         
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
-        self.scroll_toolbar.pack()
+        # self.scroll_toolbar.pack()
         
         self.scruler = None
         self._rcoords = None

@@ -2,8 +2,8 @@
 from tkinter import messagebox
 from customtkinter import CTkCanvas
 import math
-from .Utils import plcbutton
-from .Line import Line
+from .utils import plcbutton
+from .line import Line
 
 class Geometry:
     def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int):

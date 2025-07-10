@@ -2,9 +2,9 @@ from tkinter import *
 import customtkinter as ctk
 from PIL import Image, ImageTk
 
-from .MarangoniApp import MarangoniApp
-from .BalloonApp import BalloonApp
-from .InterfaceApp import InterfaceApp
+from .marangoniapp import MarangoniApp
+from .balloonapp import BalloonApp
+from .interfaceapp import InterfaceApp
 from core import abspath
 # customtkinter.set_appearance_mode("dark")
 # customtkinter.set_default_color_theme("dark-blue")

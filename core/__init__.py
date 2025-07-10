@@ -1,5 +1,5 @@
-from .Rect import PixelRect, NormalizedRect, Points
-from .Path import abspath, filexists
-from .Circle import Circle
-from .FilterTypes import FilterTypes
-from .PlotTypes import PlotTypes
+from .rect import PixelRect, NormalizedRect, Points
+from .path import abspath, filexists
+from .circle import Circle
+from .filtertypes import FilterTypes
+from .plottypes import PlotTypes

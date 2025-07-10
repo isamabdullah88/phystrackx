@@ -7,11 +7,11 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from gui.App import App
+from gui.app import App
 from experiments.nonrigid import Interface
-from gui.components.Spinner import Spinner
-from gui.components.Seekbar import CutSeekBar
-from gui.components.Ruler import ScaleRuler
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
 from core import PixelRect, Points, abspath
 
 class InterfaceApp(App):
