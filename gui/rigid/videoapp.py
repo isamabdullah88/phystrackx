@@ -20,6 +20,7 @@ class Video:
         self.crop = crop
         self.seekbar = seekbar
         self.filters = filters
+        self.spinner = spinner
         # self.fcount = 0
         self.frame = None
         
@@ -27,9 +28,23 @@ class Video:
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
         self.trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Rigid(trackpath=self.trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=spinner.queue)
+        self.rigid = Rigid(trackpath=self.trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
         
-        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
+    # @property
+    # def tkqueue(self):
+    #     return self.spinner.queue
+    
+    @property
+    def fidx(self):
+        return self.seekbar.idx
+    
+    @property
+    def sfidx(self):
+        return self.seekbar.startidx
+    
+    @property
+    def efidx(self):
+        return self.seekbar.endidx
     
     @property
     def fcount(self):
@@ -58,6 +73,8 @@ class Video:
     def loadvideo(self, videopath):
         self.rigid.addvideo(videopath)
         
+        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
+        
         
         
     def resizef(self, frame, fwidth, fheight):
@@ -69,7 +86,7 @@ class Video:
     def showframe(self):
         """Updates and shows the frame to video view"""
         
-        frame = self.rigid.frame(index=self.seekbar.idx)
+        frame = self.rigid.frame(index=self.fidx)
         frame = self.resizef(frame, self.fwidth, self.fheight)
         
         # Apply filter
@@ -85,9 +102,11 @@ class Video:
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
         
     def track(self, trect:Rect, ocr:Rect, progress:IntVar):
-        startidx = self.seekbar.startidx
-        endidx = self.seekbar.endidx
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, startidx, endidx, progress)
+        # startidx = self.seekbar.startidx
+        # endidx = self.seekbar.endidx
+        self.canvas.delete(self.imgview)
+        
+        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, self.sfidx, self.efidx, progress)
         
         
         
