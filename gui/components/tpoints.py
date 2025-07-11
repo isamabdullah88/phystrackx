@@ -120,3 +120,7 @@ class TPoints:
         
         self.button.pack_forget()
         
+    def clear(self):
+        self.canvas.delete("points")
+        self.tpts.clear()
+        self.button.place_forget()
