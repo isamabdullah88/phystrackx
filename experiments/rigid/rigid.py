@@ -117,6 +117,10 @@ class Rigid(Experiment):
                 
                 if p1 is not None:
                     p1p = p1.copy()[st == 1].reshape(-1,1,2)
+                    if p1p.size == 0:
+                        p1p = p0.copy()
+                else:
+                    p1p = p0.copy()
                 
                 x, y = self.pts2pt(p1p)
                 ptstrack[j] = p1p
@@ -145,7 +149,7 @@ class Rigid(Experiment):
                 
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
-                
+
             self._videowriter.write(tkframe)
             
         self._videowriter.release()
