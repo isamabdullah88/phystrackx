@@ -6,7 +6,7 @@ from stardist.models import StarDist2D
 from stardist.plot import render_label
 from csbdeep.utils import normalize
 from itertools import groupby
-from media import VideoReader
+from media.videoreader import VideoReader
 
 class NonRigid():
     def __init__(self):

@@ -1,9 +1,8 @@
 from tqdm import tqdm
 import cv2
 import numpy as np
-from math import floor
-from .Experiment import Experiment
-from core.Rect import NormalizedRect
+from experiments.experiment import Experiment
+from core.rect import NormalizedRect
 
 class Collision(Experiment):
     def __init__(self, trackpath, vwidth=900, vheight=600):

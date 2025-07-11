@@ -81,3 +81,28 @@ def fcrop_coords(frame, center, x):
     frame[cysrt:cyend, cxsrt:cxend] = frame_cropbd
 
     return frame, matte_frame
+
+def drawcircle(self):
+        
+    def ondown(event):
+        self.ccoords = (event.x-self.fx, event.y-self.fy)
+        
+        self.photo = ImageTk.PhotoImage(circilize(10, 10))
+        
+        self.videoview.itemconfig(self.imgview, image=self.photo)
+        
+    def incircle(event):
+        ex = (event.x-self.fx)
+        ey = (event.y-self.fy)
+
+        frame, mask = fcrop_coords(self._frame, self.ccoords, (ex, ey))
+
+        img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=img)
+        self._mask = mask
+
+        self.videoview.itemconfig(self.imgview, image=self.photo)
+        
+
+    self.videoview.bind("<Button-1>", ondown)
+    self.videoview.bind("<B1-Motion>", incircle)

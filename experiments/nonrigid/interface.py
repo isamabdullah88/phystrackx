@@ -8,16 +8,16 @@ Following points must be considered while using this:
 * The camera should not be moving while balloon is being inflated.
 * The video should be of high resolution.s
 """
+from skimage.filters import gaussian
 from math import floor
 import cv2
 import numpy as np
 from tqdm import tqdm
 from skimage.segmentation import active_contour
-from skimage.filters import gaussian
 
-from .Experiment import Experiment
-from .Utils import ptsline
 from core import Points
+from experiments.experiment import Experiment
+from .utils import ptsline
 
 class Interface(Experiment):
     def __init__(self, trackpath):

@@ -46,6 +46,7 @@ class TitleBar:
         hex_color = hex_color.lstrip("#")
         return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
+
 if __name__ == "__main__":
     # 🔧 Usage
     root = tk.Tk()

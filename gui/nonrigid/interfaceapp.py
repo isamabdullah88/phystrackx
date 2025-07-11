@@ -7,9 +7,11 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Interface import Interface
-from .components import Spinner, CutSeekBar, ScaleRuler
+from gui.app import App
+from experiments.nonrigid import Interface
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
 from core import PixelRect, Points, abspath
 
 class InterfaceApp(App):
@@ -40,7 +42,7 @@ class InterfaceApp(App):
 
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
-        self.scroll_toolbar.pack()
+        # self.scroll_toolbar.pack()
         
         self.scruler = None
 

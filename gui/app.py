@@ -1,11 +1,12 @@
 from math import floor
+from tkinter import filedialog
 import customtkinter as ctk
-import cv2
 from PIL import Image
 
-from tkinter import filedialog
-from .components import Axes
 from core import abspath
+from .components.titlebar import TitleBar
+from .components.axes import Axes
+from .components.tooltip import ToolTip
 
 class App:
     def __init__(self, root):
@@ -38,7 +39,7 @@ class App:
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
-    def button(self, imgpath, command):
+    def mkbutton(self, imgpath, command):
         """
         Creates a button with an image and a command.
         """
@@ -60,18 +61,19 @@ class App:
         self.scrollframe.pack(side=ctk.LEFT)
         
         buttons = [
-            ("assets/video.png", self.openvideo),
-            ("assets/axis.png", self.markaxes),
-            ("assets/ruler.png", self.scale),
-            ("assets/rectanglebd.png", self.drawrect),
-            ("assets/start.png", self.strack),
-            ("assets/plot.png", self.plot),
-            ("assets/save.png", self.savedata),
-            ("assets/clear.png", self.clear)
+            ("assets/video.png", self.openvideo, "Load Video File"),
+            ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
+            ("assets/ruler.png", self.scale, "Add Scale"),
+            ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
+            ("assets/start.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/clear.png", self.clear, "Clear Everything")
         ]
         
-        for imgpath, command in buttons:
-            self.button(imgpath, command)
+        for imgpath, command, tooltip in buttons:
+            self.btn = self.mkbutton(imgpath, command)
+            ToolTip(self.btn, tooltip)
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
@@ -80,6 +82,9 @@ class App:
         self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         self.videoview.pack_propagate(False)
         self.videoview.pack(side=ctk.TOP, expand=False)
+        
+        # Title
+        self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
 
 
     def openvideo(self):
@@ -136,7 +141,7 @@ class App:
         self.fwidth = fwidth
         self.fheight = fheight
         
-    def resizef(self, frame, fwidth, fheight):
-        """Resizes frame according to current fwidth and fheight"""
-        frame = cv2.resize(frame, (fwidth, fheight))
-        return frame
+    # def resizef(self, frame, fwidth, fheight):
+    #     """Resizes frame according to current fwidth and fheight"""
+    #     frame = cv2.resize(frame, (fwidth, fheight))
+    #     return frame

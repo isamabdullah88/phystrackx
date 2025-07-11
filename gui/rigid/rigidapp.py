@@ -1,21 +1,27 @@
 
-import os
-import cv2
 import threading
-import customtkinter as ctk
-from PIL import Image, ImageTk
 from tkinter import messagebox
-from math import floor
 
-from .App import App
-from experiments.Rigid import Rigid
-from .Plot import Plot
-from .components import (Spinner, CutSeekBar, ScaleRuler, ProgressBar, Rect, TPoints,
-    SubToolbar, Save, Checkbox, Label)
-from experiments.components import OCRData
-from .plugins import Filters, Crop, Geometry
+from gui.app import App
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
+from gui.components.progressbar import ProgressBar
+from gui.components.rect import Rect
+from gui.components.tpoints import TPoints
+from gui.components.subtoolbar import SubToolbar
+from gui.components.save import Save
+from gui.components.checkbox import Checkbox
+from gui.components.label import Label
+from gui.components.titlebar import TitleBar
+from gui.components.tooltip import ToolTip
+from gui.plugins.filters import Filters
+from gui.plugins.crop import Crop
+from gui.plugins.geometry import Geometry
+from experiments.components.ocr import OCRData
 from core import PlotTypes
-from .components.Titlebar import TitleBar
+from .plot import Plot
+from .videoapp import Video
 
 class RigidApp(App):
     def __init__(self, root):
@@ -25,18 +31,28 @@ class RigidApp(App):
         """
         super().__init__(root)
         
-        self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
-        
         # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
-        # TODO: Use enum for these
-        self.subtoolbar.button("assets/plugins/filters.png", self.filter).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        buttons = [
+            ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
+            ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
+            ("assets/plugins/ocr.png", self.drawocr, "Draw to Apply OCR"),
+            ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool")
+        ]
         
-        self.button("assets/plugin.png", self.plugins)
+        for imgpath, command, tooltip in buttons:
+            self.btn = self.subtoolbar.mkbutton(imgpath, command)
+            ToolTip(self.btn, tooltip)
+        
+        # TODO: Use enum for these
+        # self.subtoolbar.mkbutton("assets/plugins/filters.png", self.appfilter).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
+        # self.subtoolbar.mkbutton("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
+        
+        self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
+        ToolTip(self.pluginsbth, "Plugins")
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
@@ -52,24 +68,14 @@ class RigidApp(App):
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
         
-        # TODO: Move this var to inside progressbar class.
-        # Progress bar for tracking
-        self._progressbarh = 20
-        self.progress = ctk.IntVar()
-        self.progress.set(0)
-        
         self.spinner = Spinner(self.videoview, self.crop)
-        self.progressbar = ProgressBar(self.videoview, vwidth=self.vwidth, vheight=self.vheight, bheight=self._progressbarh)
+        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
         # TODO: Restructure this to make more consistent
         self.scruler = None
         
         # TODO: Make this handle more gracefully
-        tempdir = './temp'
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
-        self._trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Rigid(trackpath=self._trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
 
     def loadvideo(self, videopath, clear=True):
         """Loads a new video from user click."""
@@ -80,38 +86,25 @@ class RigidApp(App):
         else:
             self.clearcomponents()
         
-        self.rigid.addvideo(videopath)
-        
-        self.seekbar.setcount(self.rigid.fcount)
-        
         # Show frame count
-        Label(self.videoview, text="Frame Count: " + str(self.rigid.fcount)).place(x=10, y=10)
+        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
         
-        self.tpoints.addpoints(self.rigid.trackpts, self.crop.crpx, self.crop.crpy)
-
-        self.resize(self.rigid.fwidth, self.rigid.fheight)
+        self.videoapp.loadvideo(videopath)
+        
+        self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
         self.crop.set(self.fwidth, self.fheight)
-
-        self.imgview = self.videoview.create_image(self.crop.fx, self.crop.fy, anchor='nw')
+        
+        
+        self.seekbar.setcount(self.videoapp.fcount)
+        
+        self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
         self.updateframe()
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
-        frame = self.rigid.frame(index=self.seekbar.idx)
-        frame = self.resizef(frame, self.crop.fwidth, self.crop.fheight)
-        
-        # Apply filter
-        frame = self.filters.appfilter(frame)
-        # Apply crop
-        self.frame = self.crop.appcrop(frame)
-
-        img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
-        self.photo = ImageTk.PhotoImage(image=img)
-
-        self.videoview.coords(self.imgview, self.crop.crpx, self.crop.crpy)
-        self.videoview.itemconfig(self.imgview, image=self.photo)
+        self.videoapp.showframe()
         
         # draw tracked points
         self.tpoints.drawpoint(self.seekbar.idx)
@@ -123,15 +116,25 @@ class RigidApp(App):
         """Draws rectangle with simple lines"""
         self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
         
-        if self.rigid.fcount < 10:
+        if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
         self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+    
+    
+    def appfilter(self):
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
+            return
         
+        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
+        self.filters.spawnfilter()
+        self.subtoolbar.toggle()
+    
     def drawcrop(self):
         """Crop for crop plugin. This crop the all frames of video"""
-        if self.rigid.fcount < 10:
+        if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
@@ -141,7 +144,7 @@ class RigidApp(App):
         
     def drawocr(self):
         """Draws rectangle for OCR"""
-        if self.rigid.fcount < 10:
+        if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
@@ -154,23 +157,12 @@ class RigidApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
         self.subtoolbar.toggle()
-        
-    
-    def update_progress(self):
-        pc = self.progress.get()
-        self.progressbar.set(pc)
-        
-        if pc < 100:
-            self.root.after(100, self.update_progress)
-        else:
-            self.progressbar.set(100)
-            
 
     def strack(self):
         """
-        Detects and tracks radius for the main rigid circle using classical techniques.
+        Detects and tracks radius for the main videoapp circle using classical techniques.
         """
-        if (self.rigid.fcount < 10) or ((len(self.trects.rects) == 0) and (len(self.ocrrects.rects) == 0)):
+        if (self.videoapp.fcount < 10) or ((len(self.trects.rects) == 0) and (len(self.ocrrects.rects) == 0)):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
         
@@ -180,24 +172,21 @@ class RigidApp(App):
         self.trects.clearrects()
         self.ocrrects.clearrects()
         
-        self.videoview.delete(self.imgview)
         self.spinner.pack()
         self.progressbar.pack()
 
         def trackbg(spinner, progressbar):
-            startidx = self.seekbar.startidx
-            endidx = self.seekbar.endidx
             
-            self.rigid.track(self.trects.rects, self.ocrrects.rects, self.filters, self.crop, startidx, endidx, self.progress)
+            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
             
             self.root.after(0, spinner.destroy())
             self.root.after(0, progressbar.destroy())
 
-            self.loadvideo(self._trackpath, clear=False)
+            self.loadvideo(self.videoapp.trackpath, clear=False)
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
-        self.update_progress()
+        self.progressbar.update()
         
     # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
@@ -211,12 +200,12 @@ class RigidApp(App):
         self.axes.clear()
         
     def clear(self):
-        self.rigid.trackpts.clear()
+        self.videoapp.trackpts.clear()
         self.clearcomponents()
         # super().clear()
     
     def plot(self):
-        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):
             messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
@@ -230,13 +219,13 @@ class RigidApp(App):
         """
         Saves the tracked data to a CSV file.
         """
-        if (len(self.rigid.trackpts) == 0) and (len(self.rigid.texts) == 0):
+        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):
             messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
             return
         
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
         self.gen_plotdata()
-        ocrdata = OCRData(self.rigid.texts)
+        ocrdata = OCRData(self.videoapp.texts)
         
         save = Save(self.pdata, ocrdata)
         save.askfilepath()
@@ -251,14 +240,6 @@ class RigidApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()
         
-    def filter(self):
-        if self.rigid.fcount < 10:
-            messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
-            return
-        
-        self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
-        self.filters.spawnfilter()
-        self.subtoolbar.toggle()
     
     def gen_plotdata(self):
         """Evolve raw data into plot data"""
@@ -267,5 +248,5 @@ class RigidApp(App):
             if self.scruler is not None:
                 scale = self.scruler.scalef
                 
-            self.pdata = Plot(self.rigid.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-                    self.fheight, scale=scale, fps=self.rigid.fps)
+            self.pdata = Plot(self.videoapp.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+                    self.fheight, scale=scale, fps=self.videoapp.fps)

@@ -7,19 +7,25 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-from .Experiment import Experiment
-from filters import Smoothen
-from core import Circle
+from experiments.experiment import Experiment
+from filters.smoothen import Smoothen
+from core.circle import Circle
+from gui.plugins.filters import Filters 
+from gui.plugins.crop import Crop
+from customtkinter import IntVar
+from queue import Queue
 
 class Marangoni(Experiment):
-    def __init__(self, trackpath):
-        super().__init__()
+    def __init__(self, trackpath, vwidth, vheight, tkqueue:Queue=None):
+        super().__init__(vwidth, vheight)
 
         self._trackpath = trackpath
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
         self.trackpts = []
+        
+        self.tkqueue = tkqueue
 
-    def track(self, mask, startidx=0, endidx=0):
+    def track(self, mask, filters:Filters, crop:Crop, startidx=0, endidx=0, progress: IntVar=None):
         """Tracks the radius in marangoni effect
 
         Args:
@@ -92,6 +98,9 @@ class Marangoni(Experiment):
 
             # Store data
             self.trackpts.append(Circle(r, x, y))
+            
+            if progress is not None:
+                progress.set((i / (fcount - 1)) * 100)
 
             self._videowriter.write(frame)
 

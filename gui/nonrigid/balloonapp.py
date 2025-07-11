@@ -7,16 +7,18 @@ from matplotlib import pyplot as plt
 from tkinter import messagebox
 from math import floor
 
-from .App import App
-from experiments.Marangoni import Marangoni
-from .Core import circilize, fcrop_coords
-from .components import Spinner, CutSeekBar, ScaleRuler
+from experiments.nonrigid import Balloon
+from gui.app import App
+from gui.components.spinner import Spinner
+from gui.components.seekbar import CutSeekBar
+from gui.components.ruler import ScaleRuler
+from core.rect import PixelRect
 from core import abspath
 
-class MarangoniApp(App):
+class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
-
+        
         img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
         self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
@@ -24,52 +26,64 @@ class MarangoniApp(App):
         self.ruler.pack(padx=5, pady=5)
         self.ruler.image = img
 
-        img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        # For drawing ellipse over tracking area
+        img = Image.open(abspath("assets/circlebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
         img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        self.boundary = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+        self.circlebd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                       image=img, command=self.drawcircle)
-        self.boundary.pack(padx=5, pady=5)
-        self._idx = 0
+        self.circlebd.pack(pady=10)
+        
+        # For drawing rectangle over text area
+        img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
+        self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
+                                      image=img, command=self.drawrect)
+        self.rectbd.pack(pady=10)
+        
 
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
-
-        self.scroll_toolbar.pack()
         
+        # self.scroll_toolbar.pack()
+        
+        self.scruler = None
+
         self.ccoords = (0, 0)
 
         # mask from user for tracking
         self._mask = None
+        # rect for text detection
+        self._rect = None
 
         tempdir = './temp'
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
 
-        self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+        self._trackpath = os.path.join(tempdir, 'track-balloon.mp4')
 
-        self.marangoni = Marangoni(trackpath=self._trackpath)
+        self.balloon = Balloon(trackpath=self._trackpath)
 
 
 
     def loadvideo(self, videopath):
-        self.marangoni.addvideo(videopath)
+        self.balloon.addvideo(videopath)
         
-        self.seekbar.setcount(self.marangoni.fcount)
+        self.seekbar.setcount(self.balloon.fcount)
 
-        frame1 = self.marangoni.frame(0)
+        frame1 = self.balloon.frame(0)
         self.dispframe(frame1)
 
     def dispframe(self, frame):
-        fwidth = self.marangoni.fwidth
-        fheight = self.marangoni.fheight
+        fwidth = self.balloon.fwidth
+        fheight = self.balloon.fheight
         frame = self.resizeframe(frame, fwidth, fheight)
         self.fheight, self.fwidth = frame.shape[:2]
 
         img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
         self.photo = ImageTk.PhotoImage(image=img)
         self._frame = frame
-
-        self.fx = floor(self.cwidth/2 - frame.shape[1]/2)
-        self.fy = floor(self.cheight/2 - frame.shape[0]/2)
+        
+        self.fx = floor(self.vwidth/2 - self.fwidth/2)
+        self.fy = floor(self.vheight/2 - self.fheight/2)
         
         # Default coordinate system
         if self.ox is None:
@@ -81,10 +95,10 @@ class MarangoniApp(App):
         self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
         
     def updateframe(self):
-        
-        frame = self.marangoni.frame(index=self.seekbar.idx)
-        fwidth = self.marangoni.fwidth
-        fheight = self.marangoni.fheight
+        """Updates the frame displayed in the video view based on the slider position."""
+        frame = self.balloon.frame(index=self.seekbar.idx)
+        fwidth = self.balloon.fwidth
+        fheight = self.balloon.fheight
 
         frame = self.resizeframe(frame, fwidth, fheight)
 
@@ -94,32 +108,11 @@ class MarangoniApp(App):
 
         self.videoview.itemconfig(self.imgview, image=self.photo)
 
-    # def markaxes(self):
-
-    #     def update_axes(event):
-    #         """ Update the axes to follow the mouse cursor. """
-    #         self.videoview.delete("axes")  # Remove old axes
-    #         x, y = event.x, event.y  # Get mouse position
-
-    #         # Draw new axes centered on mouse position
-    #         self.videoview.create_line(0, y, self.cwidth, y, fill="red", width=2, tags="axes")  # X-axis
-    #         self.videoview.create_line(x, 0, x, self.cheight, fill="blue", width=2, tags="axes")  # Y-axis
-
-    #     def store_click(event):
-    #         """ Store the clicked coordinates and draw a point. """
-    #         x, y = event.x, event.y
-
-    #         self.videoview.create_oval(x-3, y-3, x+3, y+3, fill="red", outline="black")  # Draw a small dot
-
-    #         self.videoview.unbind("<Motion>")
-    #         self.videoview.unbind("<Button>")
-
-    #     self.videoview.bind("<Motion>", update_axes)
-    #     self.videoview.bind("<Button>", store_click)
     def scale(self):
         self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
     def drawcircle(self):
+        """Draws circle with filled transparent image laid over region of interest"""
         
         def ondown(event):
             self.ccoords = (event.x-self.fx, event.y-self.fy)
@@ -144,21 +137,45 @@ class MarangoniApp(App):
         self.videoview.bind("<Button-1>", ondown)
         self.videoview.bind("<B1-Motion>", incircle)
 
+    
+    def drawrect(self):
+        """Draws rectangle with simple lines"""
+        self.rbox = None
+        
+        def ondown(event):
+            if self.rbox is not None:
+                self.videoview.delete(self.rbox)
+            
+            self.rcoords = (event.x, event.y)
+            
+            self.rbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            
+        def inrect(event):
+            sx, sy = self.rcoords
+            ex, ey = (event.x, event.y)
+            
+            self.videoview.coords(self.rbox, sx, sy, event.x, event.y)
+
+            self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
+
+        self.videoview.bind("<Button-1>", ondown)
+        self.videoview.bind("<B1-Motion>", inrect)
+
 
     def strack(self):
         """
-        Detects and tracks radius for the main marangoni circle using classical techniques.
+        Detects and tracks radius for the main balloon circle using classical techniques.
         """
-        if self.marangoni.fcount < 10:
+        if self.balloon.fcount < 10:
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
-        
+
         self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
 
         def trackbg(popup):
             startidx = self.seekbar.startidx
             endidx = self.seekbar.endidx
-            self.marangoni.track(self._mask, startidx, endidx)
+            self.balloon.track(self._mask, self._rect, startidx, endidx)
             
             self.root.after(0, popup.destroy())
 
@@ -172,8 +189,8 @@ class MarangoniApp(App):
         """Clears almost everything"""
         super().clear()
         
-        del self.marangoni
-        self.marangoni = Marangoni(trackpath=self._trackpath)
+        del self.balloon
+        self.balloon = Balloon(trackpath=self._trackpath)
         
         self.scruler = None
         self._rcoords = None
@@ -181,22 +198,24 @@ class MarangoniApp(App):
         
         self.seekbar.setcount(100)
 
-    def plotx(self):
-        if len(self.marangoni.trackpts) < 1:
+
+    def plot_distances(self):
+        if len(self.balloon.trackpts) < 1:
             messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
             return
 
-        rs = [c.r for c in self.marangoni.trackpts]
-        x = [c.cx for c in self.marangoni.trackpts]
-        y = [c.cy for c in self.marangoni.trackpts]
-        
-        _, axes = plt.subplots(1, 3, figsize=(6, 5))
+        num_tracks = len(self.balloon.trackpts)
+        _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
 
+        for i in range(num_tracks):
+            trackpts = self.balloon.trackpts[i]
+            xcoords = trackpts[0, :] - self.fx
+            ycoords = trackpts[1, :] - self.fy
 
-        axes[0].plot(rs)
-        axes[0].set_title("Radius")
-        axes[1].plot(x, y)
-        axes[1].set_title("Center")
+            axes[i][0].plot(xcoords)
+            axes[i][0].set_title("x coordinates")
+            axes[i][1].plot(ycoords)
+            axes[i][1].set_title("y coordinates")
 
         plt.tight_layout()
         plt.show()

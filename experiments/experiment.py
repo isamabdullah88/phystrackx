@@ -6,11 +6,11 @@ from itertools import groupby
 from math import floor
 import cv2
 import numpy as np
-from media import VideoReader
-from gui.plugins import Crop
+from media.videoreader import VideoReader
+# from gui.plugins.crop import Crop
 
 class Experiment:
-    def __init__(self, vwidth=900, vheight=600):
+    def __init__(self, vwidth, vheight):
         
         if not sys.stdout or not sys.stdout.isatty():
             # Create a logs directory if it doesn't exist
@@ -53,6 +53,8 @@ class Experiment:
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
+        
+        self.resize()
         
         # if len(crop.rects) > 0:
         #     self.fwidth = crop.rects[0].width
