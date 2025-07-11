@@ -16,6 +16,8 @@ class Rect:
         self.canvasrects = []
         self._ctkrects = []
         
+        self.labels = []
+        
         self.toggle = toggle
         self.btnsize = 30
         self.button = self.plcbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
@@ -54,7 +56,10 @@ class Rect:
         self._ctkrects.clear()
         # self.button.place_forget()
         
-    def cleardata(self):
+    def clear(self):
+        for label in self.labels:
+            label.clear()
+            
         self.rects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
@@ -109,4 +114,6 @@ class Rect:
         for i,rect in enumerate(self.canvasrects):
             x, y, w, h = rect.totuple()
             text = f"Rect-{i+1}: x={x:.0f}, y={y:.0f}, width={w:.0f}, height={h:.0f}"
-            Label(self.canvas, text=text).place(x=10, y=(i+1)*30)
+            label = Label(self.canvas, text=text)
+            label.place(x=10, y=80 + (i+1)*30)
+            self.labels.append(label)

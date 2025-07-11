@@ -123,7 +123,7 @@ class App:
         self.root.destroy()
 
     def clear(self):
-        self.videoview.delete("all")
+        pass
         
     
     def resize(self, fwidth, fheight):
