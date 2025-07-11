@@ -34,6 +34,7 @@ class RigidApp(App):
         # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
+        # TODO: Use enum for these
         buttons = [
             ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
             ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
@@ -45,11 +46,6 @@ class RigidApp(App):
             self.btn = self.subtoolbar.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
         
-        # TODO: Use enum for these
-        # self.subtoolbar.mkbutton("assets/plugins/filters.png", self.appfilter).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
         
         self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
         ToolTip(self.pluginsbth, "Plugins")
@@ -86,10 +82,10 @@ class RigidApp(App):
         else:
             self.clearcomponents()
         
-        # Show frame count
-        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
-        
         self.videoapp.loadvideo(videopath)
+        
+        # Show frame count
+        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
         self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
@@ -192,16 +188,18 @@ class RigidApp(App):
     def clearcomponents(self):
         """Clear components"""
         self.scruler = None
-        self.seekbar.setcount(100)
         self.crop.cleardata()
-        self.ocrrects.cleardata()
-        self.trects.cleardata()
         self.filters.clear()
         self.axes.clear()
+        self.tpoints.clear()
         
     def clear(self):
-        self.videoapp.trackpts.clear()
+        print('Clear')
         self.clearcomponents()
+        self.videoapp.trackpts.clear()
+        self.ocrrects.clear()
+        self.trects.clear()
+        # self.seekbar.setcount(100)
         # super().clear()
     
     def plot(self):
