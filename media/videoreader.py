@@ -2,8 +2,8 @@ import cv2
 from math import floor
 
 class VideoReader():
-    def __init__(self, video_path):
-        self._reader = cv2.VideoCapture(video_path)
+    def __init__(self, videopath):
+        self._reader = cv2.VideoCapture(videopath)
 
         if not self._reader.isOpened():
             print("Video unable to open!")
@@ -32,3 +32,6 @@ class VideoReader():
     
     def seek(self, index):
         self._reader.set(cv2.CAP_PROP_POS_FRAMES, index)
+        
+    def release(self):
+        self._reader.release()

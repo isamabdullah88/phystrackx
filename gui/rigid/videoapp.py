@@ -5,7 +5,9 @@ from gui.plugins.filters import Filters
 from gui.components.seekbar import CutSeekBar
 from gui.components.spinner import Spinner
 from gui.components.rect import Rect
+from core import filexists
 
+import logging
 import os
 import cv2
 from PIL import Image, ImageTk
@@ -29,6 +31,9 @@ class Video:
             os.makedirs(tempdir)
         self.trackpath = os.path.join(tempdir, 'track-rigid.mp4')
         self.rigid = Rigid(trackpath=self.trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
+        
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("Video App initializedyes")
         
     # @property
     # def tkqueue(self):
@@ -70,8 +75,12 @@ class Video:
     def fheight(self):
         return self.rigid.fheight
     
-    def loadvideo(self, videopath):
+    def loadvideo(self, videopath:str):
+        if not filexists(videopath):
+            self.logger.error("File not exists at: %s", videopath)
+            
         self.rigid.addvideo(videopath)
+        self.logger.info("Video added from: %s", videopath)
         
         self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
         
@@ -108,6 +117,7 @@ class Video:
         
         self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, self.sfidx, self.efidx, progress)
         
-        
+    def clear(self):
+        self.rigid.trackpts.clear()
         
         
