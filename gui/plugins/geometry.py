@@ -6,7 +6,7 @@ from .utils import plcbutton
 from .line import Line
 
 class Geometry:
-    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int):
+    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int, btnlist, activebtn):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
@@ -23,7 +23,10 @@ class Geometry:
         self.unsltcolor = "#28a745"
         self.dragcolor = "#4fcfbe"
         
-        self.showbtn = False
+        self.showbtn = True
+        
+        self.btnlist = btnlist
+        self.activebtn = activebtn
         
         
     def pack(self):
@@ -31,9 +34,16 @@ class Geometry:
         self.distancebtn = plcbutton(self.canvas, "assets/plugins/distance.png", self.cmpdist, 40)
         self.delbtn = plcbutton(self.canvas, "assets/bin.png", self.delline, 40)
         
+        self.applybtn = plcbutton(self.canvas, "assets/plugins/exit.png", self.onexit, 60)
+        
         self.canvas.bind("<ButtonPress-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
         self.canvas.bind("<ButtonRelease-1>", self.onrelease)
+        
+        # Disable other buttons
+        for k,btn in self.btnlist.items():
+            if btn != self.activebtn:
+                btn.configure(state="disabled")
         
         
     def onclick(self, event):
@@ -79,11 +89,12 @@ class Geometry:
         self.lines.append(Line(self.tkline, (self.spoint, self.epoint)))
         
         # Show buttons
-        if not self.showbtn:
-            self.showbtn = True
-            self.anglebtn.place(x=self.vwidth-80, y=self.vheight-180)
-            self.distancebtn.place(x=self.vwidth-80, y = self.vheight-120)
-            self.delbtn.place(x=self.vwidth-80, y=self.vheight-60)
+        if self.showbtn:
+            self.showbtn = False
+            self.anglebtn.place(x=self.vwidth-80, y=self.vheight-260)
+            self.distancebtn.place(x=self.vwidth-80, y = self.vheight-200)
+            self.delbtn.place(x=self.vwidth-80, y=self.vheight-140)
+            self.applybtn.place(x=self.vwidth-90, y=self.vheight-80)
         
     
     def pointonlines(self, point):
@@ -152,7 +163,9 @@ class Geometry:
         # Draw angle text between the two lines
         mid_x = (a2[0] + b2[0]) // 2
         mid_y = (a2[1] + b2[1]) // 2
-        self.canvas.create_text(mid_x, mid_y, text=f"{angle_deg:.2f}°", font=("Arial", 14), fill="red")
+        
+        tktext = self.canvas.create_text(mid_x, mid_y, text=f"{angle_deg:.2f}°", font=("Arial", 14), fill="#d4f3db")
+        line1.tktext = tktext
         
         # Clear
         self.clear_sltlines()
@@ -171,7 +184,8 @@ class Geometry:
         mid_x = (p1[0] + p2[0]) // 2
         mid_y = (p1[1] + p2[1]) // 2
         
-        self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}px", font=("Arial", 14), fill="red")
+        tktext = self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}", font=("Arial", 14), fill="#d4f3db")
+        self.sltlines[0].tktext = tktext
     
         # Clear
         self.clear_sltlines()
@@ -184,5 +198,25 @@ class Geometry:
         
         # Delete and disappear
         self.canvas.delete(self.sltlines[-1].tkline)
+        # Delete text
+        if self.sltlines[-1].tktext is not None:
+            self.canvas.delete(self.sltlines[-1].tktext)
         line = self.sltlines.pop(-1)
         self.lines.remove(line)
+        
+        
+    def onexit(self):
+        self.anglebtn.place_forget()
+        self.distancebtn.place_forget()
+        self.delbtn.place_forget()
+        self.applybtn.place_forget()
+        
+        self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        
+        # Activate all buttons
+        for k,btn in self.btnlist.items():
+            btn.configure(state="normal")
+            
+        self.showbtn = True

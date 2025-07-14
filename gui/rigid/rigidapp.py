@@ -55,7 +55,7 @@ class RigidApp(App):
         
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
-        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight)
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
