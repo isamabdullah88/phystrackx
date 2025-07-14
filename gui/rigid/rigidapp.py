@@ -58,7 +58,9 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth,
+            height=self.seekbarh, ondrag=self.updateframe)
+            
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
         
@@ -73,18 +75,18 @@ class RigidApp(App):
         
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
+        
+        self.seekbar.settrim(trimvideo=self.videoapp.trimvideo, loadvideo=self.videoapp.loadvideo)
 
     def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
-        # if clear:
-        #     self.clear()
-        # else:
-        #     self.clearcomponents()
-        
         self.videoapp.loadvideo(videopath)
         
+        self.loadcomponents()
+        
+    def loadcomponents(self):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
@@ -97,6 +99,15 @@ class RigidApp(App):
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
         self.updateframe()
+        
+    def loadseek(self):
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.seekbar.pack()
+        
+        
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -178,7 +189,8 @@ class RigidApp(App):
             self.root.after(0, spinner.destroy())
             self.root.after(0, progressbar.destroy())
 
-            self.loadvideo(self.videoapp.trackpath, clear=False)
+            # self.loadvideo(self.videoapp.trackpath, clear=False)
+            self.loadcomponents()
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         

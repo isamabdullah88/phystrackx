@@ -7,6 +7,7 @@ from core import abspath
 from .components.titlebar import TitleBar
 from .components.axes import Axes
 from .components.tooltip import ToolTip
+# from .components.seekbar import CutSeekBar
 
 class App:
     def __init__(self, root):
@@ -62,6 +63,7 @@ class App:
         
         buttons = [
             ("assets/video.png", self.openvideo, "Load Video File"),
+            ("assets/seek.png", self.loadseek, "Trim Video"),
             ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
             ("assets/ruler.png", self.scale, "Add Scale"),
             ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
@@ -89,6 +91,8 @@ class App:
         
         # Axes
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["axis"])
+        
+        
 
 
     def openvideo(self):
@@ -96,6 +100,9 @@ class App:
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
         if self.videopath:
             self.loadvideo(self.videopath)
+            
+    def loadseek(self):
+        pass
     
     def markaxes(self):
         self.axes.markaxes()
@@ -129,6 +136,8 @@ class App:
     def reset(self):
         pass
         
+    def updateframe(self):
+        pass
     
     def resize(self, fwidth, fheight):
         """Resizes shape to minimum of videoview height and width."""

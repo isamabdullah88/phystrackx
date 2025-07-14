@@ -9,10 +9,10 @@ from queue import Queue
 
 
 class Rigid(Experiment):
-    def __init__(self, trackpath, vwidth, vheight, tkqueue:Queue=None):
+    def __init__(self, trimpath, vwidth, vheight, tkqueue:Queue=None):
         super().__init__(vwidth, vheight)
         
-        self._trackpath = trackpath
+        self.trimpath = trimpath
         self.trackpts = []
         self.texts = []
         
@@ -32,12 +32,39 @@ class Rigid(Experiment):
         
         cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         return text
+    
+    
+    def trim(self, startidx:int=0, endidx:int=0):
+        """Trims the video between the frame indices"""
+        
+        self.resize()
+        print('startidx, endidx: ', startidx, endidx)
+            
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
+        
+        if endidx == 0:
+            fcount = self._vidreader.fcount - startidx
+        else:
+            fcount = endidx - startidx
+            
+        self._vidreader.seek(startidx)
+        for i in range(fcount):
+            frame = self._vidreader.read()
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            
+            videowriter.write(frame)
+            
+            if i%100 == 0:
+                print('i: ', i)
+            
+        videowriter.release()    
         
     
     def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress:IntVar=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
-        print('startidx, endidx: ', (startidx, endidx))
         
         # Import for OCR detection
         if len(ocrrect) > 0:
@@ -55,9 +82,9 @@ class Rigid(Experiment):
             crheight = crop.crprect.height
         
         # Tracking
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-                                            (crwidth, crheight))
+        # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        # self._videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
+        #                                     (crwidth, crheight))
         
         if endidx == 0:
             fcount = self._vidreader.fcount - startidx
@@ -152,9 +179,9 @@ class Rigid(Experiment):
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
 
-            self._videowriter.write(frame)
+            # self._videowriter.write(frame)
             
-        self._videowriter.release()
+        # self._videowriter.release()
 
         for i in range(len(self.trackpts)):
             self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
