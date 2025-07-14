@@ -127,8 +127,8 @@ class Rect:
         
         self.applied = True
         
-        if self.toggle:
-            self.toggle()
+        # if self.toggle:
+        #     self.toggle()
             
         for i,rect in enumerate(self.canvasrects):
             x, y, w, h = rect.totuple()
