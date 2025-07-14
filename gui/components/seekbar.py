@@ -1,10 +1,12 @@
 from math import floor, ceil
 import customtkinter as ctk
 import tkinter as tk
+from PIL import Image
+from core import abspath
 
 class CutSeekBar:
-    def __init__(self, master, width=200, height=40, fcount=100, ondrag=None, disable=True):
-        self.canvas = tk.Canvas(master, width=width, height=height, bg="#4d535c")
+    def __init__(self, frame, width=200, height=40, fcount=100, ondrag=None, disable=True):
+        self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
         self.canvas.pack()
 
         self.fcount = fcount
@@ -26,10 +28,36 @@ class CutSeekBar:
 
         self._ondrag = ondrag
         self._disable = disable
+        
+        self.trimvideo = None
+        self.loadvideo = None
+        
+    def settrim(self, trimvideo, loadvideo):
+        self.trimvideo = trimvideo
+        self.loadvideo = loadvideo
 
+    def pack(self):
         self.draw()
         self.canvas.bind("<Button-1>", self.click)
         self.canvas.bind("<B1-Motion>", self.drag)
+        
+        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=40)
+        self.applybtn.place(x=self.width-60, y=self.height-60)
+        
+    
+    def plcbutton(self, imgpath, command, btnsize=30):
+        """
+        Creates a button with an image and a command.
+        """
+        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
+        
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
+                            image=img, command=command)
+        
+        button.image = img
+        
+        return button
 
 
     def setcount(self, fcount):
@@ -40,7 +68,7 @@ class CutSeekBar:
         self.startidx = ceil(0.01*self.fcount)
         self.endidx = floor(0.99*self.fcount)
         self.idx = self.startidx
-        self.draw()
+        # self.draw()
 
     def x2fidx(self, x):
         x -= self._xoff
@@ -107,6 +135,17 @@ class CutSeekBar:
 
     def get_trim_range(self):
         return self.startidx, self.endidx
+    
+    def onapply(self):
+        self.applybtn.place_forget()
+        
+        if self.trimvideo is not None:
+            self.trimvideo(self.startidx, self.endidx)
+            
+        if self.loadvideo is not None:
+            self.setcount(self.endidx-self.startidx)
+            self.draw()
+            self.loadvideo("")
 
 
 class App(ctk.CTk):
