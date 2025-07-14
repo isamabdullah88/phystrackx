@@ -33,6 +33,8 @@ class App:
         self.fwidth = self.vwidth
         self.fheight = self.vheight
         
+        self.btnlist = {}
+        
         self.toolbar()
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
@@ -66,12 +68,13 @@ class App:
             ("assets/start.png", self.strack, "Start Tracking"),
             ("assets/plot.png", self.plot, "Plot Tracked Data"),
             ("assets/save.png", self.savedata, "Save Tracked Data"),
-            ("assets/clear.png", self.clear, "Clear Everything")
+            ("assets/reset.png", self.reset, "Clear Everything")
         ]
         
         for imgpath, command, tooltip in buttons:
             self.btn = self.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
@@ -85,7 +88,7 @@ class App:
         self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
         
         # Axes
-        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
+        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["axis"])
 
 
     def openvideo(self):
@@ -123,7 +126,7 @@ class App:
     def onclose(self):
         self.root.destroy()
 
-    def clear(self):
+    def reset(self):
         pass
         
     
