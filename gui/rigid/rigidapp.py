@@ -45,6 +45,7 @@ class RigidApp(App):
         for imgpath, command, tooltip in buttons:
             self.btn = self.subtoolbar.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
         
         
         self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
@@ -58,8 +59,8 @@ class RigidApp(App):
         
         # Main toolbar ----------------------------------------------------------------------------
         self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
-        self.trects = Rect(self.videoview, self.vwidth, self.vheight)
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
+        self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
@@ -68,7 +69,7 @@ class RigidApp(App):
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
         # TODO: Restructure this to make more consistent
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
         
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
@@ -90,7 +91,6 @@ class RigidApp(App):
         self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
         self.crop.set(self.fwidth, self.fheight)
-        
         
         self.seekbar.setcount(self.videoapp.fcount)
         
@@ -193,7 +193,7 @@ class RigidApp(App):
         self.tpoints.clear()
         self.scruler.clear()
         
-    def clear(self):
+    def reset(self):
         print('Clear')
         self.clearcomponents()
         self.videoapp.trackpts.clear()
