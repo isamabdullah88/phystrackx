@@ -22,7 +22,7 @@ class Filters:
         self.slider = None
         
         self.btnsize = 30
-        self.applybtn = self.plcbutton("assets/apply.png", self.onapplybtn, 80)
+        # self.applybtn = self.plcbutton("assets/apply.png", self.onapplybtn, 80)
         
     def spawnfilter(self):
         """
@@ -58,7 +58,7 @@ class Filters:
         self.radiobox.destroy()
         
         # Apply button
-        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        # self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
         
     def clear(self):
         self.fvar.set(FilterTypes.NONE.name)
@@ -106,6 +106,6 @@ class Filters:
         
         return button
     
-    def onapplybtn(self):
-        self.applybtn.place_forget()
+    # def onapplybtn(self):
+    #     self.applybtn.place_forget()
         # self.toggle()

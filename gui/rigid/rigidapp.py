@@ -48,8 +48,8 @@ class RigidApp(App):
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
         
         
-        self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbth, "Plugins")
+        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
+        ToolTip(self.pluginsbtn, "Plugins")
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
@@ -199,6 +199,7 @@ class RigidApp(App):
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
         self.trects.clear()
+        self.crop.clear()
         self.loadvideo(self.videopath)
     
     def plot(self):
