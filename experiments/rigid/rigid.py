@@ -37,6 +37,8 @@ class Rigid(Experiment):
     def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress:IntVar=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
+        print('startidx, endidx: ', (startidx, endidx))
+        
         # Import for OCR detection
         if len(ocrrect) > 0:
             import pytesseract
@@ -150,7 +152,7 @@ class Rigid(Experiment):
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
 
-            self._videowriter.write(tkframe)
+            self._videowriter.write(frame)
             
         self._videowriter.release()
 

@@ -60,7 +60,11 @@ class Rect:
         for label in self.labels:
             label.clear()
             
+        self.labels.clear()
+            
+        self.clearrects()
         self.rects.clear()
+        self.canvasrects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
         """Draws rectangle with simple lines"""
@@ -69,7 +73,7 @@ class Rect:
         if fheight is None:
             fheight = self.vheight
         
-        def ondown(event):            
+        def ondown(event):           
             self._rcoords = (event.x, event.y)
             
             self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
@@ -105,8 +109,8 @@ class Rect:
         self.canvas.bind("<ButtonRelease-1>", onrelease)
         
     def onapply(self):
-        self.button.destroy()
-        self.applybtn.destroy()
+        self.button.place_forget()
+        self.applybtn.place_forget()
         
         if self.toggle:
             self.toggle()

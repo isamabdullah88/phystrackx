@@ -16,6 +16,7 @@ class ScaleRuler:
         self.scalef = None
         self.dragging = None
 
+    def pack(self):
         self.draw()
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
@@ -110,6 +111,10 @@ class ScaleRuler:
 
     def onrelease(self, event):
         self.dragging = None
+        
+    def clear(self):
+        self.canvas.delete("ruler")
+        self.scalef = None
 
 if __name__ == "__main__":
         

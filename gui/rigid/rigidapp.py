@@ -68,19 +68,19 @@ class RigidApp(App):
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
         # TODO: Restructure this to make more consistent
-        self.scruler = None
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
         
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
 
-    def loadvideo(self, videopath, clear=True):
+    def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
-        if clear:
-            self.clear()
-        else:
-            self.clearcomponents()
+        # if clear:
+        #     self.clear()
+        # else:
+        #     self.clearcomponents()
         
         self.videoapp.loadvideo(videopath)
         
@@ -106,7 +106,7 @@ class RigidApp(App):
         self.tpoints.drawpoint(self.seekbar.idx)
 
     def scale(self):
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler.pack()
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -187,11 +187,11 @@ class RigidApp(App):
     # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
         """Clear components"""
-        self.scruler = None
-        self.crop.cleardata()
+        # self.crop.cleardata()
         self.filters.clear()
         self.axes.clear()
         self.tpoints.clear()
+        self.scruler.clear()
         
     def clear(self):
         print('Clear')
@@ -199,8 +199,7 @@ class RigidApp(App):
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
         self.trects.clear()
-        # self.seekbar.setcount(100)
-        # super().clear()
+        self.loadvideo(self.videopath)
     
     def plot(self):
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):

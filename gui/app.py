@@ -35,8 +35,6 @@ class App:
         
         self.toolbar()
         
-        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
-        
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
     def mkbutton(self, imgpath, command):
@@ -85,13 +83,16 @@ class App:
         
         # Title
         self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
+        
+        # Axes
+        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
 
 
     def openvideo(self):
-        videopath = filedialog.askopenfilename(
+        self.videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
-        if videopath:
-            self.loadvideo(videopath)
+        if self.videopath:
+            self.loadvideo(self.videopath)
     
     def markaxes(self):
         self.axes.markaxes()

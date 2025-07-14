@@ -37,6 +37,8 @@ class TPoints:
         self.vheight = vheight
         
         self.tpts = []
+        self.trsize = 15
+        self.fidx = 0
         
         self.btnsize = 30
         self.button = self.plcbutton("assets/bin.png", btnsize=self.btnsize)
@@ -82,15 +84,19 @@ class TPoints:
         if len(self.tpts) < 1:
             return
         
+        self.fidx = fidx
         self.canvas.delete("points")
         for i,tpts in enumerate(self.tpts):
-            if tpts[fidx] is None:
-                continue
             
-            tpt = tpts[fidx]
-            tpt.draw()
+            # Draw previous multiple points
+            for idx in range(max(self.fidx-self.trsize, 0), self.fidx+1):
+                if tpts[idx] is None:
+                    continue
             
-            self.currpt.append([tpt.cpt, i, fidx])
+                tpt = tpts[idx]
+                tpt.draw()
+            
+                self.currpt.append([tpt.cpt, i, self.fidx])
             
     def matchid(self, id):
         for item in self.currpt:
@@ -106,15 +112,30 @@ class TPoints:
         
         id, tidx, fidx = self.matchid(cid)
         
+        print('fidx: ', fidx)
         self.sltdpt["cpt"] = cid
         self.sltdpt["tidx"] = tidx
         self.sltdpt["fidx"] = fidx
 
-        self.canvas.itemconfig(id, fill='green', width=2)
+        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+        
+        for pt in sltdtpts:
+            self.canvas.itemconfig(pt.cpt, fill='green', width=2)
+            
         self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
     
     def removept(self):
-        self.canvas.delete(self.sltdpt["cpt"])
+        # cid = self.canvas.find_withtag("current")[0]
+        
+        # id, tidx, fidx = self.matchid(cid)
+        tidx = self.sltdpt["tidx"]
+        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+        
+        for pt in sltdtpts:
+            # self.canvas.itemconfig(pt.cpt, fill='green', width=2)
+            self.canvas.delete(pt.cpt)
+            
+        # self.canvas.delete(self.sltdpt["cpt"])
         self.button.place_forget()
         self.tpts.pop(self.sltdpt["tidx"])
         
