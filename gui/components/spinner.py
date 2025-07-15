@@ -19,7 +19,7 @@ class Spinner:
         # self.frames = [ImageTk.PhotoImage(self.prsframe(img, vwidth, vheight)) for img in \
         #     ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
         self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
-        self.canvas.itemconfigure(self.imgview, state="normal")
+        # self.canvas.itemconfigure(self.imgview, state="normal")
 
         self.index = 0
 
@@ -44,22 +44,22 @@ class Spinner:
         self.running = False
         self.canvas.delete(self.imgview)
 
-    def prsframe(self, img: Image, vwidth, vheight):
+    # def prsframe(self, img: Image, vwidth, vheight):
         
-        imgsize = 200
-        img = img.resize((imgsize, imgsize), Image.Resampling.LANCZOS)
-        img = np.array(img.convert("RGB"))
+    #     imgsize = 200
+    #     img = img.resize((imgsize, imgsize), Image.Resampling.LANCZOS)
+    #     img = np.array(img.convert("RGB"))
         
-        canvas = np.ones((vheight, vwidth, 3), np.uint8)*255
+    #     canvas = np.ones((vheight, vwidth, 3), np.uint8)*255
         
-        xstart = floor(vwidth/2) - floor(imgsize/2)
-        xend = floor(vwidth/2) + floor(imgsize/2)
-        ystart = floor(vheight/2) - floor(imgsize/2)
-        yend = floor(vheight/2) + floor(imgsize/2)
+    #     xstart = floor(vwidth/2) - floor(imgsize/2)
+    #     xend = floor(vwidth/2) + floor(imgsize/2)
+    #     ystart = floor(vheight/2) - floor(imgsize/2)
+    #     yend = floor(vheight/2) + floor(imgsize/2)
             
-        canvas[ystart:yend, xstart:xend, :] = img
+    #     canvas[ystart:yend, xstart:xend, :] = img
         
-        return Image.fromarray(canvas)
+    #     return Image.fromarray(canvas)
 
 
 if __name__ == '__main__':

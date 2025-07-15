@@ -1,6 +1,7 @@
 import customtkinter 
 
 from gui.menu import MenuScreen
+from core import setup_logging
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("dark-blue")
@@ -23,4 +24,6 @@ def main():
 
 
 if __name__ == "__main__":
+    
+    setup_logging()
     main()

@@ -5,22 +5,31 @@ from PIL import Image
 from core import abspath
 
 class ScaleRuler:
-    def __init__(self, canvas, vwidth, vheight, cwidth, cheight):
+    def __init__(self, canvas, vwidth, vheight, btnlist, activebtn):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
         self.width = 30
         self.height = 30
-        self.p1 = [floor(cwidth/2)-floor(self.width/2), floor(cheight/2)]
-        self.p2 = [floor(cwidth/2)+floor(self.width/2), floor(cheight/2)]
+        self.p1 = [floor(vwidth/2)-floor(self.width/2), floor(vheight/2)]
+        self.p2 = [floor(vwidth/2)+floor(self.width/2), floor(vheight/2)]
         self.scalef = None
         self.dragging = None
+        
+        self.btnlist = btnlist
+        self.activebtn = activebtn
 
+    def pack(self):
         self.draw()
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
         self.canvas.bind("<ButtonRelease-1>", self.onrelease)
         self.canvas.bind("<Double-Button-1>", self.ondclick)
+        
+        # Disable other buttons
+        for k,btn in self.btnlist.items():
+            if btn != self.activebtn:
+                btn.configure(state="disabled")
         
         self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
         
@@ -48,6 +57,10 @@ class ScaleRuler:
         self.canvas.unbind("<B1-Motion>")
         self.canvas.unbind("<ButtonRelease-1>")
         self.canvas.unbind("<Double-Button-1>")
+        
+        # Activate all buttons
+        for k,btn in self.btnlist.items():
+            btn.configure(state="normal")
 
     def draw(self):
         self.canvas.delete("ruler")
@@ -55,7 +68,7 @@ class ScaleRuler:
         x2, _ = self.p2
 
         # Main body
-        self.canvas.create_rectangle(x1, y - self.height//2, x2, y + self.height//2, fill="#e0e0e0", outline="black", tags="ruler")
+        self.canvas.create_rectangle(x1, y - self.height//2, x2, y + self.height//2, fill="", outline="#000000", tags="ruler")
 
         # Tick marks
         for i in range(11):
@@ -110,6 +123,10 @@ class ScaleRuler:
 
     def onrelease(self, event):
         self.dragging = None
+        
+    def clear(self):
+        self.canvas.delete("ruler")
+        self.scalef = None
 
 if __name__ == "__main__":
         

@@ -33,6 +33,7 @@ class SubToolbar:
             self.canvas.itemconfigure(self.wid, state="normal")
             self.canvas.coords(self.wid, 5, 5)
             self.enable = True
+            self.frame.lift()
         
     def mkbutton(self, imgpath, command):
         """

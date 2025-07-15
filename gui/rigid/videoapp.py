@@ -5,7 +5,9 @@ from gui.plugins.filters import Filters
 from gui.components.seekbar import CutSeekBar
 from gui.components.spinner import Spinner
 from gui.components.rect import Rect
+from core import filexists
 
+import logging
 import os
 import cv2
 from PIL import Image, ImageTk
@@ -20,16 +22,36 @@ class Video:
         self.crop = crop
         self.seekbar = seekbar
         self.filters = filters
+        self.spinner = spinner
         # self.fcount = 0
         self.frame = None
         
         tempdir = './temp'
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
-        self.trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Rigid(trackpath=self.trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=spinner.queue)
+        self.trimpath = os.path.join(tempdir, 'track-rigid.mp4')
+        self.rigid = Rigid(trimpath=self.trimpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=self.spinner.queue)
         
-        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("Video App initializedyes")
+        
+        self.trimvideo = self.rigid.trim
+        
+    # @property
+    # def tkqueue(self):
+    #     return self.spinner.queue
+    
+    @property
+    def fidx(self):
+        return self.seekbar.idx
+    
+    @property
+    def sfidx(self):
+        return self.seekbar.startidx
+    
+    @property
+    def efidx(self):
+        return self.seekbar.endidx
     
     @property
     def fcount(self):
@@ -55,9 +77,18 @@ class Video:
     def fheight(self):
         return self.rigid.fheight
     
-    def loadvideo(self, videopath):
-        self.rigid.addvideo(videopath)
+    def loadvideo(self, videopath:str):
+        if not filexists(videopath):
+            self.logger.warning("Loading trim video")
+            if not filexists(self.trimpath):
+                self.logger.error("Trim video not found!")
+            else:
+                self.rigid.addvideo(self.trimpath)
+        else:    
+            self.rigid.addvideo(videopath)
+            self.logger.info("Video added from: %s", videopath)
         
+        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
         
         
     def resizef(self, frame, fwidth, fheight):
@@ -69,7 +100,7 @@ class Video:
     def showframe(self):
         """Updates and shows the frame to video view"""
         
-        frame = self.rigid.frame(index=self.seekbar.idx)
+        frame = self.rigid.frame(index=self.fidx)
         frame = self.resizef(frame, self.fwidth, self.fheight)
         
         # Apply filter
@@ -85,10 +116,13 @@ class Video:
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
         
     def track(self, trect:Rect, ocr:Rect, progress:IntVar):
-        startidx = self.seekbar.startidx
-        endidx = self.seekbar.endidx
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, startidx, endidx, progress)
+        # startidx = self.seekbar.startidx
+        # endidx = self.seekbar.endidx
+        self.canvas.tag_lower(self.imgview)
         
+        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, self.sfidx, self.efidx, progress)
         
+    def clear(self):
+        self.rigid.trackpts.clear()
         
         

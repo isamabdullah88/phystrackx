@@ -7,6 +7,7 @@ from core import abspath
 from .components.titlebar import TitleBar
 from .components.axes import Axes
 from .components.tooltip import ToolTip
+# from .components.seekbar import CutSeekBar
 
 class App:
     def __init__(self, root):
@@ -33,9 +34,9 @@ class App:
         self.fwidth = self.vwidth
         self.fheight = self.vheight
         
-        self.toolbar()
+        self.btnlist = {}
         
-        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight)
+        self.toolbar()
         
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
         
@@ -62,18 +63,20 @@ class App:
         
         buttons = [
             ("assets/video.png", self.openvideo, "Load Video File"),
+            ("assets/seek.png", self.loadseek, "Trim Video"),
             ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
             ("assets/ruler.png", self.scale, "Add Scale"),
             ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
             ("assets/start.png", self.strack, "Start Tracking"),
             ("assets/plot.png", self.plot, "Plot Tracked Data"),
             ("assets/save.png", self.savedata, "Save Tracked Data"),
-            ("assets/clear.png", self.clear, "Clear Everything")
+            ("assets/reset.png", self.reset, "Clear Everything")
         ]
         
         for imgpath, command, tooltip in buttons:
             self.btn = self.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
         
         self.vidframe = ctk.CTkFrame(self.root, width=self.cwidth-self.twidth, height=self.theight, bg_color="#899fbd", fg_color="#5bdada")
         self.vidframe.pack_propagate(False)
@@ -85,13 +88,21 @@ class App:
         
         # Title
         self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
+        
+        # Axes
+        self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["axis"])
+        
+        
 
 
     def openvideo(self):
-        videopath = filedialog.askopenfilename(
+        self.videopath = filedialog.askopenfilename(
             filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
-        if videopath:
-            self.loadvideo(videopath)
+        if self.videopath:
+            self.loadvideo(self.videopath)
+            
+    def loadseek(self):
+        pass
     
     def markaxes(self):
         self.axes.markaxes()
@@ -122,9 +133,11 @@ class App:
     def onclose(self):
         self.root.destroy()
 
-    def clear(self):
-        self.videoview.delete("all")
+    def reset(self):
+        pass
         
+    def updateframe(self):
+        pass
     
     def resize(self, fwidth, fheight):
         """Resizes shape to minimum of videoview height and width."""

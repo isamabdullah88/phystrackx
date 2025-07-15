@@ -59,8 +59,14 @@ class Crop:
             self.canvas.delete(self._ctkbox)
             self.button.place_forget()
         
-    def cleardata(self):
+    def clear(self):
         self.crprect = None
+        
+        self.fx = floor(self.vwidth/2 - self.fwidth/2)
+        self.fy = floor(self.vheight/2 - self.fheight/2)
+        self.crpx = self.fx
+        self.crpy = self.fy
+        
         
     def drawrect(self):
         """Draws rectangle with simple lines"""

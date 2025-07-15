@@ -5,7 +5,7 @@ from PIL import Image
 from core import abspath
 
 class Axes:
-    def __init__(self, root, canvas, vwidth, vheight):
+    def __init__(self, root, canvas, vwidth, vheight, btnlist, activebtn):
         self.root = root
         self.canvas = canvas
         self.vwidth = vwidth
@@ -17,6 +17,9 @@ class Axes:
         self.oy = self.vheight
         
         self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        
+        self.btnlist = btnlist
+        self.activebtn = activebtn
         
         
     def clear(self):
@@ -31,6 +34,11 @@ class Axes:
         
         self.canvas.bind("<Motion>", self.onmove)
         self.canvas.bind("<Button-1>", self.onclick)
+        
+        # Disable other buttons
+        for k,btn in self.btnlist.items():
+            if btn != self.activebtn:
+                btn.configure(state="disabled")
         
     def drawaxes(self, startx, starty, xp, yp):
         """ Draws axes with simple lines. """
@@ -160,6 +168,10 @@ class Axes:
     def onapply(self):
         self.slider.destroy()
         self.applybtn.destroy()
+        
+        # Activate all buttons
+        for k,btn in self.btnlist.items():
+            btn.configure(state="normal")
         
     
     def plcbutton(self, imgpath, command, btnsize=30):

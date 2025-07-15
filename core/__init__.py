@@ -3,3 +3,4 @@ from .path import abspath, filexists
 from .circle import Circle
 from .filtertypes import FilterTypes
 from .plottypes import PlotTypes
+from .logging import setup_logging

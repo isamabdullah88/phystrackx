@@ -47,8 +47,8 @@ class Experiment:
             self.fheight = self.vheight
             self.fwidth = floor(self.fheight*ratio)
 
-    def addvideo(self, video_path):
-        self._vidreader = VideoReader(video_path)
+    def addvideo(self, videopath):
+        self._vidreader = VideoReader(videopath)
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
@@ -64,6 +64,9 @@ class Experiment:
         print('fwidth, fheight: ', (self.fwidth, self.fheight))
             
         print('frame count: ', self.fcount)
+        
+    def release(self):
+        self._vidreader.release()
 
 
     def frame(self, index=None):

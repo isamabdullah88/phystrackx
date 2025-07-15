@@ -5,7 +5,7 @@ from core import PixelRect
 from .label import Label
 
 class Rect:
-    def __init__(self, canvas, vwidth, vheight, toggle=None):
+    def __init__(self, canvas, vwidth, vheight, btnlist, activebtn, toggle=None):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
@@ -16,11 +16,18 @@ class Rect:
         self.canvasrects = []
         self._ctkrects = []
         
+        self.labels = []
+        
         self.toggle = toggle
         self.btnsize = 30
         self.button = self.plcbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
         self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applied = False
+        
+        self.btnlist = btnlist
+        self.activebtn = activebtn
+        
         
     def plcbutton(self, imgpath, command, btnsize=30):
         """
@@ -52,22 +59,33 @@ class Rect:
         for rect in self._ctkrects:
             self.canvas.delete(rect)
         self._ctkrects.clear()
-        # self.button.place_forget()
         
-    def cleardata(self):
+    def clear(self):
+        for label in self.labels:
+            label.clear()
+            
+        self.labels.clear()
+            
+        self.clearrects()
         self.rects.clear()
+        self.canvasrects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
         """Draws rectangle with simple lines"""
+        # Disable other buttons
+        for k,btn in self.btnlist.items():
+            if btn != self.activebtn:
+                btn.configure(state="disabled")
+                
         if fwidth is None:
             fwidth = self.vwidth
         if fheight is None:
             fheight = self.vheight
         
-        def ondown(event):            
+        def ondown(event):           
             self._rcoords = (event.x, event.y)
             
-            self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
+            self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, outline="red", width=3)
             
         def inrect(event):
             sx, sy = self._rcoords
@@ -80,7 +98,7 @@ class Rect:
             ex, ey = (event.x, event.y)
             
             self._ctkrects.append(self._ctkbox)
-            self.canvas.itemconfig(self._ctkbox, outline="green")
+            self.canvas.itemconfig(self._ctkbox, outline="magenta")
 
             self.canvasrects.append(PixelRect(sx, sy, ex-sx, ey-sy))
 
@@ -100,13 +118,25 @@ class Rect:
         self.canvas.bind("<ButtonRelease-1>", onrelease)
         
     def onapply(self):
-        self.button.destroy()
-        self.applybtn.destroy()
+        """Finalize rects and colors on apply"""
+        for tkrect in self._ctkrects:
+            self.canvas.itemconfig(tkrect, outline="green", width=2)
         
-        if self.toggle:
-            self.toggle()
+        self.button.place_forget()
+        self.applybtn.place_forget()
+        
+        self.applied = True
+        
+        # if self.toggle:
+        #     self.toggle()
             
         for i,rect in enumerate(self.canvasrects):
             x, y, w, h = rect.totuple()
             text = f"Rect-{i+1}: x={x:.0f}, y={y:.0f}, width={w:.0f}, height={h:.0f}"
-            Label(self.canvas, text=text).place(x=10, y=(i+1)*30)
+            label = Label(self.canvas, text=text)
+            label.place(x=10, y=80 + (i+1)*30)
+            self.labels.append(label)
+        
+        # Activate all buttons
+        for k,btn in self.btnlist.items():
+            btn.configure(state="normal")

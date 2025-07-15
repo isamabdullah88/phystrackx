@@ -34,6 +34,7 @@ class RigidApp(App):
         # Plugins ---------------------------------------------------------------------------------
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
         
+        # TODO: Use enum for these
         buttons = [
             ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
             ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
@@ -44,26 +45,24 @@ class RigidApp(App):
         for imgpath, command, tooltip in buttons:
             self.btn = self.subtoolbar.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
         
-        # TODO: Use enum for these
-        # self.subtoolbar.mkbutton("assets/plugins/filters.png", self.appfilter).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        # self.subtoolbar.mkbutton("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
         
-        self.pluginsbth = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbth, "Plugins")
+        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
+        ToolTip(self.pluginsbtn, "Plugins")
         
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         
-        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight)
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
-        self.trects = Rect(self.videoview, self.vwidth, self.vheight)
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
+        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth,
+            height=self.seekbarh, ondrag=self.updateframe)
+            
+        self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
@@ -72,35 +71,43 @@ class RigidApp(App):
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
         # TODO: Restructure this to make more consistent
-        self.scruler = None
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
         
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
+        
+        self.seekbar.settrim(trimvideo=self.videoapp.trimvideo, loadvideo=self.videoapp.loadvideo)
 
-    def loadvideo(self, videopath, clear=True):
+    def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
-        if clear:
-            self.clear()
-        else:
-            self.clearcomponents()
-        
-        # Show frame count
-        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
-        
         self.videoapp.loadvideo(videopath)
+        
+        self.loadcomponents()
+        
+    def loadcomponents(self):
+        # Show frame count
+        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
         self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
         self.crop.set(self.fwidth, self.fheight)
-        
         
         self.seekbar.setcount(self.videoapp.fcount)
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
         self.updateframe()
+        
+    def loadseek(self):
+        if self.videoapp.fcount < 10:
+            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            return
+        
+        self.seekbar.pack()
+        
+        
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
@@ -110,7 +117,7 @@ class RigidApp(App):
         self.tpoints.drawpoint(self.seekbar.idx)
 
     def scale(self):
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
+        self.scruler.pack()
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -182,7 +189,8 @@ class RigidApp(App):
             self.root.after(0, spinner.destroy())
             self.root.after(0, progressbar.destroy())
 
-            self.loadvideo(self.videoapp.trackpath, clear=False)
+            # self.loadvideo(self.videoapp.trackpath, clear=False)
+            self.loadcomponents()
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
@@ -191,18 +199,20 @@ class RigidApp(App):
     # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
         """Clear components"""
-        self.scruler = None
-        self.seekbar.setcount(100)
-        self.crop.cleardata()
-        self.ocrrects.cleardata()
-        self.trects.cleardata()
+        # self.crop.cleardata()
         self.filters.clear()
         self.axes.clear()
+        self.tpoints.clear()
+        self.scruler.clear()
         
-    def clear(self):
-        self.videoapp.trackpts.clear()
+    def reset(self):
+        print('Clear')
         self.clearcomponents()
-        # super().clear()
+        self.videoapp.trackpts.clear()
+        self.ocrrects.clear()
+        self.trects.clear()
+        self.crop.clear()
+        self.loadvideo(self.videopath)
     
     def plot(self):
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):

@@ -18,3 +18,7 @@ class Label(ctk.CTkFrame):
 
     def set_color(self, color):
         self.colorbox.configure(fg_color=color)
+        
+    def clear(self):
+        self.colorbox.destroy()
+        self.label.destroy()
