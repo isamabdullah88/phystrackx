@@ -5,7 +5,8 @@ from PIL import Image
 from core import abspath
 
 class CutSeekBar:
-    def __init__(self, frame, width=200, height=40, fcount=100, ondrag=None, disable=True):
+    def __init__(self, frame, width=200, height=40, fcount=100, ondrag=None, disable=True, mode="Trim"):
+        """mode can be 'Trim' and 'View'."""
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
         self.canvas.pack()
 
@@ -28,6 +29,7 @@ class CutSeekBar:
 
         self._ondrag = ondrag
         self._disable = disable
+        self.mode = mode
         
         self.trimvideo = None
         self.loadvideo = None
@@ -41,8 +43,12 @@ class CutSeekBar:
         self.canvas.bind("<Button-1>", self.click)
         self.canvas.bind("<B1-Motion>", self.drag)
         
-        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=40)
-        self.applybtn.place(x=self.width-60, y=self.height-60)
+        if self.mode == "Trim":
+            self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=40)
+            self.applybtn.place(x=self.width-60, y=self.height-60)
+        else:
+            if self.applybtn:
+                self.applybtn.place_forget()
         
     
     def plcbutton(self, imgpath, command, btnsize=30):
@@ -60,7 +66,7 @@ class CutSeekBar:
         return button
 
 
-    def setcount(self, fcount):
+    def set(self, fcount, trim=True):
         self._disable = False
         self.fcount = fcount
         self._xs = ceil(0.01*self.width) + self._xoff
@@ -69,6 +75,13 @@ class CutSeekBar:
         self.endidx = floor(0.99*self.fcount)
         self.idx = self.startidx
         # self.draw()
+        if trim:
+            self.mode = "Trim"
+        else:
+            self.mode = "View"
+            self._xe = self.width + self._xoff
+            
+        # self.pack()
 
     def x2fidx(self, x):
         x -= self._xoff
@@ -81,22 +94,24 @@ class CutSeekBar:
         
         # Draw background bar
         self.canvas.create_rectangle(self._xoff, recth - 3, self.width+self._xoff, recth + 3,
-                                     fill="#e2bcc5")
-
-        # Draw selected range (trim region)
-        self.canvas.create_rectangle(self._xs, recth - 4, self._xe, recth + 4, fill="#e74ce0",
-                                     outline="")
+                                    fill="#e2bcc5")
 
         # Draw draggable handles
         w2 = floor(self._rwidth/2)
         self.canvas.create_rectangle(self._xs-w2, self._rheight, self._xs+w2, self.height-self._rheight,
-                                     fill="#1eff00", outline="", tag="start")
-        self.canvas.create_rectangle(self._xe-w2, self._rheight, self._xe+w2, self.height-self._rheight,
-                                     fill="#1eff00", outline="", tag="end")
+                                    fill="#1eff00", outline="", tag="start")
+        
+        if self.mode == "Trim":
+            # Draw selected range (trim region)
+            self.canvas.create_rectangle(self._xs, recth - 4, self._xe, recth + 4, fill="#e74ce0",
+                                        outline="")
+        
+            self.canvas.create_rectangle(self._xe-w2, self._rheight, self._xe+w2, self.height-self._rheight,
+                                        fill="#1eff00", outline="", tag="end")
 
-        # Optional: display current range
-        self.canvas.create_text(self.width//2, recth+10, fill="#ffffff",
-                                text=f"Trim Range: {self.startidx} - {self.endidx}")
+            # Optional: display current range
+            self.canvas.create_text(self.width//2, recth+10, fill="#ffffff",
+                                    text=f"Trim Range: {self.startidx} - {self.endidx}")
 
     def click(self, event):
         x = event.x
@@ -119,7 +134,7 @@ class CutSeekBar:
                 self._xs = x
             self._x = self._xs
             
-        elif self.active == "end":
+        elif (self.mode == "Trim") and (self.active == "end"):
             if (x <= self.width+self._xoff) and (x-self._wpad/2 > self._xs):
                 self._xe = x
             self._x = self._xe
@@ -143,7 +158,7 @@ class CutSeekBar:
             self.trimvideo(self.startidx, self.endidx)
             
         if self.loadvideo is not None:
-            self.setcount(self.endidx-self.startidx)
+            self.set(self.endidx-self.startidx, trim=False)
             self.draw()
             self.loadvideo("")
 

@@ -86,7 +86,7 @@ class RigidApp(App):
         
         self.loadcomponents()
         
-    def loadcomponents(self):
+    def loadcomponents(self, trim=True):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
@@ -94,7 +94,7 @@ class RigidApp(App):
 
         self.crop.set(self.fwidth, self.fheight)
         
-        self.seekbar.setcount(self.videoapp.fcount)
+        self.seekbar.set(self.videoapp.fcount, trim=trim)
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
@@ -190,7 +190,7 @@ class RigidApp(App):
             self.root.after(0, progressbar.destroy())
 
             # self.loadvideo(self.videoapp.trackpath, clear=False)
-            self.loadcomponents()
+            self.loadcomponents(trim=False)
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         

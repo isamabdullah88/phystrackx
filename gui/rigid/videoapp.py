@@ -120,7 +120,7 @@ class Video:
         # endidx = self.seekbar.endidx
         self.canvas.tag_lower(self.imgview)
         
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, self.sfidx, self.efidx, progress)
+        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, progress)
         
     def clear(self):
         self.rigid.trackpts.clear()
