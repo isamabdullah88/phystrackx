@@ -29,9 +29,9 @@ class Checkbox(ctk.CTkToplevel):
             self.optionsvar[option.name] = var
 
         # Confirm button
-        ctk.CTkButton(self, text="✓ Apply", command=self.on_apply, width=120).pack(pady=15)
+        ctk.CTkButton(self, text="✓ Apply", command=self.onapply, width=120).pack(pady=15)
 
-    def on_apply(self):
+    def onapply(self):
         selected = [k for k, v in self.optionsvar.items() if v.get()]
         if self.callback:
             self.callback(selected)

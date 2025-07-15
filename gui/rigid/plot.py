@@ -86,7 +86,7 @@ class Plot:
             elif ptype == PlotTypes.D2Y.name:
                 self.plotd2y()
                 
-        plt.show()
+        plt.show(block=False)
         
     def plotx(self):
         for d in self._datatr:
