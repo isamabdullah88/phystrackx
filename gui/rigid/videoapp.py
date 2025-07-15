@@ -2,7 +2,7 @@ from customtkinter import CTkCanvas, IntVar
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.spinner import Spinner
 from gui.components.rect import Rect
 from core import filexists

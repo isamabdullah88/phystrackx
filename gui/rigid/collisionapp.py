@@ -12,7 +12,7 @@ from experiments.rigid.collision import Collision
 from core.rect import PixelRect
 from .plot import Plot
 from gui.components.spinner import Spinner
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.ruler import ScaleRuler
 from core import abspath
 
