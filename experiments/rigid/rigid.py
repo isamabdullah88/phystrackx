@@ -56,9 +56,6 @@ class Rigid(Experiment):
             
             videowriter.write(frame)
             
-            if i%100 == 0:
-                print('i: ', i)
-            
         videowriter.release()    
         
     
