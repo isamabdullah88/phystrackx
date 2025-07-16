@@ -4,7 +4,7 @@ from tkinter import messagebox
 
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar.seekbar import CutSeekBar
+from gui.components.seekbar.trimskb import TrimSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
@@ -58,8 +58,7 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth,
-            height=self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, ondrag=self.updateframe)
             
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
@@ -94,7 +93,7 @@ class RigidApp(App):
 
         self.crop.set(self.fwidth, self.fheight)
         
-        self.seekbar.set(self.videoapp.fcount, trim=trim)
+        self.seekbar.set(self.videoapp.fcount)
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
@@ -212,6 +211,7 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
+        self.seekbar.clear()
         self.loadvideo(self.videopath)
     
     def plot(self):

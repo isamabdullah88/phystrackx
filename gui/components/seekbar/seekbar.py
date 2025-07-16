@@ -106,74 +106,7 @@ class CutSeekBar:
         else:
             self.mode = "View"
             self.x1 = self.width - self.padx
-            
-
-        # self.pack()
-
-    # def x2fidx(self, x):
-    #     x -= self._xoff
-    #     return floor(x / self.width * self.fcount)
-
-    # def draw(self):
-    #     self.canvas.delete("all")
-
-    #     recth = floor(self.height/2)
-        
-    #     # Draw background bar
-    #     self.canvas.create_rectangle(self._xoff, recth - 3, self.width+self._xoff, recth + 3,
-    #                                 fill="#e2bcc5")
-
-    #     # Draw draggable handles
-    #     w2 = floor(self._rwidth/2)
-    #     self.canvas.create_rectangle(self._xs-w2, self._rheight, self._xs+w2, self.height-self._rheight,
-    #                                 fill="#1eff00", outline="", tag="start")
-        
-    #     if self.mode == "Trim":
-    #         # Draw selected range (trim region)
-    #         self.canvas.create_rectangle(self._xs, recth - 4, self._xe, recth + 4, fill="#e74ce0",
-    #                                     outline="")
-        
-    #         self.canvas.create_rectangle(self._xe-w2, self._rheight, self._xe+w2, self.height-self._rheight,
-    #                                     fill="#1eff00", outline="", tag="end")
-
-    #         # Optional: display current range
-    #         self.canvas.create_text(self.width//2, recth+10, fill="#ffffff",
-    #                                 text=f"Trim Range: {self.startidx} - {self.endidx}")
-
-    # def click(self, event):
-    #     x = event.x
-        
-    #     if abs(x - self._xs) < self._wpad/2:
-    #         self.active = "start"
-    #     elif abs(x - self._xe) < self._wpad/2:
-    #         self.active = "end"
-    #     else:
-    #         self.active = None
-
-    # def drag(self, event):
-    #     if self._disable:
-    #         return
-        
-    #     x = event.x
-        
-    #     if self.active == "start":
-    #         if (x >= self._xoff) and (x+self._wpad/2 < self._xe):
-    #             self._xs = x
-    #         self._x = self._xs
-            
-    #     elif (self.mode == "Trim") and (self.active == "end"):
-    #         if (x <= self.width+self._xoff) and (x-self._wpad/2 > self._xs):
-    #             self._xe = x
-    #         self._x = self._xe
-
-    #     self.startidx = self.x2fidx(self._xs)
-    #     self.endidx = self.x2fidx(self._xe)
-    #     self.idx = self.x2fidx(self._x)
-        
-    #     if (self._ondrag is not None) and (self.idx < self.fcount):
-    #         self._ondrag()
-
-    #     self.draw()
+    
 
     def get_trim_range(self):
         return self.startidx, self.endidx
@@ -204,16 +137,6 @@ class App(ctk.CTk):
 
         self.seekbar = CutSeekBar(self.frame, width=600, fcount=2000, ondrag=self.ondrag,
                             disable=False)
-        # Seek(self.canvas, 100, 600, 50)
-        # bar1 = Bar(self.canvas, 100, 600, 50, 100, "left", None)
-        # bar2 = Bar(self.canvas, 110, 600, 50, 100, "right", None)
-
-        # self.print_button = ctk.CTkButton(self, text="Print Cut Range", command=self.print_range)
-        # self.print_button.pack()
-
-    # def print_range(self):
-    #     start, end = self.seekbar.get_trim_range()
-    #     print(f"Selected trim range: Frame {start} to {end}")
     
     def ondrag(self):
         pass

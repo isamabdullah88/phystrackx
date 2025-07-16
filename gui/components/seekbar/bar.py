@@ -3,7 +3,7 @@ from math import floor
 
 class Bar:
     """Implements and draws the bar of a seekbar. A vertical stick that can be dragged along a seek"""
-    def __init__(self, canvas:CTkCanvas, x0:float, x1:float, y:float, fcount:int, label, callback, xs=10, width=6, height=50):
+    def __init__(self, canvas:CTkCanvas, x:float, x0:float, x1:float, y:float, fcount:int, label, callback, xs=10, width=6, height=50):
         self.canvas = canvas
         
         self.x0 = x0
@@ -15,7 +15,7 @@ class Bar:
         
         self.clicked = False
         
-        self.x = self.x0 + xs
+        self.x = x
         self.idx = self.x2fidx(self.x)
         
         self.tkrect = None
