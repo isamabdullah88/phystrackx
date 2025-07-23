@@ -1,4 +1,5 @@
 # from customtkinter import CTkCanvas
+from core import SeekType
 from math import floor
 # import customtkinter as ctk
 import tkinter as tk
@@ -6,7 +7,8 @@ from .seek import Seek
 
 class Bar:
     """Implements and draws the bar of a seekbar. A vertical stick that can be dragged along a seek"""
-    def __init__(self, canvas:tk.Canvas, x:float, x0:float, x1:float, y:float, fcount:int, label, callback, width=6, height=50, seektype="fixed"):
+    def __init__(self, canvas:tk.Canvas, x:float, x0:float, x1:float, y:float, fcount:int,
+                seektype:SeekType, seekcolor:str="#9c97d6", width=6, height=50):
         self.canvas = canvas
         
         self.x0 = x0
@@ -22,31 +24,31 @@ class Bar:
         self.idx = self.x2fidx(self.x)
         
         self.tkrect = None
-        self.label = label
-        self.callback = callback
         
-        self.seek = Seek(self.canvas, self.x0, self.x1, self.y)
+        # self.seekcolor = seekcolor
+        # self.label = label
+        # self.callback = callback
+        
+        self.seek = Seek(self.canvas, self.x0, self.x1, self.y, color=seekcolor)
         self.seektype = seektype
         
-    def sdraw(self, x0, x1):
+    def seekdraw(self, x0, x1):
         """Draws the seek bar"""
-        if self.seektype == "fixed":
+        if self.seektype == SeekType.FIXED:
             self.seek.draw(x0, x1)
-        elif self.seektype == "left":
+        elif self.seektype == SeekType.LEFT:
             self.seek.draw(self.x-self.whalf, x1)
-        elif self.seektype == "right":
+        elif self.seektype == SeekType.RIGHT:
             self.seek.draw(x0, self.x+self.whalf)
     
     def pack(self):
         """Draws the bar and the seek"""
         
-        self.sdraw(self.x0, self.x1)
+        self.seek.pack()
         
         self.tkrect = self.canvas.create_rectangle(self.x-self.whalf, self.y-self.hhalf,
                             self.x+self.whalf, self.y+self.hhalf, fill="#0ef87f", outline="")
-        
-        # self.canvas.bind("<Button-1>", self.onclick)
-        # self.canvas.bind("<B1-Motion>", self.ondrag)
+        self.canvas.tag_raise(self.tkrect)
         
     def clear(self):
         if self.tkrect is not None:
@@ -56,7 +58,7 @@ class Bar:
     def onclick(self, event):
         x = event.x
         
-        if abs(x - self.x) < self.whalf:
+        if self.contain(x):
             self.clicked = True
         else:
             self.clicked = False
@@ -65,34 +67,37 @@ class Bar:
         """Position of bar to frame index"""
         x -= self.x0 - self.whalf
         return floor(x / (self.x1-self.x0 + 2*self.whalf) * self.fcount)
+    
+    def contain(self, x):
+        """Checks if the x position is within the bar"""
+        return abs(x - self.x) < self.whalf
             
-    def ondrag(self, event):
+    def ondrag(self, event, func, xlim):
+        """Updates the drag position by evaluating func with xlim."""
         x = event.x
         
-        self.canvas.delete(self.tkrect)
-        self.seek.clear()
-        # if not self.clicked:
-        #     return
+        if not self.clicked:
+            return
         
-        if self.x0-self.whalf < x < self.x1+self.whalf:
-            self.x = x
+        # self.canvas.delete(self.tkrect)
+        # self.seek.clear()
+        
+        # if self.contain(x):
+        x = func(x, xlim)
             
-            self.idx = self.x2fidx(self.x)
-            print("idx: ", self.idx)
+        self.x = x
+        
+        self.idx = self.x2fidx(self.x)
+            # print("idx: ", self.idx)
             # self.callback(self.label, self.idx)
-        # self.canvas.coords(self.tkrect, self.x-self.whalf, self.y-self.hhalf,
-        #                 self.x+self.whalf, self.y+self.hhalf)
+        self.seekdraw(self.x0, self.x1)
+        self.canvas.coords(self.tkrect, self.x-self.whalf, self.y-self.hhalf,
+                        self.x+self.whalf, self.y+self.hhalf)
         
         # self.canvas.create_rectangle(self.x0, self.y - 3, self.x1, self.y + 3, fill="#888")
-        if self.seektype == "fixed":
-            self.seek.draw(self.x0, self.x1)
-        elif self.seektype == "left":
-            self.seek.draw(self.x-self.whalf, self.x1)
-        elif self.seektype == "right":
-            self.seek.draw(self.x0, self.x+self.whalf)
         
-        self.tkrect = self.canvas.create_rectangle(self.x-self.whalf, self.y-self.hhalf,
-                            self.x+self.whalf, self.y+self.hhalf, fill="#0ef87f", outline="")
+        # self.tkrect = self.canvas.create_rectangle(self.x-self.whalf, self.y-self.hhalf,
+        #                     self.x+self.whalf, self.y+self.hhalf, fill="#0ef87f", outline="")
         
         # self.canvas.create_text((self.x0 + self.x1) // 2, self.y + 25,
         #                         text=f"Frame index: {self.x2fidx(x)}", fill="white")
