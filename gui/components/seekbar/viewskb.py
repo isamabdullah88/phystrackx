@@ -65,7 +65,7 @@ class ViewSeekBar:
         
     def ondrag(self, event):
         func = lambda x, xlim: min(x, xlim)
-        self.leftbar.ondrag(event, func, self.x1-self.padx)
+        self.leftbar.ondrag(event, func, self.x1)
         self.fixedseek.draw(self.leftbar.x0, self.leftbar.x1)
         self.callback()
         
