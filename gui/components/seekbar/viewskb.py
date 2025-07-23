@@ -2,6 +2,7 @@ from math import floor, ceil
 import customtkinter as ctk
 from .seek import Seek
 from .bar import Bar
+from core import SeekType
 
 class ViewSeekBar:
     """Seekbar that is view only and act as a video viewer. It can't trim video."""
@@ -45,7 +46,7 @@ class ViewSeekBar:
         
         self.clear()
         
-        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount, "leftbar", self.callback, seektype="fixed")
+        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount, seektype=SeekType.FIXED)
         
         self.leftbar.pack()
         
@@ -59,9 +60,12 @@ class ViewSeekBar:
         
     def onclick(self, event):
         self.leftbar.onclick(event)
+        self.callback()
         
     def ondrag(self, event):
-        self.leftbar.ondrag(event)
+        func = lambda x, xlim: min(x, xlim)
+        self.leftbar.ondrag(event, func, self.x1-self.padx)
+        self.callback()
         
 class App(ctk.CTk):
     def __init__(self):
@@ -79,8 +83,8 @@ class App(ctk.CTk):
     #     start, end = self.seekbar.get_trim_range()
     #     print(f"Selected trim range: Frame {start} to {end}")
     
-    def callback(self, label, idx):
-        print('idx: ', self.seekbar.idx)
+    def callback(self):
+        print('callback')
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")

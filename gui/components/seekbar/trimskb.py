@@ -1,46 +1,49 @@
 from math import floor, ceil
+from typing import override
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
 from core import abspath
 from .bar import Bar
 from .viewskb import ViewSeekBar
+from core import SeekType
 
 
 class TrimSeekBar(ViewSeekBar):
-    def __init__(self, frame, width, height, fcount=100, ondrag=None):
-        super().__init__(frame, width, height, fcount, self.leftcb)
+    def __init__(self, frame, width, height, fcount=100, callback=None):
+        super().__init__(frame, width, height, fcount, callback)
 
         self.startidx = ceil(0.01*fcount)
         self.endidx = floor(0.99*fcount)
         self.idx = self.startidx
 
-        self.ondrag = ondrag
+        self.callback = callback
         
         self.rightbar = None
         
     def pack(self):
         super().pack()
         
-        self.rightbar = Bar(self.canvas, self.x1-self.padx, self.x0, self.x1, self.height/2, self.fcount, "rightbar", self.rightcb)
+        self.rightbar = Bar(self.canvas, self.x1-self.padx, self.x0, self.x1, self.height/2,
+                        self.fcount, seektype=SeekType.RIGHT, seekcolor="#42f2c9")
         self.rightbar.pack()
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=40)
         self.applybtn.place(x=self.width-60, y=self.height-60)
         
-    def leftcb(self, label, idx):
-        self.startidx = idx
-        self.idx = idx
+    # def leftcb(self, label, idx):
+    #     self.startidx = idx
+    #     self.idx = idx
             
-        print('left idx: ', self.startidx)
-        self.ondrag()
+    #     print('left idx: ', self.startidx)
+    #     self.ondrag()
         
-    def rightcb(self, label, idx):
-        self.endidx = idx
-        self.idx = idx
+    # def rightcb(self, label, idx):
+    #     self.endidx = idx
+    #     self.idx = idx
         
-        print('right idx: ', self.endidx)
-        self.ondrag()
+    #     print('right idx: ', self.endidx)
+    #     self.ondrag()
         
         
     def settrim(self, trimvideo, loadvideo):
@@ -68,6 +71,29 @@ class TrimSeekBar(ViewSeekBar):
         button.image = img
         
         return button
+    
+    @override
+    def onclick(self, event):
+        self.leftbar.onclick(event)
+        self.rightbar.onclick(event)
+        
+        if self.leftbar.clicked or self.rightbar.clicked:
+            self.callback()
+        
+    @override
+    def ondrag(self, event):
+        
+        self.startidx = self.leftbar.idx
+        self.endidx = self.rightbar.idx
+        
+        func = lambda x, xlim: min(x, xlim-50)
+        self.leftbar.ondrag(event, func, self.rightbar.x)
+        
+        func = lambda x, xlim: max(x, xlim+50)
+        self.rightbar.ondrag(event, func, self.leftbar.x)
+        
+        if self.leftbar.clicked or self.rightbar.clicked:
+            self.callback()
     
     
     def onapply(self):
@@ -98,11 +124,11 @@ class App(ctk.CTk):
         self.canvas = ctk.CTkCanvas(self.frame)
         self.canvas.pack(fill="both", expand=True)
 
-        self.tseekbar = TrimSeekBar(self.frame, 600, 100, 2000, ondrag=self.ondrag)
+        self.tseekbar = TrimSeekBar(self.frame, 600, 100, 2000, callback=self.callback)
         self.tseekbar.pack()
     
-    def ondrag(self):
-        pass
+    def callback(self):
+        print('callback triggered')
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")
