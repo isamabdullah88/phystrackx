@@ -21,6 +21,7 @@ class ViewSeekBar:
         self.leftbar = None
         
         self.setparams()
+        
 
     def setparams(self):
         self.idx = ceil(0.01*self.fcount)
@@ -50,10 +51,40 @@ class ViewSeekBar:
         self.seek.pack()
         self.leftbar.pack()
         
+        self.canvas.tag_bind(self.leftbar.tkrect, "<Button-1>", self.onclick)
+        self.canvas.tag_bind(self.leftbar.tkrect, "<B1-Motion>", self.ondrag)
+        
     def set(self, fcount):
         self.fcount = fcount
         
         self.setparams()
+        
+    def onclick(self, event):
+        # self.leftbar.onclick(event)
+        x = event.x
+        
+        if abs(x - self.leftbar.x) < self.leftbar.whalf:
+            self.leftbar.clicked = True
+        else:
+            self.leftbar.clicked = False
+        
+    def ondrag(self, event):
+        # self.leftbar.ondrag(event)
+        
+        x = event.x
+        
+        if not self.leftbar.clicked:
+            return
+        
+        if self.leftbar.x0-self.leftbar.whalf < x < self.leftbar.x1+self.leftbar.whalf:
+            self.leftbar.x = x
+            
+            self.canvas.delete(self.leftbar.tkrect)
+            self.leftbar.tkrect = self.canvas.create_rectangle(self.leftbar.x-self.leftbar.whalf, self.leftbar.y-self.leftbar.hhalf,
+                            self.leftbar.x+self.leftbar.whalf, self.leftbar.y+self.leftbar.hhalf, fill="#0ef87f", outline="")
+            
+            self.leftbar.idx = self.leftbar.x2fidx(self.leftbar.x)
+            self.callback(self.leftbar.label, self.leftbar.idx)
         
 class App(ctk.CTk):
     def __init__(self):
@@ -71,7 +102,7 @@ class App(ctk.CTk):
     #     start, end = self.seekbar.get_trim_range()
     #     print(f"Selected trim range: Frame {start} to {end}")
     
-    def callback(self):
+    def callback(self, label, idx):
         print('idx: ', self.seekbar.idx)
 
 if __name__ == "__main__":

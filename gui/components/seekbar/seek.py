@@ -18,7 +18,7 @@ class Seek:
         self.tkrectb = self.canvas.create_rectangle(self.x0, self.y-self.hhalf, self.x1, self.y+self.hhalf, fill="#e2bcc5")
 
         # Draw selected range
-        self.tkrects = self.canvas.create_rectangle(self.x0+1, self.y-self.hhalf-1, self.x1, self.y+self.hhalf+1, fill="#cb04c1", outline="")
+        self.tkrects = self.canvas.create_rectangle(self.x0+1, self.y-self.hhalf-1, self.x1, self.y+self.hhalf+1, fill="#ee7ae8", outline="")
         
     def clear(self):
         if self.tkrectb is not None:
