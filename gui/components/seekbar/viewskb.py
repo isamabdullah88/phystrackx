@@ -48,7 +48,8 @@ class ViewSeekBar:
         
         self.fixedseek = Seek(self.canvas, self.x0, self.x1, self.height/2, color="#9c97d6")
         self.fixedseek.pack()
-        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount)
+        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount,
+                        callback=self.callback)
         self.leftbar.pack()
         
         self.canvas.bind("<Button-1>", self.onclick)
@@ -61,14 +62,16 @@ class ViewSeekBar:
         
     def onclick(self, event):
         self.leftbar.onclick(event)
-        self.callback()
+        # self.callback()
         
     def ondrag(self, event):
         func = lambda x, xlim: min(x, xlim)
         self.leftbar.ondrag(event, func, self.x1)
         self.fixedseek.draw(self.leftbar.x0, self.leftbar.x1)
-        self.callback()
+        # self.callback()
         
+
+import time
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -86,7 +89,7 @@ class App(tk.Tk):
     #     print(f"Selected trim range: Frame {start} to {end}")
     
     def callback(self):
-        print('callback')
+        print('callback called: ' + str(time.time()))
 
 if __name__ == "__main__":
     app = App()

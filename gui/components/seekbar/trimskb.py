@@ -31,7 +31,7 @@ class TrimSeekBar(ViewSeekBar):
         self.varseek = Seek(self.canvas, self.x0, self.x1, self.height/2, color="#42f2c9")
         self.varseek.pack()
         self.rightbar = Bar(self.canvas, self.x1-self.padx, self.x0, self.x1, self.height/2,
-                        self.fcount)
+                        self.fcount, callback=self.callback)
         self.rightbar.pack()
         
         self.canvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
@@ -104,8 +104,10 @@ class TrimSeekBar(ViewSeekBar):
         rfunc = lambda x, xlim: max(x, xlim+50)
         self.rightbar.ondrag(event, rfunc, self.leftbar.x)
         
-        if self.leftbar.clicked or self.rightbar.clicked:
-            self.callback()
+        if self.leftbar.clicked:
+            self.idx = self.startidx
+        if self.rightbar.clicked:
+            self.idx = self.endidx
     
     
     def onapply(self):

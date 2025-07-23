@@ -1,14 +1,14 @@
 # from customtkinter import CTkCanvas
 from core import SeekType
 from math import floor
-# import customtkinter as ctk
+from typing import Callable
 import tkinter as tk
 from .seek import Seek
 
 class Bar:
     """Implements and draws the bar of a seekbar. A vertical stick that can be dragged along a seek"""
     def __init__(self, canvas:tk.Canvas, x:float, x0:float, x1:float, y:float, fcount:int,
-                color:str="#de459b", width=6, height=50):
+                color:str="#de459b", callback:Callable=None, width=6, height=50):
         self.canvas = canvas
         
         self.x0 = x0
@@ -28,7 +28,8 @@ class Bar:
         
         # self.seekcolor = seekcolor
         # self.label = label
-        # self.callback = callback
+        self.trigger = True
+        self.callback = callback
         
         # self.seek = Seek(self.canvas, self.x0, self.x1, self.y, color=seekcolor)
         # self.seektype = seektype
@@ -87,18 +88,23 @@ class Bar:
         
         # self.canvas.delete(self.tkrect)
         # self.seek.clear()
+        if x < self.x0:
+            x = self.x0
+            self.trigger = False
+            print('triggered min')
+        elif x > self.x1:
+            x = self.x1
+            self.trigger = False
+            print('triggered max')
+        else:
+            self.trigger = True
         
         # if self.contain(x):
         x = func(x, xlim)
         
-        if x < self.x0:
-            x = self.x0
-        elif x > self.x1:
-            x = self.x1
             
         self.x = x
         
-        self.idx = self.x2fidx(self.x)
             # print("idx: ", self.idx)
             # self.callback(self.label, self.idx)
         # self.seekdraw(self.x0, self.x1)
@@ -112,6 +118,12 @@ class Bar:
         
         # self.canvas.create_text((self.x0 + self.x1) // 2, self.y + 25,
         #                         text=f"Frame index: {self.x2fidx(x)}", fill="white")
+        self.idx = self.x2fidx(self.x)
+        # print('(idx, self.idx): ', (idx, self.idx))
+        
+        # self.idx = idx
+        if self.trigger and (self.callback is not None):
+            self.callback()
             
 class App(tk.Tk):
     def __init__(self):
