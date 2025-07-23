@@ -22,6 +22,7 @@ class TrimSeekBar(ViewSeekBar):
         
         self.rseek = None
         self.rightbar = None
+        self.bardiff = 50
         
         
         
@@ -62,6 +63,9 @@ class TrimSeekBar(ViewSeekBar):
     def clearright(self):
         if self.rightbar is not None:
             self.rightbar.clear()
+            self.rightbar.x = self.x1
+            self.bardiff = 0
+            
         
     def clear(self):
         super().clear()
@@ -99,9 +103,9 @@ class TrimSeekBar(ViewSeekBar):
         self.fixedseek.draw(self.leftbar.x0, self.leftbar.x1)
         self.varseek.draw(self.leftbar.x, self.rightbar.x)
         
-        lfunc = lambda x, xlim: min(x, xlim-50)
+        lfunc = lambda x, xlim: min(x, xlim-self.bardiff)
         self.leftbar.ondrag(event, lfunc, self.rightbar.x)
-        rfunc = lambda x, xlim: max(x, xlim+50)
+        rfunc = lambda x, xlim: max(x, xlim+self.bardiff)
         self.rightbar.ondrag(event, rfunc, self.leftbar.x)
         
         if self.leftbar.clicked:

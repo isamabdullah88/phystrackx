@@ -29,6 +29,9 @@ class ViewSeekBar:
         
         self.x0 = self.padx
         self.x1 = self.width - self.padx
+        
+        if self.leftbar is not None:
+            self.leftbar.setcount(self.fcount)
 
     # def callback(self, label, idx):
     #     self.idx = idx

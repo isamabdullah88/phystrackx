@@ -33,6 +33,10 @@ class Bar:
         
         # self.seek = Seek(self.canvas, self.x0, self.x1, self.y, color=seekcolor)
         # self.seektype = seektype
+    def setcount(self, fcount):
+        """Sets the frame count for the bar."""
+        self.fcount = fcount
+        self.idx = self.x2fidx(self.x)
         
     # def seekdraw(self, x0, x1):
     #     """Draws the seek bar"""

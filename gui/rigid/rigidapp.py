@@ -5,6 +5,7 @@ from tkinter import messagebox
 from gui.app import App
 from gui.components.spinner import Spinner
 from gui.components.seekbar.trimskb import TrimSeekBar
+from gui.components.seekbar.viewskb import ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
@@ -189,6 +190,7 @@ class RigidApp(App):
             self.root.after(0, progressbar.destroy())
 
             # self.loadvideo(self.videoapp.trackpath, clear=False)
+            # self.seekbar = ViewSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, fcount=self.videoapp.fcount, callback=self.updateframe)
             self.loadcomponents(trim=False)
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
