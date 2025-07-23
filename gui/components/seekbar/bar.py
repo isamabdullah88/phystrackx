@@ -59,4 +59,4 @@ class Bar:
                             self.x+self.whalf, self.y+self.hhalf)
             
             self.idx = self.x2fidx(self.x)
-            self.callback(self.label, self.idx)
+            # self.callback(self.label, self.idx)

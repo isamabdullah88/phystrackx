@@ -60,31 +60,31 @@ class ViewSeekBar:
         self.setparams()
         
     def onclick(self, event):
-        # self.leftbar.onclick(event)
-        x = event.x
+        self.leftbar.onclick(event)
+        # x = event.x
         
-        if abs(x - self.leftbar.x) < self.leftbar.whalf:
-            self.leftbar.clicked = True
-        else:
-            self.leftbar.clicked = False
+        # if abs(x - self.leftbar.x) < self.leftbar.whalf:
+        #     self.leftbar.clicked = True
+        # else:
+        #     self.leftbar.clicked = False
         
     def ondrag(self, event):
-        # self.leftbar.ondrag(event)
+        self.leftbar.ondrag(event)
         
-        x = event.x
+        # x = event.x
         
-        if not self.leftbar.clicked:
-            return
+        # if not self.leftbar.clicked:
+        #     return
         
-        if self.leftbar.x0-self.leftbar.whalf < x < self.leftbar.x1+self.leftbar.whalf:
-            self.leftbar.x = x
+        # if self.leftbar.x0-self.leftbar.whalf < x < self.leftbar.x1+self.leftbar.whalf:
+        #     self.leftbar.x = x
             
-            self.canvas.delete(self.leftbar.tkrect)
-            self.leftbar.tkrect = self.canvas.create_rectangle(self.leftbar.x-self.leftbar.whalf, self.leftbar.y-self.leftbar.hhalf,
-                            self.leftbar.x+self.leftbar.whalf, self.leftbar.y+self.leftbar.hhalf, fill="#0ef87f", outline="")
+        #     self.canvas.delete(self.leftbar.tkrect)
+        #     self.leftbar.tkrect = self.canvas.create_rectangle(self.leftbar.x-self.leftbar.whalf, self.leftbar.y-self.leftbar.hhalf,
+        #                     self.leftbar.x+self.leftbar.whalf, self.leftbar.y+self.leftbar.hhalf, fill="#0ef87f", outline="")
             
-            self.leftbar.idx = self.leftbar.x2fidx(self.leftbar.x)
-            self.callback(self.leftbar.label, self.leftbar.idx)
+        #     self.leftbar.idx = self.leftbar.x2fidx(self.leftbar.x)
+        #     self.callback(self.leftbar.label, self.leftbar.idx)
         
 class App(ctk.CTk):
     def __init__(self):
