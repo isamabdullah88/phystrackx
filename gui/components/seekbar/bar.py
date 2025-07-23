@@ -8,7 +8,7 @@ from .seek import Seek
 class Bar:
     """Implements and draws the bar of a seekbar. A vertical stick that can be dragged along a seek"""
     def __init__(self, canvas:tk.Canvas, x:float, x0:float, x1:float, y:float, fcount:int,
-                seektype:SeekType, seekcolor:str="#9c97d6", width=6, height=50):
+                color:str="#de459b", width=6, height=50):
         self.canvas = canvas
         
         self.x0 = x0
@@ -24,30 +24,31 @@ class Bar:
         self.idx = self.x2fidx(self.x)
         
         self.tkrect = None
+        self.color = color
         
         # self.seekcolor = seekcolor
         # self.label = label
         # self.callback = callback
         
-        self.seek = Seek(self.canvas, self.x0, self.x1, self.y, color=seekcolor)
-        self.seektype = seektype
+        # self.seek = Seek(self.canvas, self.x0, self.x1, self.y, color=seekcolor)
+        # self.seektype = seektype
         
-    def seekdraw(self, x0, x1):
-        """Draws the seek bar"""
-        if self.seektype == SeekType.FIXED:
-            self.seek.draw(x0, x1)
-        elif self.seektype == SeekType.LEFT:
-            self.seek.draw(self.x-self.whalf, x1)
-        elif self.seektype == SeekType.RIGHT:
-            self.seek.draw(x0, self.x+self.whalf)
+    # def seekdraw(self, x0, x1):
+    #     """Draws the seek bar"""
+    #     if self.seektype == SeekType.FIXED:
+    #         self.seek.draw(x0, x1)
+    #     elif self.seektype == SeekType.LEFT:
+    #         self.seek.draw(self.x-self.whalf, x1)
+    #     elif self.seektype == SeekType.RIGHT:
+    #         self.seek.draw(x0, self.x+self.whalf)
     
     def pack(self):
         """Draws the bar and the seek"""
         
-        self.seek.pack()
+        # self.seek.pack()
         
         self.tkrect = self.canvas.create_rectangle(self.x-self.whalf, self.y-self.hhalf,
-                            self.x+self.whalf, self.y+self.hhalf, fill="#0ef87f", outline="")
+                            self.x+self.whalf, self.y+self.hhalf, fill=self.color, outline="")
         self.canvas.tag_raise(self.tkrect)
         
     def clear(self):
@@ -71,6 +72,11 @@ class Bar:
     def contain(self, x):
         """Checks if the x position is within the bar"""
         return abs(x - self.x) < self.whalf
+    
+    def inextents(self, x):
+        """Checks if the x position is within the extents of the bar"""
+        return self.x0 <= x <= self.x1
+    
             
     def ondrag(self, event, func, xlim):
         """Updates the drag position by evaluating func with xlim."""
@@ -84,13 +90,18 @@ class Bar:
         
         # if self.contain(x):
         x = func(x, xlim)
+        
+        if x < self.x0:
+            x = self.x0
+        elif x > self.x1:
+            x = self.x1
             
         self.x = x
         
         self.idx = self.x2fidx(self.x)
             # print("idx: ", self.idx)
             # self.callback(self.label, self.idx)
-        self.seekdraw(self.x0, self.x1)
+        # self.seekdraw(self.x0, self.x1)
         self.canvas.coords(self.tkrect, self.x-self.whalf, self.y-self.hhalf,
                         self.x+self.whalf, self.y+self.hhalf)
         

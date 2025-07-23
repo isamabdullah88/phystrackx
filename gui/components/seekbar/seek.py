@@ -21,16 +21,18 @@ class Seek:
     def pack(self):
         """Draws the seek bar"""
         self.tkrect = self.canvas.create_rectangle(self.x0+1, self.y-self.hhalf-1, self.x1, self.y+self.hhalf+1, fill=self.color, outline="")
-        self.canvas.tag_lower(self.tkrect)
+        # self.canvas.tag_lower(self.tkrect)
         
     def draw(self, x0, x1):
         # Draw background bar
         # self.tkrectb = self.canvas.create_rectangle(self.x0, self.y-self.hhalf, self.x1, self.y+self.hhalf, fill="#e2bcc5")
 
+        # self.canvas.delete(self.tkrect)
         # Draw selected range
-        self.tkrect = self.canvas.create_rectangle(x0+1, self.y-self.hhalf-1, x1, self.y+self.hhalf+1, fill=self.color, outline="")
-        # if self.tkrect is not None:
-        #     self.canvas.coords(self.tkrect, x0+1, self.y-self.hhalf-1, x1, self.y+self.hhalf+1)
+        # self.tkrect = self.canvas.create_rectangle(x0+1, self.y-self.hhalf-1, x1, self.y+self.hhalf+1, fill=self.color, outline="")
+        # self.canvas.tag_raise(self.tkrect)
+        if self.tkrect is not None:
+            self.canvas.coords(self.tkrect, x0+1, self.y-self.hhalf-1, x1, self.y+self.hhalf+1)
         
     def clear(self):
         # if self.tkrectb is not None:
