@@ -6,6 +6,7 @@ from PIL import Image
 from core import abspath
 from .bar import Bar
 from .viewskb import ViewSeekBar
+from .seek import Seek
 from core import SeekType
 
 
@@ -19,17 +20,25 @@ class TrimSeekBar(ViewSeekBar):
 
         self.callback = callback
         
+        self.rseek = None
         self.rightbar = None
+        
+        
         
     def pack(self):
         super().pack()
         
+        self.varseek = Seek(self.canvas, self.x0, self.x1, self.height/2, color="#42f2c9")
+        self.varseek.pack()
         self.rightbar = Bar(self.canvas, self.x1-self.padx, self.x0, self.x1, self.height/2,
-                        self.fcount, seektype=SeekType.RIGHT, seekcolor="#42f2c9")
+                        self.fcount)
         self.rightbar.pack()
+        
+        self.canvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=40)
         self.applybtn.place(x=self.width-60, y=self.height-60)
+        
         
     # def leftcb(self, label, idx):
     #     self.startidx = idx
@@ -86,11 +95,14 @@ class TrimSeekBar(ViewSeekBar):
         self.startidx = self.leftbar.idx
         self.endidx = self.rightbar.idx
         
-        func = lambda x, xlim: min(x, xlim-50)
-        self.leftbar.ondrag(event, func, self.rightbar.x)
         
-        func = lambda x, xlim: max(x, xlim+50)
-        self.rightbar.ondrag(event, func, self.leftbar.x)
+        self.fixedseek.draw(self.leftbar.x0, self.leftbar.x1)
+        self.varseek.draw(self.leftbar.x, self.rightbar.x)
+        
+        lfunc = lambda x, xlim: min(x, xlim-50)
+        self.leftbar.ondrag(event, lfunc, self.rightbar.x)
+        rfunc = lambda x, xlim: max(x, xlim+50)
+        self.rightbar.ondrag(event, rfunc, self.leftbar.x)
         
         if self.leftbar.clicked or self.rightbar.clicked:
             self.callback()
