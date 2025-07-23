@@ -11,18 +11,18 @@ class Seek:
         self.y = y
         
         self.tkrectb = None
-        self.tkrects = None
+        self.tkrect = None
         
-    def pack(self):
+    def draw(self, x0, x1):
         # Draw background bar
-        self.tkrectb = self.canvas.create_rectangle(self.x0, self.y-self.hhalf, self.x1, self.y+self.hhalf, fill="#e2bcc5")
+        # self.tkrectb = self.canvas.create_rectangle(self.x0, self.y-self.hhalf, self.x1, self.y+self.hhalf, fill="#e2bcc5")
 
         # Draw selected range
-        self.tkrects = self.canvas.create_rectangle(self.x0+1, self.y-self.hhalf-1, self.x1, self.y+self.hhalf+1, fill="#ee7ae8", outline="")
+        self.tkrect = self.canvas.create_rectangle(x0+1, self.y-self.hhalf-1, x1, self.y+self.hhalf+1, fill="#ee7ae8", outline="")
         
     def clear(self):
         if self.tkrectb is not None:
             self.canvas.delete(self.tkrectb)
             
-        if self.tkrects is not None:
-            self.canvas.delete(self.tkrects)
+        if self.tkrect is not None:
+            self.canvas.delete(self.tkrect)

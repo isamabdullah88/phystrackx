@@ -45,14 +45,12 @@ class ViewSeekBar:
         
         self.clear()
         
-        # self.seek = Seek(self.canvas, self.x0, self.x1,  self.height/2)
-        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount, "leftbar", self.callback)
+        self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount, "leftbar", self.callback, seektype="fixed")
         
-        # self.seek.pack()
         self.leftbar.pack()
         
-        self.canvas.tag_bind(self.leftbar.tkrect, "<Button-1>", self.onclick)
-        self.canvas.tag_bind(self.leftbar.tkrect, "<B1-Motion>", self.ondrag)
+        self.canvas.bind("<Button-1>", self.onclick)
+        self.canvas.bind("<B1-Motion>", self.ondrag)
         
     def set(self, fcount):
         self.fcount = fcount
@@ -61,30 +59,9 @@ class ViewSeekBar:
         
     def onclick(self, event):
         self.leftbar.onclick(event)
-        # x = event.x
-        
-        # if abs(x - self.leftbar.x) < self.leftbar.whalf:
-        #     self.leftbar.clicked = True
-        # else:
-        #     self.leftbar.clicked = False
         
     def ondrag(self, event):
         self.leftbar.ondrag(event)
-        
-        # x = event.x
-        
-        # if not self.leftbar.clicked:
-        #     return
-        
-        # if self.leftbar.x0-self.leftbar.whalf < x < self.leftbar.x1+self.leftbar.whalf:
-        #     self.leftbar.x = x
-            
-        #     self.canvas.delete(self.leftbar.tkrect)
-        #     self.leftbar.tkrect = self.canvas.create_rectangle(self.leftbar.x-self.leftbar.whalf, self.leftbar.y-self.leftbar.hhalf,
-        #                     self.leftbar.x+self.leftbar.whalf, self.leftbar.y+self.leftbar.hhalf, fill="#0ef87f", outline="")
-            
-        #     self.leftbar.idx = self.leftbar.x2fidx(self.leftbar.x)
-        #     self.callback(self.leftbar.label, self.leftbar.idx)
         
 class App(ctk.CTk):
     def __init__(self):
