@@ -58,7 +58,7 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = TrimSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, callback=self.updateframe)
             
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
