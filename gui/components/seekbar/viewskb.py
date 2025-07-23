@@ -45,10 +45,10 @@ class ViewSeekBar:
         
         self.clear()
         
-        self.seek = Seek(self.canvas, self.x0, self.x1,  self.height/2)
+        # self.seek = Seek(self.canvas, self.x0, self.x1,  self.height/2)
         self.leftbar = Bar(self.canvas, self.x0, self.x0, self.x1, self.height/2, self.fcount, "leftbar", self.callback)
         
-        self.seek.pack()
+        # self.seek.pack()
         self.leftbar.pack()
         
         self.canvas.tag_bind(self.leftbar.tkrect, "<Button-1>", self.onclick)
