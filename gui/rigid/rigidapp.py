@@ -19,7 +19,7 @@ from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry import Geometry
 from experiments.components.ocr import OCRData
-from core import PlotTypes
+from core import PlotType
 from .plot import Plot
 from .videoapp import Video
 
@@ -223,7 +223,7 @@ class RigidApp(App):
         # TODO: Remove points from plot data as well when user removed the point
         self.gen_plotdata() 
         
-        Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
+        Checkbox(self.videoview, PlotType, self.pdata.showplots)
 
     def savedata(self):
         """
