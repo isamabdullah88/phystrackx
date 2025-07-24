@@ -1,4 +1,5 @@
 
+import math
 import tkinter as tk
 from .point import Point
 from .line import Line
@@ -42,7 +43,8 @@ class Triangle:
                 self.tkline = None
                 # print('lines: ', len(self.lines))
                 self.complete = True
-                
+                self.display_triangle_with_angle_arcs(self.points[0], self.points[1], self.points[2])
+                self.label_side_lengths(self.points[0], self.points[1], self.points[2])
             #     return {'complete': True, 'exist': False}
             # else:
             #     return {'complete': False, 'exist': False}
@@ -104,3 +106,89 @@ class Triangle:
             print('lines select: ', len(self.lines))
             for line in self.lines:
                 self.canvas.itemconfig(line.tkline, fill="#7f5fea", width=3)
+                
+
+    # def distance(p1, p2):
+    #     return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+
+    def angle_from_sides(self, a, b, c):
+        return math.degrees(math.acos((b**2 + c**2 - a**2) / (2 * b * c)))
+
+    def vector_angle(self, p1:Point, vertex:Point, p2:Point):
+        # Angle between vectors (vertex → p1) and (vertex → p2)
+        v1 = (p1.x - vertex.x, p1.y - vertex.y)
+        v2 = (p2.x - vertex.x, p2.y - vertex.y)
+        
+        # atan2 uses (Y, X), and we invert Y for canvas coordinate system
+        a1 = math.degrees(math.atan2(-v1[1], v1[0])) % 360
+        a2 = math.degrees(math.atan2(-v2[1], v2[0])) % 360
+
+        # Angle from a1 to a2 (sweep)
+        extent = (a2 - a1) % 360
+        if extent > 180:
+            # Flip to get interior angle
+            a1, a2 = a2, a1
+            extent = (a2 - a1) % 360
+        return a1, extent
+
+    def draw_angle_arc(self, vertex:Point, p1:Point, p2:Point, angle_deg, color):
+        r = 30  # Radius of arc
+        x, y = vertex.x, vertex.y
+        bbox = (x - r, y - r, x + r, y + r)
+        start, extent = self.vector_angle(p1, vertex, p2)
+        self.canvas.create_arc(bbox, start=start, extent=extent, style="arc", outline=color, width=2)
+
+        # Label the angle slightly outside the arc
+        label_x = x + 1.2 * r * math.cos(math.radians(start + extent / 2))
+        label_y = y + 1.2 * r * math.sin(math.radians(start + extent / 2))
+        self.canvas.create_text(label_x, label_y, text=f"{angle_deg:.1f}°", fill=color, font=("Arial", 10, "bold"))
+
+    def display_triangle_with_angle_arcs(self, A:Point, B:Point, C:Point):
+        # Draw triangle
+        # self.canvas.create_polygon([A, B, C], outline="black", fill="", width=2)
+
+        # Compute side lengths
+        a = B.distance(C)
+        b = A.distance(C)
+        c = A.distance(B)
+
+        # Compute angles
+        angle_A = self.angle_from_sides(a, b, c)
+        angle_B = self.angle_from_sides(b, c, a)
+        angle_C = self.angle_from_sides(c, a, b)
+
+        # Draw arcs and labels
+        self.draw_angle_arc(A, B, C, angle_A, "red")
+        self.draw_angle_arc(B, A, C, angle_B, "red")
+        self.draw_angle_arc(C, A, B, angle_C, "red")
+        
+        
+    def label_side_lengths(self, A:Point, B:Point, C:Point):
+        
+        def label_length(p1:Point, p2:Point, color):
+            mid_x = (p1.x + p2.x) / 2
+            mid_y = (p1.y + p2.y) / 2
+            length = p1.distance(p2)
+            
+            self.canvas.create_text(mid_x, mid_y, text=f"{length:.1f}", fill=color, font=("Arial", 9, "italic"))
+
+        label_length(A, B, "green")  # side c
+        label_length(B, C, "green")  # side a
+        label_length(C, A, "green")  # side b
+
+
+# # Tkinter setup
+# root = tk.Tk()
+# root.title("Triangle Angles with Arcs")
+# canvas = tk.Canvas(root, width=400, height=400, bg="white")
+# canvas.pack()
+
+# # Triangle points (manually defined)
+# A = (100, 300)
+# B = (300, 300)
+# C = (200, 100)
+
+# # Display triangle and angles
+# display_triangle_with_angle_arcs(canvas, A, B, C)
+
+# root.mainloop()
