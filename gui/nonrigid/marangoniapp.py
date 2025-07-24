@@ -10,7 +10,7 @@ from math import floor
 from experiments.nonrigid import Marangoni
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar.seekbar import CutSeekBar
+from gui.components.seekbar import TrimSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.subtoolbar import SubToolbar
 from gui.components.titlebar import TitleBar
@@ -43,7 +43,7 @@ class MarangoniApp(App):
         
         self._idx = 0
 
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
 
         # self.scroll_toolbar.pack()
         

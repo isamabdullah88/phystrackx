@@ -10,7 +10,7 @@ from math import floor
 from gui.app import App
 from experiments.nonrigid import Interface
 from gui.components.spinner import Spinner
-from gui.components.seekbar.seekbar import CutSeekBar
+from gui.components.seekbar import TrimSeekBar
 from gui.components.ruler import ScaleRuler
 from core import PixelRect, Points, abspath
 
@@ -40,7 +40,7 @@ class InterfaceApp(App):
         self.rectbd.pack(padx=5, pady=5)
         
 
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
         
         # self.scroll_toolbar.pack()
         
