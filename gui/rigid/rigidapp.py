@@ -4,7 +4,8 @@ from tkinter import messagebox
 
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.trimskb import TrimSeekBar
+from gui.components.seekbar.viewskb import ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
@@ -19,7 +20,7 @@ from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry import Geometry
 from experiments.components.ocr import OCRData
-from core import PlotTypes
+from core import PlotType
 from .plot import Plot
 from .videoapp import Video
 
@@ -58,8 +59,7 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = CutSeekBar(self.vidframe, width=self.cwidth-self.twidth,
-            height=self.seekbarh, ondrag=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, callback=self.updateframe)
             
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
@@ -86,7 +86,7 @@ class RigidApp(App):
         
         self.loadcomponents()
         
-    def loadcomponents(self):
+    def loadcomponents(self, trim=True):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
@@ -94,7 +94,7 @@ class RigidApp(App):
 
         self.crop.set(self.fwidth, self.fheight)
         
-        self.seekbar.setcount(self.videoapp.fcount)
+        self.seekbar.set(self.videoapp.fcount)
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
@@ -190,7 +190,8 @@ class RigidApp(App):
             self.root.after(0, progressbar.destroy())
 
             # self.loadvideo(self.videoapp.trackpath, clear=False)
-            self.loadcomponents()
+            # self.seekbar = ViewSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, fcount=self.videoapp.fcount, callback=self.updateframe)
+            self.loadcomponents(trim=False)
 
         threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
         
@@ -212,6 +213,7 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
+        self.seekbar.clear()
         self.loadvideo(self.videopath)
     
     def plot(self):
@@ -223,7 +225,7 @@ class RigidApp(App):
         # TODO: Remove points from plot data as well when user removed the point
         self.gen_plotdata() 
         
-        Checkbox(self.videoview, PlotTypes, self.pdata.showplots)
+        Checkbox(self.videoview, PlotType, self.pdata.showplots)
 
     def savedata(self):
         """

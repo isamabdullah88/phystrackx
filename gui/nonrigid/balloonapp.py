@@ -10,7 +10,7 @@ from math import floor
 from experiments.nonrigid import Balloon
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.ruler import ScaleRuler
 from core.rect import PixelRect
 from core import abspath

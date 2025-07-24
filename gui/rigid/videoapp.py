@@ -2,7 +2,7 @@ from customtkinter import CTkCanvas, IntVar
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.spinner import Spinner
 from gui.components.rect import Rect
 from core import filexists
@@ -120,7 +120,7 @@ class Video:
         # endidx = self.seekbar.endidx
         self.canvas.tag_lower(self.imgview)
         
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, self.sfidx, self.efidx, progress)
+        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, progress)
         
     def clear(self):
         self.rigid.trackpts.clear()
