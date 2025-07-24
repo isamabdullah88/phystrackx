@@ -18,7 +18,7 @@ from gui.components.titlebar import TitleBar
 from gui.components.tooltip import ToolTip
 from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
-from gui.plugins.geometry import Geometry
+from gui.plugins.geometry.geometry import Geometry
 from experiments.components.ocr import OCRData
 from core import PlotType
 from .plot import Plot
