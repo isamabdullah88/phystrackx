@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from gui.components.axes import Axes
-from core import PlotTypes
+from core import PlotType
 
 class Plot:
     def __init__(self, data:list[float], axes:Axes , vwidth, vheight, fwidth, fheight, fps=24,
@@ -71,22 +71,22 @@ class Plot:
     def showplots(self, splots):
         """Displays plot of selected plots stored in splots"""
         for ptype in splots:
-            if ptype == PlotTypes.X.name:
+            if ptype == PlotType.X.name:
                 self.plotx()
-            elif ptype == PlotTypes.Y.name:
+            elif ptype == PlotType.Y.name:
                 self.ploty()
-            elif ptype == PlotTypes.XY.name:    
+            elif ptype == PlotType.XY.name:    
                 self.plotxy()
-            elif ptype == PlotTypes.DX.name:
+            elif ptype == PlotType.DX.name:
                 self.plotdx()
-            elif ptype == PlotTypes.DY.name:
+            elif ptype == PlotType.DY.name:
                 self.plotdy()
-            elif ptype == PlotTypes.D2X.name:
+            elif ptype == PlotType.D2X.name:
                 self.plotd2x()
-            elif ptype == PlotTypes.D2Y.name:
+            elif ptype == PlotType.D2Y.name:
                 self.plotd2y()
                 
-        plt.show()
+        plt.show(block=False)
         
     def plotx(self):
         for d in self._datatr:

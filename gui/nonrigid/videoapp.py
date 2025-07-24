@@ -1,7 +1,7 @@
 from customtkinter import CTkCanvas, IntVar
 from experiments import Marangoni
 from gui.plugins import Crop, Filters
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.spinner import Spinner
 from gui.components.rect import Rect
 

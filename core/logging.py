@@ -28,6 +28,6 @@ def setup_logging():
 
     # Configure root logger
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         handlers=[console_handler, file_handler]
     )

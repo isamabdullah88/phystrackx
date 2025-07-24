@@ -56,13 +56,10 @@ class Rigid(Experiment):
             
             videowriter.write(frame)
             
-            if i%100 == 0:
-                print('i: ', i)
-            
         videowriter.release()    
         
     
-    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, startidx=0, endidx=0, progress:IntVar=None):
+    def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, progress:IntVar=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
         
@@ -86,10 +83,10 @@ class Rigid(Experiment):
         # self._videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
         #                                     (crwidth, crheight))
         
-        if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
-        else:
-            fcount = endidx - startidx
+        # if endidx == 0:
+        #     fcount = self._vidreader.fcount - startidx
+        # else:
+        #     fcount = endidx - startidx
 
         # Define Lucas-Kanade optical flow parameters
         lk_params = dict(winSize=(15, 15), maxLevel=5,criteria=(cv2.TERM_CRITERIA_EPS | \
@@ -97,7 +94,7 @@ class Rigid(Experiment):
         
         ptstrack = []
         
-        self._vidreader.seek(startidx)
+        self._vidreader.seek(0)
         
         self.trackpts = [[] for _ in rects]
         self.texts = [[] for _ in ocrrect]
@@ -126,8 +123,9 @@ class Rigid(Experiment):
         
             ptstrack.append(p0)
             
+        fcount = self._vidreader.fcount
         fprev = None
-        for i in tqdm(range(0, fcount-1), desc="Rigid", total=fcount-1):
+        for i in range(fcount-1):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             

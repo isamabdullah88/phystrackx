@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-class PlotTypes(Enum):
+class PlotType(Enum):
     X = auto()
     Y = auto()
     XY = auto()

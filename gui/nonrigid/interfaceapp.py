@@ -10,7 +10,7 @@ from math import floor
 from gui.app import App
 from experiments.nonrigid import Interface
 from gui.components.spinner import Spinner
-from gui.components.seekbar import CutSeekBar
+from gui.components.seekbar.seekbar import CutSeekBar
 from gui.components.ruler import ScaleRuler
 from core import PixelRect, Points, abspath
 
