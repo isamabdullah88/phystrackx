@@ -1,7 +1,7 @@
 
-from copy import deepcopy
+from PIL import ImageGrab
 from tkinter import messagebox
-from customtkinter import CTkCanvas
+import customtkinter as ctk
 import math
 from ..utils import mkbutton
 from .line import Line
@@ -9,7 +9,7 @@ from .point import Point
 from .triangle import Triangle
 
 class Geometry:
-    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int, btnlist, activebtn):
+    def __init__(self, canvas:ctk.CTkCanvas, vwidth:int, vheight:int, btnlist, activebtn):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
@@ -64,6 +64,7 @@ class Geometry:
             self.distancebtn.place(x=self.vwidth-80, y = self.vheight-200)
             self.delbtn.place(x=self.vwidth-80, y=self.vheight-140)
             self.applybtn.place(x=self.vwidth-90, y=self.vheight-80)
+            self.screenshot.place(x=self.vwidth-80, y=100)
             self.showbtn = False
         
     def onclick(self, event):
@@ -266,7 +267,22 @@ class Geometry:
         
     #     # Clear
     #     self.clear_sltlines()
+    
+    def capturescreen(self):
+        """Capture a screenshot of the given canvas and save to file."""
+        filepath = ctk.filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png"), ("All files", "*.*")])
+        if not filepath:
+            return
         
+        self.canvas.update()
+        x = self.canvas.winfo_rootx()
+        y = self.canvas.winfo_rooty()
+        w = x + self.canvas.winfo_width()
+        h = y + self.canvas.winfo_height()
+
+        ImageGrab.grab().crop((x, y, w, h)).save(filepath)
+        
+        messagebox.showinfo("Success", "Screenshot saved successfully.")
         
     def compute_dist(self):
         """Computes distance of the selected triangles"""
