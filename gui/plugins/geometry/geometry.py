@@ -48,6 +48,7 @@ class Geometry:
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<Motion>", self.ondrag)
         # self.canvas.bind("<ButtonRelease-1>", self.onrelease)
+        self.canvas.config(cursor="crosshair")
         
         # Disable other buttons
         for k,btn in self.btnlist.items():
@@ -78,7 +79,7 @@ class Geometry:
         # if addpt['exist']:
         #     print('exists')
             # Check if a triangle is selected
-            # if self.triangle.ptontriangle(Point(*currpt)):
+            # if self.triangle.is_pt_ontriangle(Point(*currpt)):
             #     print('Triangle selected')
             # else:
             
@@ -162,7 +163,7 @@ class Geometry:
         
         print('triangles: ', len(self.triangles))
         for triangle in self.triangles:
-            if triangle.ptontriangle(point):
+            if triangle.is_pt_ontriangle(point):
                 return True, triangle
         return False, None
     # def pointonlines(self, point):
