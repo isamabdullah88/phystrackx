@@ -99,8 +99,7 @@ class Triangle:
                 fill="#d82995"
             )
             self.points[-1].settk(self.tkpt)
-            print('pointtkpt (add):', self.points[-1].tkpt)
-            print('tkpt:', self.tkpt)
+            
             self.canvas.tag_lower(self.tkline)
 
     def ondrag(self, event) -> None:
@@ -172,8 +171,8 @@ class Triangle:
         for line in self.lines:
             self.canvas.delete(line.tkline)
         for point in self.points:
-            print('pointtkpt:', point.tkpt)
             self.canvas.delete(point.tkpt)
+            
         self.lines.clear()
         self.points.clear()
         self.tkpt = None
