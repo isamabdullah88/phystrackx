@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 from core import abspath
+from .togglebutton import ToggleButton
 
 
 class FPoint:
@@ -26,6 +27,12 @@ class FPoint:
             fill='magenta', outline='black', width=1, tags="points"
         )
         
+    def undraw(self):
+        """Undraws the point."""
+        if hasattr(self, 'cpt'):
+            self.canvas.delete(self.cpt)
+            del self.cpt
+        
 
 class TPoints:
     """
@@ -41,8 +48,9 @@ class TPoints:
         self.fidx = 0
         
         self.btnsize = 30
-        self.button = self.mkbutton("assets/bin.png", btnsize=self.btnsize)
-        self.button.configure(command=self.removept)
+        self.delbtn = self.mkbutton("assets/bin.png", self.removept, btnsize=self.btnsize)
+        # self.delbtn.configure(command=self.removept)
+        self.togglebtn = ToggleButton(self.canvas, commandon=self.toggleon, commandoff=self.toggleoff)
         
         self.currpt = []
         self.sltdpt = {"tidx": None, "fidx": None, "cpt": None}
@@ -50,7 +58,7 @@ class TPoints:
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
         
     
-    def mkbutton(self, imgpath, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """
@@ -58,7 +66,7 @@ class TPoints:
         
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
         button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img)
+                        command=command, image=img)
         button.image = img
         
         return button
@@ -76,7 +84,9 @@ class TPoints:
         
         for i, tpt in enumerate(tpts):
             for j, pt in enumerate(tpt):
-                self.tpts[i].append(FPoint(self.canvas, pt, fx, fy, self.button))
+                self.tpts[i].append(FPoint(self.canvas, pt, fx, fy, self.delbtn))
+                
+        self.togglebtn.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
                 
 
     def drawpoint(self, fidx):
@@ -122,7 +132,34 @@ class TPoints:
         for pt in sltdtpts:
             self.canvas.itemconfig(pt.cpt, fill='green', width=2)
             
-        self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+        self.delbtn.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+        
+    def toggleon(self):
+        """Toggle button ON action."""
+        self.delbtn.pack_forget()
+        
+        cid = self.canvas.find_withtag("current")[0]
+        
+        id, tidx, fidx = self.matchid(cid)
+
+        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+        
+        for pt in sltdtpts:
+            pt.draw()
+            
+    def toggleoff(self):
+        """Toggle button ON action."""
+        self.delbtn.pack_forget()
+        
+        cid = self.canvas.find_withtag("current")[0]
+        
+        id, tidx, fidx = self.matchid(cid)
+
+        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+        
+        for pt in sltdtpts:
+            pt.undraw()
+        
     
     def removept(self):
         # cid = self.canvas.find_withtag("current")[0]
@@ -136,12 +173,12 @@ class TPoints:
             self.canvas.delete(pt.cpt)
             
         # self.canvas.delete(self.sltdpt["cpt"])
-        self.button.place_forget()
+        self.delbtn.place_forget()
         self.tpts.pop(self.sltdpt["tidx"])
         
-        self.button.pack_forget()
+        self.delbtn.pack_forget()
         
     def clear(self):
         self.canvas.delete("points")
         self.tpts.clear()
-        self.button.place_forget()
+        self.delbtn.place_forget()
