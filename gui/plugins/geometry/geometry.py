@@ -3,7 +3,7 @@ from copy import deepcopy
 from tkinter import messagebox
 from customtkinter import CTkCanvas
 import math
-from ..utils import plcbutton
+from ..utils import mkbutton
 from .line import Line
 from .point import Point
 from .triangle import Triangle
@@ -39,11 +39,13 @@ class Geometry:
         
         
     def pack(self):
-        self.anglebtn = plcbutton(self.canvas, "assets/plugins/angle.png", self.cmpangle, 40)
-        self.distancebtn = plcbutton(self.canvas, "assets/plugins/distance.png", self.cmpdist, 40)
-        self.delbtn = plcbutton(self.canvas, "assets/bin.png", self.delline, 40)
+        self.anglebtn = mkbutton(self.canvas, "assets/plugins/angle.png", self.compute_angle, 40)
+        self.distancebtn = mkbutton(self.canvas, "assets/plugins/distance.png", self.compute_dist, 40)
+        self.delbtn = mkbutton(self.canvas, "assets/bin.png", self.deltriangle, 40)
         
-        self.applybtn = plcbutton(self.canvas, "assets/plugins/exit.png", self.onexit, 60)
+        self.applybtn = mkbutton(self.canvas, "assets/plugins/exit.png", self.onexit, 60)
+        
+        self.screenshot = mkbutton(self.canvas, "assets/plugins/screenshot.png", self.capturescreen, 40)
         
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<Motion>", self.ondrag)
@@ -54,7 +56,15 @@ class Geometry:
         for k,btn in self.btnlist.items():
             if btn != self.activebtn:
                 btn.configure(state="disabled")
-        
+    
+    def disp_buttons(self):
+        """Display buttons for angle, distance, delete and apply"""
+        if self.showbtn:
+            self.anglebtn.place(x=self.vwidth-80, y=self.vheight-260)
+            self.distancebtn.place(x=self.vwidth-80, y = self.vheight-200)
+            self.delbtn.place(x=self.vwidth-80, y=self.vheight-140)
+            self.applybtn.place(x=self.vwidth-90, y=self.vheight-80)
+            self.showbtn = False
         
     def onclick(self, event):
         currpt = event.x, event.y
@@ -63,7 +73,7 @@ class Geometry:
         
         if self.triangle.complete:
             self.triangles.append(self.triangle.copy())
-            meet, triangle = self.ptontriangles(Point(*currpt))
+            meet, triangle = self.is_pt_ontriangle(Point(*currpt))
             print('meet: ', meet)
             if meet:
                 triangle.select()
@@ -76,6 +86,9 @@ class Geometry:
         else:
             self.triangle.addpoint(Point(*currpt))
         print('after complete: ', self.triangle.complete)
+        
+        if self.triangle.complete:
+            self.disp_buttons()
         # if addpt['exist']:
         #     print('exists')
             # Check if a triangle is selected
@@ -154,7 +167,7 @@ class Geometry:
             self.delbtn.place(x=self.vwidth-80, y=self.vheight-140)
             self.applybtn.place(x=self.vwidth-90, y=self.vheight-80)
         
-    def ptontriangles(self, point: Point) -> bool:
+    def is_pt_ontriangle(self, point: Point) -> bool:
         """Check if point is near any triangle."""
         # Don't select if current triangle is not complete
         print('complete: ', self.triangle.complete)
@@ -210,75 +223,75 @@ class Geometry:
         self.sltlines.clear()
         self.selected = False
         
-    def cmpangle(self):
+    def compute_angle(self):
         """Computes angle between two lines via dot product of vectors"""
-        if len(self.sltlines) < 2:
-            messagebox.showerror("Error", "No lines selected. Please select two lines.")
+        
+        selected_triangles = [triangle for triangle in self.triangles if triangle.selected]
+        
+        if not selected_triangles:
+            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
             return
+        
+        for triangle in selected_triangles:
+            if triangle.selected:
+                triangle.draw_angles()
+                triangle.select()
             
-        line1, line2 = self.sltlines
+    #     line1, line2 = self.sltlines
         
-        a1, a2 = line1.line
-        b1, b2 = line2.line
+    #     a1, a2 = line1.line
+    #     b1, b2 = line2.line
 
-        v1 = (a2[0] - a1[0], a2[1] - a1[1])
-        v2 = (b2[0] - b1[0], b2[1] - b1[1])
+    #     v1 = (a2[0] - a1[0], a2[1] - a1[1])
+    #     v2 = (b2[0] - b1[0], b2[1] - b1[1])
 
-        dot = v1[0]*v2[0] + v1[1]*v2[1]
-        mag1 = math.hypot(*v1)
-        mag2 = math.hypot(*v2)
+    #     dot = v1[0]*v2[0] + v1[1]*v2[1]
+    #     mag1 = math.hypot(*v1)
+    #     mag2 = math.hypot(*v2)
 
-        if mag1 == 0 or mag2 == 0:
-            angle_deg = 0
-        else:
-            cos_theta = dot / (mag1 * mag2)
-            cos_theta = max(min(cos_theta, 1), -1)
-            angle_rad = math.acos(cos_theta)
-            angle_deg = math.degrees(angle_rad)
+    #     if mag1 == 0 or mag2 == 0:
+    #         angle_deg = 0
+    #     else:
+    #         cos_theta = dot / (mag1 * mag2)
+    #         cos_theta = max(min(cos_theta, 1), -1)
+    #         angle_rad = math.acos(cos_theta)
+    #         angle_deg = math.degrees(angle_rad)
 
-        # Draw angle text between the two lines
-        mid_x = (a2[0] + b2[0]) // 2
-        mid_y = (a2[1] + b2[1]) // 2
+    #     # Draw angle text between the two lines
+    #     mid_x = (a2[0] + b2[0]) // 2
+    #     mid_y = (a2[1] + b2[1]) // 2
         
-        tktext = self.canvas.create_text(mid_x, mid_y, text=f"{angle_deg:.2f}°", font=("Arial", 14), fill="#d4f3db")
-        line1.tktext = tktext
+    #     tktext = self.canvas.create_text(mid_x, mid_y, text=f"{angle_deg:.2f}°", font=("Arial", 14), fill="#d4f3db")
+    #     line1.tktext = tktext
         
-        # Clear
-        self.clear_sltlines()
+    #     # Clear
+    #     self.clear_sltlines()
         
         
-    def cmpdist(self):
-        """Computes distance of the selected line"""
-        if len(self.sltlines) != 1:
-            messagebox.showerror("Error", "Please select one line to get the distance.")
+    def compute_dist(self):
+        """Computes distance of the selected triangles"""
+        selected_triangles = [triangle for triangle in self.triangles if triangle.selected]
+        
+        if not selected_triangles:
+            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
             return
         
-        line = self.sltlines[0].line
-        p1, p2 = line
+        for triangle in selected_triangles:
+            if triangle.selected:
+                triangle.select()
+                triangle.label_lengths()
         
-        dist = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
-        mid_x = (p1[0] + p2[0]) // 2
-        mid_y = (p1[1] + p2[1]) // 2
+    def deltriangle(self):
+        """Deletes selected triangles"""
+        selected_triangles = [triangle for triangle in self.triangles if triangle.selected]
         
-        tktext = self.canvas.create_text(mid_x, mid_y, text=f"{dist:.2f}", font=("Arial", 14), fill="#d4f3db")
-        self.sltlines[0].tktext = tktext
-    
-        # Clear
-        self.clear_sltlines()
-        
-    def delline(self):
-        """Deletes selected line"""
-        if len(self.sltlines) == 0:
-            messagebox.showerror("Error", "No line selected to delete.")
+        if not selected_triangles:
+            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
             return
         
-        # Delete and disappear
-        self.canvas.delete(self.sltlines[-1].tkline)
-        # Delete text
-        if self.sltlines[-1].tktext is not None:
-            self.canvas.delete(self.sltlines[-1].tktext)
-        line = self.sltlines.pop(-1)
-        self.lines.remove(line)
+        for triangle in selected_triangles:
+            triangle.delete()
+            self.triangles.remove(triangle)
         
         
     def onexit(self):

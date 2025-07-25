@@ -9,6 +9,11 @@ class Point:
     """Point representation for geometry plugin in PhysTrackX."""
     x: float
     y: float
+    tkpt: int = None
+    
+    def settk(self, tkpt: int) -> None:
+        """Set the tkinter ID for this point."""
+        self.tkpt = tkpt
 
     def distance(self, point: Self) -> float:
         """Calculate Euclidean distance to another point."""

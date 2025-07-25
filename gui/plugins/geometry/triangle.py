@@ -54,7 +54,7 @@ class Triangle:
             Triangle: A new triangle instance with copied points and lines.
         """
         triangle = Triangle(self.canvas)
-        triangle.points = [Point(p.x, p.y) for p in self.points]
+        triangle.points = [Point(p.x, p.y, p.tkpt) for p in self.points]
         triangle.lines = [Line(line.tkline, line.ptstart, line.ptend) for line in self.lines]
         triangle.tkpt = self.tkpt
         triangle.tkline = self.tkline
@@ -79,9 +79,6 @@ class Triangle:
                 self.tkline = None
                 self.complete = True
 
-                drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
-                drawangles.draw(self.canvas, color="#27e586")
-                self.label_lengths()
             return
 
         elif self.numpts < 3:
@@ -91,15 +88,19 @@ class Triangle:
             if len(self.points) > 1:
                 self.lines.append(Line(self.tkline, self.points[-2], self.points[-1]))
 
+            self.tkline = self.canvas.create_line(
+                point.x, point.y, point.x, point.y,
+                fill="#3cd1df", width=2
+            )
+            
             self.tkpt = self.canvas.create_oval(
                 point.x - 5, point.y - 5,
                 point.x + 5, point.y + 5,
                 fill="#d82995"
             )
-            self.tkline = self.canvas.create_line(
-                point.x, point.y, point.x, point.y,
-                fill="#3cd1df", width=2
-            )
+            self.points[-1].settk(self.tkpt)
+            print('pointtkpt (add):', self.points[-1].tkpt)
+            print('tkpt:', self.tkpt)
             self.canvas.tag_lower(self.tkline)
 
     def ondrag(self, event) -> None:
@@ -149,7 +150,7 @@ class Triangle:
         self.selected = not self.selected
         for line in self.lines:
             if self.selected:
-                self.canvas.itemconfig(line.tkline, fill="#7f5fea", width=3)
+                self.canvas.itemconfig(line.tkline, fill="#7f5fea", width=4)
             else:
                 self.canvas.itemconfig(line.tkline, fill="#3cd1df", width=2)
 
@@ -159,3 +160,24 @@ class Triangle:
         """
         for line in self.lines:
             line.label_length(self.canvas, color="#CCFFAE")
+            
+    def draw_angles(self) -> None:
+            drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
+            drawangles.draw(self.canvas, color="#27e586")
+            
+    def delete(self) -> None:
+        """
+        Remove the triangle from the canvas and clear its data.
+        """
+        for line in self.lines:
+            self.canvas.delete(line.tkline)
+        for point in self.points:
+            print('pointtkpt:', point.tkpt)
+            self.canvas.delete(point.tkpt)
+        self.lines.clear()
+        self.points.clear()
+        self.tkpt = None
+        self.tkline = None
+        self.numpts = 0
+        self.selected = False
+        self.complete = False
