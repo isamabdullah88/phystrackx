@@ -140,7 +140,7 @@ class Triangle:
         """
         if len(self.lines) < 3:
             return False
-        return any(line.is_point_near_line(point) for line in self.lines)
+        return any(line.is_pt_online(point) for line in self.lines)
 
     def select(self) -> None:
         """
