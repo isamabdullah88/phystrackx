@@ -31,9 +31,9 @@ class ScaleRuler:
             if btn != self.activebtn:
                 btn.configure(state="disabled")
         
-        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         
-    def plcbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """

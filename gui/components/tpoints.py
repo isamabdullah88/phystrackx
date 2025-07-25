@@ -41,7 +41,7 @@ class TPoints:
         self.fidx = 0
         
         self.btnsize = 30
-        self.button = self.plcbutton("assets/bin.png", btnsize=self.btnsize)
+        self.button = self.mkbutton("assets/bin.png", btnsize=self.btnsize)
         self.button.configure(command=self.removept)
         
         self.currpt = []
@@ -50,7 +50,7 @@ class TPoints:
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
         
     
-    def plcbutton(self, imgpath, btnsize=30):
+    def mkbutton(self, imgpath, btnsize=30):
         """
         Creates a button with an image and a command.
         """
