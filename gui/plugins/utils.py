@@ -3,7 +3,7 @@ import customtkinter as ctk
 from PIL import Image
 from core import abspath
 
-def plcbutton(canvas, imgpath, command, btnsize=30):
+def mkbutton(canvas, imgpath, command, btnsize=30):
     """
     Creates a button with an image and a command.
     """

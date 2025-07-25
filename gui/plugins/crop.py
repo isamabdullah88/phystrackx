@@ -25,8 +25,8 @@ class Crop:
         self.crprect = None
         
         self.btnsize = 30
-        self.applybtn = self.plcbutton("assets/apply.png", self.apply, 80)
-        self.button = self.plcbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.applybtn = self.mkbutton("assets/apply.png", self.apply, 80)
+        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
     def set(self, fwidth, fheight):
         self.fwidth = fwidth
@@ -39,7 +39,7 @@ class Crop:
         self.crpx = self.fx
         self.crpy = self.fy
         
-    def plcbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """

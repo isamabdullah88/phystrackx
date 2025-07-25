@@ -19,11 +19,11 @@ class Circle:
         
         self.toggle = toggle
         self.btnsize = 30
-        self.button = self.plcbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
-        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         
-    def plcbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """

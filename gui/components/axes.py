@@ -16,7 +16,7 @@ class Axes:
         self.ox = 0
         self.oy = self.vheight
         
-        self.applybtn = self.plcbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         
         self.btnlist = btnlist
         self.activebtn = activebtn
@@ -174,7 +174,7 @@ class Axes:
             btn.configure(state="normal")
         
     
-    def plcbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """

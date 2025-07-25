@@ -22,7 +22,7 @@ class Filters:
         self.slider = None
         
         self.btnsize = 30
-        # self.applybtn = self.plcbutton("assets/apply.png", self.onapplybtn, 80)
+        # self.applybtn = self.mkbutton("assets/apply.png", self.onapplybtn, 80)
         
     def spawnfilter(self):
         """
@@ -92,7 +92,7 @@ class Filters:
         return fltframe
         
     
-    def plcbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, btnsize=30):
         """
         Creates a button with an image and a command.
         """
