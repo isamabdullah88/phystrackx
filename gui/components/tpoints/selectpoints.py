@@ -1,7 +1,9 @@
 
+import tkinter as tk
+from .fpoint import FPoint
 
 class SelectPoints:
-    def __init__(self, trsize):
+    def __init__(self, trsize:int):
         self.selectedpoints = []
         self.tidx = None
         self.fidx = None
@@ -9,8 +11,11 @@ class SelectPoints:
         
         self.trsize = trsize
         self.selected = False
+        self.toggled = True
         
-    def select(self, canvas, points, tidx, fidx):
+        self.currpts = []  # To store currently selected points for toggling
+        
+    def select(self, canvas: tk.Canvas, points: list[FPoint], tidx:int, fidx:int):
         """
         Highlight the selected points on the canvas.
 
@@ -30,3 +35,19 @@ class SelectPoints:
             for point in self.selectedpoints:
                 point.select(canvas)
             self.selected = True
+            
+    def toggleon(self, canvas:tk.Canvas, points:list[FPoint]):
+        """Show all frames' trail of points."""
+        for i,tpts in enumerate(points):
+            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+                pt.draw(canvas)
+                self.currpts.append([pt.cpt, i, self.fidx])
+                
+        self.toggled = True
+        
+    def toggleoff(self, canvas:tk.Canvas, points:list[FPoint]):
+        """Hide all frames' trail of points."""
+        for tpts in points:
+            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+                pt.undraw(canvas)
+        self.toggled = False

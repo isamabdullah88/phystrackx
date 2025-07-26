@@ -69,11 +69,12 @@ class TPoints:
     def drawpoints(self, fidx):
         """Draw points up to a given frame index."""
         self.fidx = fidx
-        if len(self.tpts) < 1 or not self.toggled:
+        self.selectpoints.fidx = fidx
+        if len(self.tpts) < 1 or not self.selectpoints.toggled:
             return
 
         self.undrawpoints()
-        self.currpts.clear()
+        self.selectpoints.currpts.clear()
 
         for i, tpts in enumerate(self.tpts):
             for idx in range(max(self.fidx - self.trsize, 0), self.fidx + 1):
@@ -81,11 +82,11 @@ class TPoints:
                     continue
                 tpt = tpts[idx]
                 tpt.draw(self.canvas)
-                self.currpts.append([tpt.cpt, i, self.fidx])
+                self.selectpoints.currpts.append([tpt.cpt, i, self.fidx])
 
     def matchid(self, cid):
         """Find matching tracked point by canvas ID."""
-        for item in self.currpts:
+        for item in self.selectpoints.currpts:
             if cid == item[0]:
                 return item
         return None
@@ -120,19 +121,20 @@ class TPoints:
 
     def toggleon(self):
         """Show current frame's trail of points."""
-        for i,tpts in enumerate(self.tpts):
-            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
-                pt.draw(self.canvas)
-                self.currpts.append([pt.cpt, i, self.fidx])
-        self.toggled = True
+        self.selectpoints.toggleon(self.canvas, self.tpts)
+        # for i,tpts in enumerate(self.tpts):
+        #     for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+        #         pt.draw(self.canvas)
+        #         self.currpts.append([pt.cpt, i, self.fidx])
+        # self.toggled = True
 
     def toggleoff(self):
         """Hide current frame's trail of points."""
-        for tpts in self.tpts:
-            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
-                pt.undraw(self.canvas)
+        # for tpts in self.tpts:
+        #     for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+        #         pt.undraw(self.canvas)
+        self.selectpoints.toggleoff(self.canvas, self.tpts)
         self.delbtn.place_forget()
-        self.toggled = False
 
     def removept(self):
         """Remove selected trajectory from canvas and list."""
@@ -140,10 +142,15 @@ class TPoints:
         sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
 
         for pt in sltdtpts:
-            self.canvas.delete(pt.cpt)
+            # self.canvas.delete(pt.cpt)
+            pt.undraw(self.canvas)
 
         self.tpts.pop(tidx)
         self.delbtn.place_forget()
+        
+        if len(self.tpts) == 0:
+            self.togglebtn.place_forget()
+            return
 
     def clear(self):
         """Clear all tracked points."""
