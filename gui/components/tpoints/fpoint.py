@@ -12,6 +12,8 @@ Typical usage:
     point = FPoint([100, 200], fx=5, fy=10, button=delete_button)
     point.draw(canvas)
     point.undraw(canvas)
+    
+Author: [Isam Balghari]
 """
 
 class FPoint:
