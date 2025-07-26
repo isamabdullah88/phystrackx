@@ -10,17 +10,17 @@ class ToggleButton(ctk.CTkButton):
         self.imgoff = ctk.CTkImage(dark_image=Image.open("assets/switch-off.png"), size=(50, 20))
         self.commandon = commandon
         self.commandoff = commandoff
-        self.is_on = False
+        self.ison = True
 
-        self.configure(image=self.imgoff, text="", width=width, height=height, command=self.toggle)
+        self.configure(image=self.imgon, text="", width=width, height=height, command=self.toggle)
 
     def toggle(self):
-        self.is_on = not self.is_on
-        self.configure(image=self.imgon if self.is_on else self.imgoff)
+        self.ison = not self.ison
+        self.configure(image=self.imgon if self.ison else self.imgoff)
         
-        if self.is_on and self.commandon:
+        if self.ison and self.commandon:
             self.commandon()
-        elif not self.is_on and self.commandoff:
+        elif not self.ison and self.commandoff:
             self.commandoff()
 
 
