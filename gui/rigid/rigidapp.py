@@ -114,7 +114,7 @@ class RigidApp(App):
         self.videoapp.showframe()
         
         # draw tracked points
-        self.tpoints.drawpoint(self.seekbar.idx)
+        self.tpoints.drawpoints(self.seekbar.idx)
 
     def scale(self):
         self.scruler.pack()

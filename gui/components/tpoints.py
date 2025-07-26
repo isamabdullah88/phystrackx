@@ -6,32 +6,32 @@ from .togglebutton import ToggleButton
 
 class FPoint:
     """Class to manage single point clickable"""
-    def __init__(self, canvas, pt, fx, fy, button, disable=False):
-        self.canvas = canvas
+    def __init__(self, pt, fx, fy, button):
+        # self.canvas = canvas
         self.x, self.y = pt.copy()
         self.x += fx
         self.y += fy
         
-        self.disable = disable
         self.button = button
         
-        self.btnsize = 30
+        self.cpt = None
         
-    def draw(self):
+    def draw(self, canvas):
         
-        if self.disable:
+        if self.cpt is not None:
             return
         
-        self.cpt = self.canvas.create_oval(
+        self.cpt = canvas.create_oval(
             self.x - 6, self.y - 6, self.x + 6, self.y + 6,
             fill='magenta', outline='black', width=1, tags="points"
         )
         
-    def undraw(self):
+    def undraw(self, canvas):
         """Undraws the point."""
-        if hasattr(self, 'cpt'):
-            self.canvas.delete(self.cpt)
-            del self.cpt
+        if self.cpt is not None:
+            print('undrawing point: ', self.cpt)
+            canvas.delete(self.cpt)
+            self.cpt = None
         
 
 class TPoints:
@@ -50,6 +50,7 @@ class TPoints:
         self.btnsize = 30
         self.delbtn = self.mkbutton("assets/bin.png", self.removept, btnsize=self.btnsize)
         # self.delbtn.configure(command=self.removept)
+        self.toggled = True
         self.togglebtn = ToggleButton(self.canvas, commandon=self.toggleon, commandoff=self.toggleoff)
         
         self.currpt = []
@@ -84,18 +85,27 @@ class TPoints:
         
         for i, tpt in enumerate(tpts):
             for j, pt in enumerate(tpt):
-                self.tpts[i].append(FPoint(self.canvas, pt, fx, fy, self.delbtn))
+                self.tpts[i].append(FPoint(pt, fx, fy, self.delbtn))
                 
-        self.togglebtn.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+        self.togglebtn.place(x=self.vwidth-50-30, y=self.btnsize + 60, anchor="nw")
                 
+    def undrawpoints(self):
+        """Undraws all points."""
+        for tpts in self.tpts:
+            for pt in tpts:
+                pt.undraw(self.canvas)
+        
 
-    def drawpoint(self, fidx):
+    def drawpoints(self, fidx):
         """Draws a point by frame index."""
-        if len(self.tpts) < 1:
+        self.fidx = fidx
+        if (len(self.tpts) < 1) or (not self.toggled):
             return
         
-        self.fidx = fidx
-        self.canvas.delete("points")
+        # Undraw points
+        self.undrawpoints()
+        
+        print('Drawing points at frame index: ', fidx)
         for i,tpts in enumerate(self.tpts):
             
             # Draw previous multiple points
@@ -104,7 +114,7 @@ class TPoints:
                     continue
             
                 tpt = tpts[idx]
-                tpt.draw()
+                tpt.draw(self.canvas)
             
                 self.currpt.append([tpt.cpt, i, self.fidx])
             
@@ -119,10 +129,10 @@ class TPoints:
 
     def onclick(self, event):
         cid = self.canvas.find_withtag("current")[0]
+        print('cid: ', cid)
         
         id, tidx, fidx = self.matchid(cid)
         
-        print('fidx: ', fidx)
         self.sltdpt["cpt"] = cid
         self.sltdpt["tidx"] = tidx
         self.sltdpt["fidx"] = fidx
@@ -136,29 +146,33 @@ class TPoints:
         
     def toggleon(self):
         """Toggle button ON action."""
-        self.delbtn.pack_forget()
+        print('tpts: ', len(self.tpts))
         
-        cid = self.canvas.find_withtag("current")[0]
-        
-        id, tidx, fidx = self.matchid(cid)
-
-        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
-        
-        for pt in sltdtpts:
-            pt.draw()
+        print('fidx [ON]: ', self.fidx)
+        for tidx,_ in enumerate(self.tpts):
+            currpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+            print('currpts[ON]: ', len(currpts))
+            for pt in currpts:
+                pt.draw(self.canvas)
+                
+        self.toggled = True
             
     def toggleoff(self):
         """Toggle button ON action."""
+        print('tpts: ', len(self.tpts))
         self.delbtn.pack_forget()
         
-        cid = self.canvas.find_withtag("current")[0]
-        
-        id, tidx, fidx = self.matchid(cid)
-
-        sltdtpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
-        
-        for pt in sltdtpts:
-            pt.undraw()
+        print('fidx [OFF]: ', self.fidx)
+        for tidx,tpts in enumerate(self.tpts):
+            currpts = self.tpts[tidx][max(self.fidx-self.trsize, 0):self.fidx+1]
+            # print('currpts: ', len(currpts))
+            for pt in currpts:
+                # pt.undraw(self.canvas)
+                print('cpt: ', pt.cpt)
+                # self.canvas.delete(pt.cpt)
+                pt.undraw(self.canvas)
+                
+        self.toggled = False
         
     
     def removept(self):
@@ -182,3 +196,36 @@ class TPoints:
         self.canvas.delete("points")
         self.tpts.clear()
         self.delbtn.place_forget()
+        
+
+import customtkinter as ctk
+import random
+
+def main():
+    ctk.set_appearance_mode("light")
+    root = ctk.CTk()
+    root.geometry("800x600")
+    root.title("TPoints Demo")
+
+    canvas = ctk.CTkCanvas(root, width=800, height=600, bg="white")
+    canvas.pack(fill="both", expand=True)
+
+    # Instantiate TPoints
+    tp = TPoints(canvas, vwidth=800, vheight=600)
+
+    # Generate dummy tracked points (e.g. 2 trajectories with 5 points each)
+    tpts = []
+    for _ in range(2):  # 2 objects
+        track = []
+        x, y = random.randint(100, 300), random.randint(100, 300)
+        for i in range(5):  # 5 frames
+            track.append([x + i * 10, y + i * 5])
+        tpts.append(track)
+
+    tp.addpoints(tpts, fx=0, fy=0)
+    tp.drawpoints(fidx=4)  # Draw up to frame 4
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
