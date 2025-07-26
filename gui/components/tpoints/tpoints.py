@@ -10,6 +10,7 @@ from PIL import Image
 from core import abspath
 from ..togglebutton import ToggleButton
 from .fpoint import FPoint
+from .selectpoints import SelectPoints
 
 class TPoints:
     """
@@ -28,10 +29,13 @@ class TPoints:
         self.btnsize = 30
         self.toggled = True
 
-        self.sltdpt = {"tidx": None, "fidx": None, "cpt": None}
+        # self.sltdpt = {"tidx": None, "fidx": None, "cpt": None}
+        # self.sltdpt = {}
 
         self.delbtn = self._mkbutton("assets/bin.png", self.removept)
         self.togglebtn = ToggleButton(canvas, commandon=self.toggleon, commandoff=self.toggleoff)
+        
+        self.selectpoints = SelectPoints(trsize=self.trsize)
 
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
 
@@ -94,13 +98,25 @@ class TPoints:
             return
 
         _, tidx, fidx = match
-        self.sltdpt.update({"cpt": cid, "tidx": tidx, "fidx": fidx})
+        
+        self.selectpoints.select(self.canvas, self.tpts, tidx, fidx)
+        # if self.sltdpt.get("cpt") is not None:
+        #     # Undraw previously selected point
+        #     sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
+        #     for pt in sltdtpts:
+        #         pt.deselect(self.canvas)
+        #         self.sltdpt = {"tidx": None, "fidx": None, "cpt": None}
+        #     return
 
-        sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
-        for pt in sltdtpts:
-            self.canvas.itemconfig(pt.cpt, fill='green', width=2)
+        # self.sltdpt.update({"cpt": cid, "tidx": tidx, "fidx": fidx})
 
-        self.delbtn.place(x=self.vwidth / 2 - self.btnsize / 2, y=self.vheight - self.btnsize - 20, anchor="nw")
+        # sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
+        # for pt in sltdtpts:
+        #     pt.select(self.canvas)
+        if self.selectpoints.selected:
+            self.delbtn.place(x=self.vwidth / 2 - self.btnsize / 2, y=self.vheight - self.btnsize - 20, anchor="nw")
+        else:
+            self.delbtn.place_forget()
 
     def toggleon(self):
         """Show current frame's trail of points."""
@@ -120,7 +136,7 @@ class TPoints:
 
     def removept(self):
         """Remove selected trajectory from canvas and list."""
-        tidx = self.sltdpt["tidx"]
+        tidx = self.selectpoints.tidx
         sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
 
         for pt in sltdtpts:

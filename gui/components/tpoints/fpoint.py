@@ -66,3 +66,23 @@ class FPoint:
         if self.cpt is not None:
             canvas.delete(self.cpt)
             self.cpt = None
+            
+    def select(self, canvas):
+        """
+        Highlight the point on the canvas by changing its color.
+
+        Args:
+            canvas (CTkCanvas): The canvas to highlight on.
+        """
+        if self.cpt is not None:
+            canvas.itemconfig(self.cpt, fill='green', width=2)
+            
+    def deselect(self, canvas):
+        """
+        Remove the highlight from the point on the canvas.
+
+        Args:
+            canvas (CTkCanvas): The canvas to deselect on.
+        """
+        if self.cpt is not None:
+            canvas.itemconfig(self.cpt, fill='magenta', width=1)
