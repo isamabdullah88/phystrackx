@@ -1,4 +1,4 @@
-import customtkinter 
+import customtkinter
 
 from gui.menu import MenuScreen
 from core import setup_logging
