@@ -4,7 +4,7 @@ import customtkinter as ctk
 from PIL import Image
 from core import abspath
 from .bar import Bar
-from .viewskb import ViewSeekBar
+from .viewseekbar import ViewSeekBar
 from .seek import Seek
 
 

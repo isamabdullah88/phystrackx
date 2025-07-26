@@ -4,8 +4,8 @@ from tkinter import messagebox
 
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar.trimskb import TrimSeekBar
-from gui.components.seekbar.viewskb import ViewSeekBar
+from gui.components.seekbar import TrimSeekBar
+from gui.components.seekbar import ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect

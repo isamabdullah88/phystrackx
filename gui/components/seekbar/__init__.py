@@ -1,1 +1,2 @@
-from .trimskb import TrimSeekBar
+from .trimseekbar import TrimSeekBar
+from .viewseekbar import ViewSeekBar
