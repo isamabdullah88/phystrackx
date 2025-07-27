@@ -1,18 +1,25 @@
+"""
+trimseekbar.py
 
+This module defines the TrimSeekBar class for video trimming using two draggable bars
+and dynamic seek regions.
+
+Author: Isam Balghari
+"""
+
+import tkinter as tk
 from typing import Optional, Callable
 from math import ceil
-import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
+from core import abspath
 from .seek import Seek
 from .bar import Bar
-from core import abspath
 
 
 class TrimSeekBar:
     """
-    Seekbar widget that allows trimming by using two draggable bars (left and right)
-    and dynamically drawn seek regions.
+    Seekbar widget with two draggable bars to allow video trimming.
     """
 
     def __init__(
@@ -24,70 +31,79 @@ class TrimSeekBar:
         callback: Optional[Callable] = None
     ) -> None:
         """
-        Initialize the ViewSeekBar.
+        Initialize the TrimSeekBar.
 
         Args:
-            frame: Parent Tkinter frame.
-            width: Width of the seekbar canvas.
-            height: Height of the seekbar canvas.
-            fcount: Total number of frames.
-            callback: Callback function on bar movement.
+            frame (tk.Frame): Parent frame.
+            width (int): Canvas width.
+            height (int): Canvas height.
+            fcount (int): Total number of frames.
+            callback (Optional[Callable]): Callback on bar movement.
         """
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
         self.canvas.pack()
 
-        self.btnsize = 50
-        self.mintrim = 50
-        self.fcount = fcount
-        self.idx = 0
-        self.padx = 10
-        self.width = width - self.btnsize - 40
-        self.height = height
-        self.callback = callback
+        self.btnsize: int = 50
+        self.mintrim: int = 50
+        self.fcount: int = fcount
+        self.idx: int = 0
+        self.xstart: int = 0
+        self.xend: int = 100
+        self.padx: int = 10
+        self.width: int = width - self.btnsize - 40
+        self.height: int = height
+        self.callback: Optional[Callable] = callback
 
         self.fixedseek: Optional[Seek] = None
         self.varseek: Optional[Seek] = None
         self.leftbar: Optional[Bar] = None
         self.rightbar: Optional[Bar] = None
-        
-        self.disable = False
-        
+        self.applybtn: ctk.CTkButton = None
+
+        self.disable: bool = False
+        self.trimvideo: Optional[Callable] = None
+        self.loadvideo: Optional[Callable] = None
+
     @property
-    def startidx(self):
-        return self.leftbar.idx
-    
+    def startidx(self) -> int:
+        """Return index of the left bar."""
+        return self.leftbar.idx if self.leftbar else 0
+
     @property
-    def endidx(self):
-        return self.rightbar.idx
+    def endidx(self) -> int:
+        """Return index of the right bar."""
+        return self.rightbar.idx if self.rightbar else self.fcount
 
     def setparams(self) -> None:
-        """Set internal layout parameters based on current frame count."""
+        """
+        Set internal layout parameters based on frame count.
+        """
         self.idx = ceil(0.01 * self.fcount)
         self.xstart = self.padx
         self.xend = self.width - self.padx
 
-        if self.leftbar is not None:
+        if self.leftbar:
             self.leftbar.setcount(self.fcount)
-            
-        if self.rightbar is not None:
+        if self.rightbar:
             self.rightbar.setcount(self.fcount)
 
     def clear(self) -> None:
-        """Clear bar from canvas."""
-        if self.leftbar is not None:
+        """
+        Clear all canvas elements related to trimming.
+        """
+        if self.leftbar:
             self.leftbar.clear()
-            
-        if self.fixedseek is not None:
+        if self.fixedseek:
             self.fixedseek.clear()
-            
-        if self.rightbar is not None:
+        if self.rightbar:
             self.rightbar.clear()
-            
-        if self.varseek is not None:
+        if self.varseek:
             self.varseek.clear()
 
     def pack(self) -> None:
-        """Render the seek and bar on the canvas."""
+        """
+        Render seek regions and bars on the canvas.
+        """
         self.clear()
         self.setparams()
 
@@ -99,7 +115,7 @@ class TrimSeekBar:
             color="#9c97d6"
         )
         self.fixedseek.pack()
-        
+
         self.varseek = Seek(
             self.canvas,
             self.xstart + self.padx,
@@ -119,7 +135,7 @@ class TrimSeekBar:
             callback=self.callback
         )
         self.leftbar.pack()
-        
+
         self.rightbar = Bar(
             self.canvas,
             self.xend - self.padx,
@@ -130,12 +146,12 @@ class TrimSeekBar:
             callback=self.callback
         )
         self.rightbar.pack()
-        
+
         self.canvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
 
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
-        
+
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
         self.applybtn.place(
             x=self.width + 10,
@@ -143,27 +159,53 @@ class TrimSeekBar:
         )
 
     def set(self, fcount: int) -> None:
-        """Update frame count and refresh internal parameters."""
+        """
+        Update frame count and layout.
+
+        Args:
+            fcount (int): New total frame count.
+        """
         self.fcount = fcount
         self.setparams()
-    
-    def settrim(self, trimvideo, loadvideo) -> None:
-        """Assign trimming and reload callback functions."""
+
+    def settrim(self, trimvideo: Callable, loadvideo: Callable) -> None:
+        """
+        Set external trimming and loading callbacks.
+
+        Args:
+            trimvideo (Callable): Function to perform trimming.
+            loadvideo (Callable): Function to reload video.
+        """
         self.trimvideo = trimvideo
         self.loadvideo = loadvideo
 
-    def onclick(self, event) -> None:
-        """Handle click on left or right bar."""
-        self.leftbar.onclick(event)
-        self.rightbar.onclick(event)
+    def onclick(self, event: tk.Event) -> None:
+        """
+        Handle mouse click on bars.
 
-        if self.leftbar.clicked or self.rightbar.clicked:
-            self.callback()
+        Args:
+            event (tk.Event): Tkinter event object.
+        """
+        if self.leftbar:
+            self.leftbar.onclick(event)
+        if self.rightbar:
+            self.rightbar.onclick(event)
 
-    def ondrag(self, event) -> None:
-        """Handle drag motion and update seek visuals."""
-        # self.startidx = self.leftbar.idx
-        # self.endidx = self.rightbar.idx
+        if (self.leftbar and self.leftbar.clicked) or (
+            self.rightbar and self.rightbar.clicked
+        ):
+            if self.callback:
+                self.callback()
+
+    def ondrag(self, event: tk.Event) -> None:
+        """
+        Handle drag motion and update bar and seek positions.
+
+        Args:
+            event (tk.Event): Tkinter event object.
+        """
+        if not self.leftbar or not self.rightbar or not self.fixedseek or not self.varseek:
+            return
 
         self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
         self.varseek.draw(self.leftbar.x, self.rightbar.x)
@@ -180,51 +222,67 @@ class TrimSeekBar:
             self.idx = self.endidx
 
     def onapply(self) -> None:
-        """Apply the selected trim and optionally reload video."""
+        """
+        Apply trimming logic and reload video.
+        """
         self.applybtn.place_forget()
-        
         self.disable = True
-        print('disable: ', self.disable)
+        print("disable:", self.disable)
 
-        if self.trimvideo is not None:
+        if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)
 
-        if self.loadvideo is not None:
+        if self.loadvideo:
             self.set(self.endidx - self.startidx)
             self.loadvideo("")
-            
+
         self.clear()
         self.canvas.destroy()
-        
-    def mkbutton(self, imgpath, command, btnsize=30):
+
+    def mkbutton(
+        self,
+        imgpath: str,
+        command: Callable,
+        btnsize: int = 30
+    ) -> ctk.CTkButton:
         """
-        Create an image button for the seekbar.
+        Create a CTk image button on the canvas.
 
         Args:
-            imgpath: Path to the image file.
-            command: Function to execute on click.
-            btnsize: Button width and height.
+            imgpath (str): Path to image asset.
+            command (Callable): Click event handler.
+            btnsize (int): Size of button.
+
+        Returns:
+            ctk.CTkButton: The created button widget.
         """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        img = Image.open(abspath(imgpath)).resize(
+            (btnsize, btnsize),
+            Image.Resampling.LANCZOS
+        )
+        ctkimg = ctk.CTkImage(
+            light_image=img,
+            dark_image=img,
+            size=(btnsize, btnsize)
+        )
         button = ctk.CTkButton(
             self.canvas,
             text="",
             width=btnsize,
             height=btnsize,
-            image=img,
+            image=ctkimg,
             command=command
         )
-        button.image = img  # prevent garbage collection
+        button.image = ctkimg  # prevent garbage collection
         return button
 
 
-# --- Optional minimal test app ---
-
-
-
 class App(tk.Tk):
-    def __init__(self):
+    """
+    Minimal test application for TrimSeekBar.
+    """
+
+    def __init__(self) -> None:
         super().__init__()
         self.geometry("800x500")
         self.title("Video Editor Cut Range")
@@ -232,17 +290,39 @@ class App(tk.Tk):
         self.frame = tk.Frame(self, width=700, height=300)
         self.frame.pack(fill="both", expand=True)
 
-        self.seekbar = TrimSeekBar(self.frame, 700, 100, fcount=100, callback=self.callback)
+        self.seekbar = TrimSeekBar(
+            self.frame,
+            width=700,
+            height=100,
+            fcount=100,
+            callback=self.callback
+        )
         self.seekbar.pack()
         self.seekbar.settrim(self.trimvideo, self.loadvideo)
 
-    def callback(self):
-        print('callback called: ' + str(time.time()))
-        
-    def trimvideo(self, arg1, arg2):
-        print("Trim")
-        
-    def loadvideo(self, arg1):
+    def callback(self) -> None:
+        """
+        Sample callback for testing bar movement.
+        """
+        print("callback called:", time.time())
+
+    def trimvideo(self, start: int, end: int) -> None:
+        """
+        Sample trimming function.
+
+        Args:
+            start (int): Start frame.
+            end (int): End frame.
+        """
+        print("Trim", start, end)
+
+    def loadvideo(self, _: str) -> None:
+        """
+        Sample video reload function.
+
+        Args:
+            _ (str): Placeholder argument.
+        """
         print("Load")
 
 
