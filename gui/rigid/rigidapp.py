@@ -4,8 +4,8 @@ from tkinter import messagebox
 
 from gui.app import App
 from gui.components.spinner import Spinner
-from gui.components.seekbar.trimskb import TrimSeekBar
-from gui.components.seekbar.viewskb import ViewSeekBar
+from gui.components.seekbar import TrimSeekBar
+from gui.components.seekbar import ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
@@ -59,7 +59,7 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
         
         # Main toolbar ----------------------------------------------------------------------------
-        self.seekbar = TrimSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, callback=self.updateframe)
+        self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
             
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
@@ -76,7 +76,7 @@ class RigidApp(App):
         # TODO: Make this handle more gracefully
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
         
-        self.seekbar.settrim(trimvideo=self.videoapp.trimvideo, loadvideo=self.videoapp.loadvideo)
+        self.seekbar.settrim(trimvideo=self.videoapp.trimvideo, loadvideo=self.loadvideo)
 
     def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
@@ -94,7 +94,16 @@ class RigidApp(App):
 
         self.crop.set(self.fwidth, self.fheight)
         
-        self.seekbar.set(self.videoapp.fcount)
+        print('seekbar.disable: ', self.seekbar.disable)
+        if self.seekbar.disable:
+            self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+            print('fcount: ', self.videoapp.fcount)
+            self.seekbar.set(self.videoapp.fcount)
+            self.seekbar.pack()
+            print('packed')
+        else:
+            self.seekbar.set(self.videoapp.fcount)
+        
         
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         
@@ -111,7 +120,7 @@ class RigidApp(App):
 
     def updateframe(self):
         """Updates the frame displayed in the video view based on the slider position."""
-        self.videoapp.showframe()
+        self.videoapp.showframe(self.seekbar.idx)
         
         # draw tracked points
         self.tpoints.drawpoints(self.seekbar.idx)
