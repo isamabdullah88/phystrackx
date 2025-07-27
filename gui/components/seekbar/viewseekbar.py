@@ -38,41 +38,43 @@ class ViewSeekBar:
         self.width = width
         self.height = height
         self.callback = callback
+        self.idx = 0
 
         self.sheight = 8
-        self.fixedseek: Optional[Seek] = None
-        self.leftbar: Optional[Bar] = None
+        self.seek: Optional[Seek] = None
+        self.seekbar: Optional[Bar] = None
+        self.disable = False
 
     def setparams(self) -> None:
         """Set internal layout parameters based on current frame count."""
-        self.idx = ceil(0.01 * self.fcount)
+        # self.idx = ceil(0.01 * self.fcount)
         self.xstart = self.padx
         self.xend = self.width - self.padx
         print('xend: ', self.xend)
 
-        if self.leftbar is not None:
-            self.leftbar.setcount(self.fcount)
+        if self.seekbar is not None:
+            self.seekbar.setcount(self.fcount)
 
     def clear(self) -> None:
         """Clear bar from canvas."""
-        if self.leftbar is not None:
-            self.leftbar.clear()
+        if self.seekbar is not None:
+            self.seekbar.clear()
 
     def pack(self) -> None:
         """Render the seek and bar on the canvas."""
         self.clear()
         self.setparams()
 
-        self.fixedseek = Seek(
+        self.seek = Seek(
             self.canvas,
             self.xstart,
             self.xend,
             self.height / 2,
             color="#9c97d6"
         )
-        self.fixedseek.pack()
+        self.seek.pack()
 
-        self.leftbar = Bar(
+        self.seekbar = Bar(
             self.canvas,
             self.xstart,
             self.xstart,
@@ -81,7 +83,7 @@ class ViewSeekBar:
             self.fcount,
             callback=self.callback
         )
-        self.leftbar.pack()
+        self.seekbar.pack()
 
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
@@ -93,13 +95,14 @@ class ViewSeekBar:
 
     def onclick(self, event: tk.Event) -> None:
         """Handle mouse click event."""
-        self.leftbar.onclick(event)
+        self.seekbar.onclick(event)
 
     def ondrag(self, event: tk.Event) -> None:
         """Handle drag event and update the seekbar."""
         func = lambda x, xlim: min(x, xlim)
-        self.leftbar.ondrag(event, func, self.xend)
-        self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
+        self.seekbar.ondrag(event, func, self.xend)
+        # self.seek.draw(self.seekbar.xstart, self.seekbar.xend)
+        self.idx = self.seekbar.idx
 
 
 # --- Optional minimal test app ---

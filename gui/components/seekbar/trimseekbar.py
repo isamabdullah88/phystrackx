@@ -39,8 +39,7 @@ class TrimSeekBar:
         self.btnsize = 50
         self.mintrim = 50
         self.fcount = fcount
-        self.startidx = self.idx = 0
-        self.endidx = fcount
+        self.idx = 0
         self.padx = 10
         self.width = width - self.btnsize - 40
         self.height = height
@@ -50,6 +49,16 @@ class TrimSeekBar:
         self.varseek: Optional[Seek] = None
         self.leftbar: Optional[Bar] = None
         self.rightbar: Optional[Bar] = None
+        
+        self.disable = False
+        
+    @property
+    def startidx(self):
+        return self.leftbar.idx
+    
+    @property
+    def endidx(self):
+        return self.rightbar.idx
 
     def setparams(self) -> None:
         """Set internal layout parameters based on current frame count."""
@@ -153,8 +162,8 @@ class TrimSeekBar:
 
     def ondrag(self, event) -> None:
         """Handle drag motion and update seek visuals."""
-        self.startidx = self.leftbar.idx
-        self.endidx = self.rightbar.idx
+        # self.startidx = self.leftbar.idx
+        # self.endidx = self.rightbar.idx
 
         self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
         self.varseek.draw(self.leftbar.x, self.rightbar.x)
@@ -173,6 +182,9 @@ class TrimSeekBar:
     def onapply(self) -> None:
         """Apply the selected trim and optionally reload video."""
         self.applybtn.place_forget()
+        
+        self.disable = True
+        print('disable: ', self.disable)
 
         if self.trimvideo is not None:
             self.trimvideo(self.startidx, self.endidx)
@@ -182,6 +194,7 @@ class TrimSeekBar:
             self.loadvideo("")
             
         self.clear()
+        self.canvas.destroy()
         
     def mkbutton(self, imgpath, command, btnsize=30):
         """
