@@ -44,18 +44,19 @@ class Rigid(Experiment):
         videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
                                             (self.fwidth, self.fheight))
         
+        print('before count: ', self.fcount)
         if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
+            self.fcount = self._vidreader.fcount - startidx
         else:
-            fcount = endidx - startidx
+            self.fcount = endidx - startidx
             
         self._vidreader.seek(startidx)
-        for i in range(fcount):
+        for i in range(self.fcount):
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             
             videowriter.write(frame)
-            
+        print('after count: ', self.fcount)
         videowriter.release()    
         
     

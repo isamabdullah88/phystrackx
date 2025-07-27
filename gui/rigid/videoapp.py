@@ -41,17 +41,17 @@ class Video:
     # def tkqueue(self):
     #     return self.spinner.queue
     
-    @property
-    def fidx(self):
-        return self.seekbar.idx
+    # @property
+    # def fidx(self):
+    #     return self.seekbar.idx
     
-    @property
-    def sfidx(self):
-        return self.seekbar.startidx
+    # @property
+    # def sfidx(self):
+    #     return self.seekbar.startidx
     
-    @property
-    def efidx(self):
-        return self.seekbar.endidx
+    # @property
+    # def efidx(self):
+    #     return self.seekbar.endidx
     
     @property
     def fcount(self):
@@ -97,10 +97,10 @@ class Video:
         return frame
         
         
-    def showframe(self):
+    def showframe(self, idx):
         """Updates and shows the frame to video view"""
         
-        frame = self.rigid.frame(index=self.fidx)
+        frame = self.rigid.frame(index=idx)
         frame = self.resizef(frame, self.fwidth, self.fheight)
         
         # Apply filter
