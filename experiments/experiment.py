@@ -1,6 +1,7 @@
 
 import sys
 import os
+import re
 
 from itertools import groupby
 from math import floor
@@ -30,24 +31,16 @@ class Experiment:
         self.vheight = vheight
         
         self.active_duration = []
+        
+        self.videopath = None
+        self.proxypath = None
 
         # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
         
     
-    def resize(self):
-        """Resize frame shape to minimum of videoview height and width."""
-        if (self.fwidth > self.vwidth):
-                ratio = self.fheight/self.fwidth
-                self.fwidth = self.vwidth
-                self.fheight = floor(self.fwidth * ratio)
-                
-
-        if (self.fheight > self.vheight):
-            ratio = self.fwidth/self.fheight
-            self.fheight = self.vheight
-            self.fwidth = floor(self.fheight*ratio)
 
     def addvideo(self, videopath):
+        self.videopath = videopath
         self._vidreader = VideoReader(videopath)
         self.fwidth = self._vidreader.width
         self.fheight = self._vidreader.height
@@ -56,14 +49,77 @@ class Experiment:
         
         self.resize()
         
-        # if len(crop.rects) > 0:
-        #     self.fwidth = crop.rects[0].width
-        #     self.fheight = crop.rects[0].height
-        # self.fwidth = crop.fwidth
-        # self.fheight = crop.fheight
-        print('fwidth, fheight: ', (self.fwidth, self.fheight))
+    
+    def resize(self):
+        """Resize frame shape to minimum of videoview height and width."""
+        proxy = False
+        if (self.fwidth > self.vwidth):
+            ratio = self.fheight/self.fwidth
+            self.fwidth = self.vwidth
+            self.fheight = floor(self.fwidth * ratio)
+            proxy = True
+
+        if (self.fheight > self.vheight):
+            ratio = self.fwidth/self.fheight
+            self.fheight = self.vheight
+            self.fwidth = floor(self.fheight*ratio)
+            proxy = True
             
-        print('frame count: ', self.fcount)
+        if proxy:
+            self.proxymize()
+            
+    def proxymize(self):
+        """Resizes video into lower resolution video if needed"""
+        tempdir = "./temp"
+        os.makedirs(tempdir, exist_ok=True)
+        self.proxypath = os.path.join(tempdir, "proxy-" + re.split(r"[\\/]", self.videopath)[-1])
+        
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        videowriter = cv2.VideoWriter(self.proxypath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
+        
+        print('fcount: ', self.fcount)
+        for i in range(self.fcount):
+            frame = self._vidreader.read()
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            
+            print('i: ', i)
+            videowriter.write(frame)
+            
+        videowriter.release()
+        
+        self.videopath = self.proxypath
+        self._vidreader = VideoReader(self.videopath)
+        # self.fwidth = self._vidreader.width
+        # self.fheight = self._vidreader.height
+        # self.fcount = self._vidreader.fcount
+        # self.fps = self._vidreader.fps
+        
+        
+    def trim(self, startidx:int=0, endidx:int=0):
+        """Trims the video between the frame indices"""
+        
+        self.resize()
+        print('startidx, endidx: ', startidx, endidx)
+            
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
+                                            (self.fwidth, self.fheight))
+        
+        print('before count: ', self.fcount)
+        if endidx == 0:
+            self.fcount = self._vidreader.fcount - startidx
+        else:
+            self.fcount = endidx - startidx
+            
+        self._vidreader.seek(startidx)
+        for i in range(self.fcount):
+            frame = self._vidreader.read()
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            
+            videowriter.write(frame)
+        print('after count: ', self.fcount)
+        videowriter.release()
         
     def release(self):
         self._vidreader.release()

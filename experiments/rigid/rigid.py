@@ -34,32 +34,6 @@ class Rigid(Experiment):
         return text
     
     
-    def trim(self, startidx:int=0, endidx:int=0):
-        """Trims the video between the frame indices"""
-        
-        self.resize()
-        print('startidx, endidx: ', startidx, endidx)
-            
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        videowriter = cv2.VideoWriter(self.trimpath, fourcc, self._vidreader.fps,
-                                            (self.fwidth, self.fheight))
-        
-        print('before count: ', self.fcount)
-        if endidx == 0:
-            self.fcount = self._vidreader.fcount - startidx
-        else:
-            self.fcount = endidx - startidx
-            
-        self._vidreader.seek(startidx)
-        for i in range(self.fcount):
-            frame = self._vidreader.read()
-            frame = cv2.resize(frame, (self.fwidth, self.fheight))
-            
-            videowriter.write(frame)
-        print('after count: ', self.fcount)
-        videowriter.release()    
-        
-    
     def track(self, rects:list[NormalizedRect], ocrrect:list[NormalizedRect], filters:Filters, crop:Crop, progress:IntVar=None):
         """Tracks the specified rectangles in the video and performs OCR detection if specified."""
         
