@@ -1,24 +1,30 @@
 
 import csv
 import customtkinter as ctk
-from gui.rigid.plot import Plot
+from gui.components.plot.plot import Plot
 from experiments.components.ocr import OCRData
+from ..checkbox import Checkbox
+from .savetype import SaveType
 
 class Save:
-    def __init__(self, pdata:Plot, ocrdata:OCRData):
+    def __init__(self, parent, pdata:Plot, ocrdata:OCRData):
+        self.parent = parent
         self.pdata = pdata
         self.ocrdata = ocrdata
         self.filepath = None
         
         self.samplecount = max(self.pdata.samplecount, self.ocrdata.samplecount)
         
+        self.checkbox = Checkbox(self.parent, SaveType, self.savedata)
+        
     
     def askfilepath(self):
-        self.filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        self.filepath = ctk.filedialog.asksaveasfilename(defaultextension=".csv", 
+                            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
         if not self.filepath:
             return
         
-    def savedata(self):
+    def savedata(self, selected_data):
         """Saves data onto file path"""
         datalist = self.pdata.data()
         with open(self.filepath, mode='w', newline='') as file:
@@ -27,15 +33,17 @@ class Save:
             
             dt = 1 / self.pdata.fps
             ts = 0.0
+            
+            if SaveType.HEADER in selected_data:
             # Prep header
-            header = ["T(s)"]
-            for i in range(self.pdata.datanum):
-                header.extend([f"x{i+1}", f"y{i+1}"])
-                
-            for i in range(self.ocrdata.datanum):
-                header.extend([f"text{i+1}"])
+                header = ["T(s)"]
+                for i in range(self.pdata.datanum):
+                    header.extend([f"x{i+1}", f"y{i+1}"])
+                    
+                for i in range(self.ocrdata.datanum):
+                    header.extend([f"text{i+1}"])
 
-            writer.writerow(header)
+                writer.writerow(header) 
             
             # Persist data into file
             for i in range(self.samplecount):

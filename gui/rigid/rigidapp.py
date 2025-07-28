@@ -12,7 +12,7 @@ from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
 from gui.components.tpoints import TPoints
 from gui.components.subtoolbar import SubToolbar
-from gui.components.save import Save
+from gui.components.plot.save import Save
 from gui.components.checkbox import Checkbox
 from gui.components.label import Label
 from gui.components.titlebar import TitleBar
@@ -22,7 +22,7 @@ from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry
 from experiments.components.ocr import OCRData
 from core import PlotType
-from .plot import Plot
+from ..components.plot.plot import Plot
 from .videoapp import Video
 
 class RigidApp(App):
@@ -260,9 +260,9 @@ class RigidApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         # TODO: Remove points from plot data as well when user removed the point
-        self.gen_plotdata() 
+        self.gen_plotdata()
         
-        Checkbox(self.videoview, PlotType, self.pdata.showplots)
+        # Checkbox(self.videoview, PlotType, self.pdata.showplots)
 
     def savedata(self):
         """
@@ -273,6 +273,9 @@ class RigidApp(App):
             return
         
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
+        
+        Checkbox(self.videoview, PlotType, self.pdata.showplots)
+        
         self.gen_plotdata()
         ocrdata = OCRData(self.videoapp.texts)
         

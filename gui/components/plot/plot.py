@@ -2,10 +2,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from gui.components.axes import Axes
-from core import PlotType
+from gui.components.checkbox import Checkbox
+from .plottype import PlotType
+import customtkinter as ctk
 
 class Plot:
-    def __init__(self, data:list[float], axes:Axes , vwidth, vheight, fwidth, fheight, fps=24,
+    def __init__(self, parent, data:list[float], axes:Axes , vwidth, vheight, fwidth, fheight, fps=24,
                 scale=1, theme='ggplot'):
         """
         data: list of numpy arrays. Each array should have shape N,2.
@@ -15,6 +17,7 @@ class Plot:
         vwidth: Width of videoview frame.
         vheight: Height of videoview frame.
         """
+        self.parent = parent
         self._data = data
         self.datanum = len(data)
         self.fps = fps
@@ -40,6 +43,8 @@ class Plot:
             datatr = np.hstack((datax.reshape(-1,1), datay.reshape(-1,1)))
             
             self._datatr.append(datatr)
+            
+        self.checkbox = Checkbox(self.parent, PlotType, self.showplots)
             
     def data(self):
         """Returns processed data after transformation"""
@@ -68,9 +73,9 @@ class Plot:
         
         return x, y
     
-    def showplots(self, splots):
-        """Displays plot of selected plots stored in splots"""
-        for ptype in splots:
+    def showplots(self, selected_plots):
+        """Displays plot of selected plots stored in selected_plots"""
+        for ptype in selected_plots:
             if ptype == PlotType.X.name:
                 self.plotx()
             elif ptype == PlotType.Y.name:
@@ -222,12 +227,61 @@ class Plot:
     # def show(self):
     #     plt.show()
         
-        
+
+
+def main():
+    """
+    GUI-based test for Plot and Axes with dummy circular motion data.
+    Allows axes selection and plot type selection through checkboxes.
+    """
+
+    # Initialize GUI
+    ctk.set_appearance_mode("system")
+    root = ctk.CTk()
+    root.geometry("800x600")
+    root.title("Plot and Axes Test")
+
+    # Create canvas
+    canvas = ctk.CTkCanvas(root, width=640, height=480, bg="white")
+    canvas.pack(pady=10)
+
+    # Dummy buttons just to satisfy Axes dependency
+    btn_frame = ctk.CTkFrame(root)
+    btn_frame.pack(pady=5)
+    dummy_btn = ctk.CTkButton(btn_frame, text="Axes")  # This is the button used for axes
+    dummy_btn.pack()
+
+    btnlist = {"axes": dummy_btn}
+    activebtn = dummy_btn
+
+    # Create Axes object (user sets origin and rotation angle interactively)
+    axes = Axes(root, canvas, vwidth=640, vheight=480, btnlist=btnlist, activebtn=activebtn)
+
+    # Bind axes setup on button click
+    dummy_btn.configure(command=axes.markaxes)
+
+    # Generate sample circular data
+    t = np.linspace(0, 2 * np.pi, 150)
+    x = 50 + 30 * np.cos(t)
+    y = 50 + 30 * np.sin(t)
+    data = [np.column_stack((x, y))]
+
+    # Create Plot object (plot types shown after axes are applied)
+    plot = Plot(
+        parent=root,
+        data=data,
+        axes=axes,
+        vwidth=640,
+        vheight=480,
+        fwidth=640,
+        fheight=480,
+        fps=30,
+        scale=1.0,
+        theme='ggplot'
+    )
+
+    root.mainloop()
+
+
 if __name__ == "__main__":
-    data = [np.random.rand(100, 2) * 100]
-    plot = Plot(data, 640, 480, 640, 480)
-    plot.plotx()
-    # plot.plotdrv()
-    # plot.plotdrv2()
-    plot.intgr()
-    plot.show()
+    main()
