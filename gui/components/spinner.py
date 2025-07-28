@@ -1,71 +1,124 @@
+"""
+spinner.py
+
+Displays a centered animated spinner on a CTkCanvas using a preloaded GIF.
+
+Author: Isam Balghari
+"""
 
 from math import floor
-from PIL import Image, ImageTk
+from typing import Optional
+import numpy as np
+from PIL import Image, ImageTk, ImageSequence
 import customtkinter as ctk
 from customtkinter import CTkCanvas
-import numpy as np
 from gui.plugins import Crop
-from queue import Queue, Empty
-import cv2
+from core import abspath
+
 
 class Spinner:
-    def __init__(self, canvas:CTkCanvas, crop:Crop=None):
-        self.running = True
-        self.canvas = canvas
-        self.queue = Queue(maxsize=5)
-        self.crop = crop
+    """
+    A widget that shows a centered animated spinner overlay using a GIF.
 
-        # Load animated GIF
-        # self.frames = [ImageTk.PhotoImage(self.prsframe(img, vwidth, vheight)) for img in \
-        #     ImageSequence.Iterator(Image.open(abspath("./assets/process.gif")))]
-        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
+    Args:
+        canvas: The CTkCanvas to display the spinner on.
+        crop: Optional Crop instance for positioning offset.
+    """
+
+    def __init__(self, canvas: CTkCanvas, crop: Optional[Crop] = None) -> None:
+        self.running: bool = True
+        self.canvas: CTkCanvas = canvas
+        self.crop: Optional[Crop] = crop
+
+        self.index: int = 0
+        self.vwidth = self.canvas.winfo_width()
+        self.vheight = self.canvas.winfo_height()
+
+        gif_path = abspath("./assets/process.gif")
+        self.frames = [ImageTk.PhotoImage(img.resize((200, 200), Image.Resampling.LANCZOS)) for img in \
+            ImageSequence.Iterator(Image.open(gif_path))]
+
+        # self.imgview = self.canvas.create_image(
+        #     self.crop.fx if self.crop else 0,
+        #     self.crop.fy if self.crop else 0,
+        #     anchor="nw",
+        #     image = self.frames[0]
+        # )
+        
+        self.imgview = self.canvas.create_image(
+            self.vwidth//2,
+            self.vheight//2,
+            image=self.frames[0],
+            anchor="center")
         # self.canvas.itemconfigure(self.imgview, state="normal")
+        self.animate()
 
-        self.index = 0
+    # def _process_frame(self, img: Image.Image) -> Image.Image:
+    #     """
+    #     Resizes the frame and centers it on a white canvas matching the canvas size.
 
-    def pack(self):
+    #     Args:
+    #         img: Input GIF frame.
+
+    #     Returns:
+    #         Resized and padded image as PIL Image.
+    #     """
+    #     imgsize = 200
+    #     resized = img.resize((imgsize, imgsize), Image.Resampling.LANCZOS)
+    #     img_array = np.array(resized.convert("RGB"))
+
+    #     canvas = np.ones((self.vheight, self.vwidth, 3), np.uint8) * 255
+
+    #     xstart = floor(self.vwidth / 2) - floor(imgsize / 2)
+    #     xend = xstart + imgsize
+    #     ystart = floor(self.vheight / 2) - floor(imgsize / 2)
+    #     yend = ystart + imgsize
+
+    #     canvas[ystart:yend, xstart:xend, :] = img_array
+
+    #     return Image.fromarray(canvas)
+
+    def animate(self) -> None:
+        """
+        Animate the spinner frame-by-frame using `after` loop.
+        """
         if not self.running:
             return
-        
-        try:
-            frame = self.queue.get_nowait()
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(frame)
-            
-            self.imgtk = ImageTk.PhotoImage(img)
-            self.canvas.itemconfigure(self.imgview, image=self.imgtk)
-            self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
-        except Empty:
-            pass
-        
-        self.canvas.after(50, self.pack)
 
-    def destroy(self):
+        self.index = (self.index + 1) % len(self.frames)
+        self.canvas.itemconfig(self.imgview, image=self.frames[self.index])
+        self.canvas.after(50, self.animate)
+
+    def destroy(self) -> None:
+        """
+        Stop the animation and remove the spinner from canvas.
+        """
         self.running = False
         self.canvas.delete(self.imgview)
 
-    # def prsframe(self, img: Image, vwidth, vheight):
-        
-    #     imgsize = 200
-    #     img = img.resize((imgsize, imgsize), Image.Resampling.LANCZOS)
-    #     img = np.array(img.convert("RGB"))
-        
-    #     canvas = np.ones((vheight, vwidth, 3), np.uint8)*255
-        
-    #     xstart = floor(vwidth/2) - floor(imgsize/2)
-    #     xend = floor(vwidth/2) + floor(imgsize/2)
-    #     ystart = floor(vheight/2) - floor(imgsize/2)
-    #     yend = floor(vheight/2) + floor(imgsize/2)
-            
-    #     canvas[ystart:yend, xstart:xend, :] = img
-        
-    #     return Image.fromarray(canvas)
 
+# --- Minimal test app --- #
 
-if __name__ == '__main__':
+def main() -> None:
+    """
+    Launches a test window displaying the spinner animation.
+    """
     root = ctk.CTk()
     root.geometry("900x600")
-    root.title("Spinner Popup Example")
+    root.title("Spinner Preview")
+
     canvas = ctk.CTkCanvas(root, width=900, height=600, bg="white")
     canvas.pack(fill="both", expand=True)
-    Spinner(canvas, 900, 600)
+
+    # Wait for canvas to draw before showing spinner
+    def launch_spinner():
+        spinner = Spinner(canvas)
+        # Auto-destroy after 5 seconds
+        canvas.after(5000, spinner.destroy)
+
+    canvas.after(100, launch_spinner)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
