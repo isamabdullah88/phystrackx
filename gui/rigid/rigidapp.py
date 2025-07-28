@@ -3,6 +3,7 @@ import threading
 from tkinter import messagebox
 
 from gui.app import App
+from gui.components.processanim import ProcessAnimation
 from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar
 from gui.components.seekbar import ViewSeekBar
@@ -67,32 +68,59 @@ class RigidApp(App):
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
         
-        self.spinner = Spinner(self.videoview, self.crop)
+        self.processanim = ProcessAnimation(self.videoview, self.crop)
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         
         # TODO: Restructure this to make more consistent
         self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
         
         # TODO: Make this handle more gracefully
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
         
-        self.seekbar.settrim(trimvideo=self.videoapp.trimvideo, loadvideo=self.loadvideo)
+        self.seekbar.settrim(trimvideo=self.trimvideo)
 
     def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
-        self.videoapp.loadvideo(videopath)
+        # self.videoapp.loadvideo(videopath)
         
-        self.loadcomponents()
+        # self.loadcomponents()
+        
+        self.spinner = Spinner(self.videoview, self.crop)
+
+        def load(spinner):
+            print('spinner')
+            self.videoapp.loadvideo(videopath)
+            print('after ended')
+            self.root.after(0, spinner.destroy())
+            
+            self.loadcomponents()
+
+        threading.Thread(target=load, args=(self.spinner,)).start()
+        
+    def trimvideo(self, startidx, endidx):
+        self.spinner = Spinner(self.videoview, self.crop)
+
+        def trim(spinner):
+            print('trim start')
+            self.videoapp.trimvideo(startidx, endidx)
+            print('trim ended')
+            self.videoapp.loadvideo(self.videoapp.trimpath)
+            self.loadcomponents()
+            self.root.after(0, spinner.destroy())
+
+        threading.Thread(target=trim, args=(self.spinner,)).start()
+        
         
     def loadcomponents(self, trim=True):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
         
-        self.resize(self.videoapp.fwidth, self.videoapp.fheight)
+        # self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
-        self.crop.set(self.fwidth, self.fheight)
+        self.crop.set(self.videoapp.fwidth, self.videoapp.fheight)
+        self.videoapp.setview()
         
         print('seekbar.disable: ', self.seekbar.disable)
         if self.seekbar.disable:
@@ -188,21 +216,21 @@ class RigidApp(App):
         self.trects.clearrects()
         self.ocrrects.clearrects()
         
-        self.spinner.pack()
+        self.processanim.pack()
         self.progressbar.pack()
 
-        def trackbg(spinner, progressbar):
+        def trackbg(processanim, progressbar):
             
             self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
             
-            self.root.after(0, spinner.destroy())
+            self.root.after(0, processanim.destroy())
             self.root.after(0, progressbar.destroy())
 
             # self.loadvideo(self.videoapp.trackpath, clear=False)
             # self.seekbar = ViewSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, fcount=self.videoapp.fcount, callback=self.updateframe)
             self.loadcomponents(trim=False)
 
-        threading.Thread(target=trackbg, args=(self.spinner,self.progressbar)).start()
+        threading.Thread(target=trackbg, args=(self.processanim,self.progressbar)).start()
         
         self.progressbar.update()
         
@@ -256,7 +284,7 @@ class RigidApp(App):
         
     def plugins(self):
         """
-        Opens a spinner to select a filter type and apply it to the video frame.
+        Opens a processanim to select a filter type and apply it to the video frame.
         """
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()

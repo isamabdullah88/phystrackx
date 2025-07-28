@@ -168,7 +168,7 @@ class TrimSeekBar:
         self.fcount = fcount
         self.setparams()
 
-    def settrim(self, trimvideo: Callable, loadvideo: Callable) -> None:
+    def settrim(self, trimvideo: Callable) -> None:
         """
         Set external trimming and loading callbacks.
 
@@ -177,7 +177,7 @@ class TrimSeekBar:
             loadvideo (Callable): Function to reload video.
         """
         self.trimvideo = trimvideo
-        self.loadvideo = loadvideo
+        # self.loadvideo = loadvideo
 
     def onclick(self, event: tk.Event) -> None:
         """
@@ -207,7 +207,7 @@ class TrimSeekBar:
         if not self.leftbar or not self.rightbar or not self.fixedseek or not self.varseek:
             return
 
-        self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
+        # self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
         self.varseek.draw(self.leftbar.x, self.rightbar.x)
 
         lfunc = lambda x, xlim: min(x, xlim - self.mintrim)
@@ -231,10 +231,7 @@ class TrimSeekBar:
 
         if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)
-
-        if self.loadvideo:
             self.set(self.endidx - self.startidx)
-            self.loadvideo("")
 
         self.clear()
         self.canvas.destroy()
@@ -298,7 +295,7 @@ class App(tk.Tk):
             callback=self.callback
         )
         self.seekbar.pack()
-        self.seekbar.settrim(self.trimvideo, self.loadvideo)
+        self.seekbar.settrim(self.trimvideo)
 
     def callback(self) -> None:
         """
@@ -315,15 +312,6 @@ class App(tk.Tk):
             end (int): End frame.
         """
         print("Trim", start, end)
-
-    def loadvideo(self, _: str) -> None:
-        """
-        Sample video reload function.
-
-        Args:
-            _ (str): Placeholder argument.
-        """
-        print("Load")
 
 
 if __name__ == "__main__":
