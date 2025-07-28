@@ -64,12 +64,11 @@ class Video:
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
         self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
-        print('trimpath: ', self.trimpath)
 
         self.rigid = Rigid(
             trimpath=self.trimpath,
-            vwidth=800,
-            vheight=600,
+            vwidth=600,
+            vheight=500,
             tkqueue=self.spinner.queue
         )
 
@@ -151,7 +150,6 @@ class Video:
             idx (int): Index of the frame to display.
         """
         frame = self.rigid.frame(index=idx)
-        # frame = self.resizef(frame, self.fwidth, self.fheight)
         frame = self.filters.appfilter(frame)
         self.frame = self.crop.appcrop(frame)
 

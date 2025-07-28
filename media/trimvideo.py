@@ -13,21 +13,21 @@ import logging
 
 
 def trimvideo(
-    input_path: str,
-    output_path: str,
-    start_frame: int,
-    end_frame: int,
+    videopath: str,
+    writepath: str,
+    startidx: int,
+    endidx: int,
     fps: Optional[float] = None,
     overwrite: bool = True
 ) -> bool:
     """
-    Trim a video between start_frame and end_frame using ffmpeg.
+    Trim a video between startidx and endidx using ffmpeg.
 
     Args:
-        input_path: Path to the input video file.
-        output_path: Path to save the trimmed video.
-        start_frame: Start frame index (inclusive).
-        end_frame: End frame index (exclusive).
+        videopath: Path to the input video file.
+        writepath: Path to save the trimmed video.
+        startidx: Start frame index (inclusive).
+        endidx: End frame index (exclusive).
         fps: Frames per second of the video. If None, assumes 30.
         overwrite: Whether to overwrite output file if it exists.
 
@@ -36,39 +36,39 @@ def trimvideo(
     """
     logger = logging.getLogger(__name__)
 
-    if not os.path.exists(input_path):
-        logger.error(f"Input video does not exist: {input_path}")
+    if not os.path.exists(videopath):
+        logger.error(f"Input video does not exist: {videopath}")
         return False
 
-    if start_frame >= end_frame:
-        logger.error("Invalid frame range: start_frame >= end_frame")
+    if startidx >= endidx:
+        logger.error("Invalid frame range: startidx >= endidx")
         return False
 
     if fps is None:
         fps = 30.0  # Default if not given
 
-    start_time = start_frame / fps
-    duration = (end_frame - start_frame) / fps
+    start_time = startidx / fps
+    duration = (endidx - startidx) / fps
 
     command = [
         "ffmpeg",
         "-y" if overwrite else "-n",
-        "-i", input_path,
+        "-i", videopath,
         "-ss", str(start_time),
         "-t", str(duration),
         "-c:v", "libx264",
         "-crf", "23",
         "-preset", "fast",
         "-an",  # disable audio
-        output_path
+        writepath
     ]
 
-    logger.info(f"Trimming video: {input_path} → {output_path}")
+    logger.info(f"Trimming video: {videopath} → {writepath}")
     logger.debug(f"Command: {' '.join(command)}")
 
     try:
         subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        logger.info(f"Trim successful: {output_path}")
+        logger.info(f"Trim successful: {writepath}")
         return True
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg error: {e}")

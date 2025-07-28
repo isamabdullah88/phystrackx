@@ -233,10 +233,6 @@ class TrimSeekBar:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
 
-        # if self.loadvideo:
-            # self.set(self.endidx - self.startidx)
-            # self.loadvideo("")
-
         self.clear()
         self.canvas.destroy()
 
@@ -299,7 +295,7 @@ class App(tk.Tk):
             callback=self.callback
         )
         self.seekbar.pack()
-        self.seekbar.settrim(self.trimvideo, self.loadvideo)
+        self.seekbar.settrim(self.trimvideo)
 
     def callback(self) -> None:
         """
@@ -316,15 +312,6 @@ class App(tk.Tk):
             end (int): End frame.
         """
         print("Trim", start, end)
-
-    def loadvideo(self, _: str) -> None:
-        """
-        Sample video reload function.
-
-        Args:
-            _ (str): Placeholder argument.
-        """
-        print("Load")
 
 
 if __name__ == "__main__":
