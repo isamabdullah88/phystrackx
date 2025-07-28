@@ -61,14 +61,15 @@ class Video:
         self.imgview = None
         self.tkimg = None
 
-        tempdir = "./temp"
+        tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
         self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
+        print('trimpath: ', self.trimpath)
 
         self.rigid = Rigid(
             trimpath=self.trimpath,
-            vwidth=self.vwidth,
-            vheight=self.vheight,
+            vwidth=800,
+            vheight=600,
             tkqueue=self.spinner.queue
         )
 
@@ -123,6 +124,7 @@ class Video:
             self.rigid.addvideo(videopath)
             self.logger.info("Video added from: %s", videopath)
 
+    def setview(self):
         self.imgview = self.canvas.create_image(
             self.crop.fx, self.crop.fy, anchor="nw"
         )
@@ -149,7 +151,7 @@ class Video:
             idx (int): Index of the frame to display.
         """
         frame = self.rigid.frame(index=idx)
-        frame = self.resizef(frame, self.fwidth, self.fheight)
+        # frame = self.resizef(frame, self.fwidth, self.fheight)
         frame = self.filters.appfilter(frame)
         self.frame = self.crop.appcrop(frame)
 
