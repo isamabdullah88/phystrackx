@@ -6,6 +6,7 @@ Implements rigid body tracking using optical flow and optional OCR from video fr
 Author: Isam Balghari
 """
 
+from typing import Optional
 from queue import Queue
 import cv2
 import numpy as np
