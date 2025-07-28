@@ -10,9 +10,9 @@ from queue import Queue
 
 class Rigid(Experiment):
     def __init__(self, trimpath, vwidth, vheight, tkqueue:Queue=None):
-        super().__init__(vwidth, vheight)
+        super().__init__(trimpath, vwidth, vheight)
         
-        self.trimpath = trimpath
+        # self.trimpath = trimpath
         self.trackpts = []
         self.texts = []
         
