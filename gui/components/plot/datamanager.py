@@ -95,7 +95,7 @@ class DataManager:
         x, y = self.axes.rotatez(x, y, theta_rad)
 
         # Apply scale if needed
-        if self.scale:
+        if self.scale is not None:
             x *= self.scale
             y *= self.scale
 

@@ -9,6 +9,7 @@ Author: Isam Balghari
 import csv
 import customtkinter as ctk
 from gui.components.plot.datamanager import DataManager
+from tkinter import messagebox
 from ..checkbox import Checkbox
 from .savetype import SaveType
 
@@ -100,6 +101,8 @@ class Save:
                         row.append(o[i])
 
                 writer.writerow(row)
+        
+        messagebox.showinfo("Success", "Tracked data saved successfully.")
 
 
 def main():
@@ -135,7 +138,7 @@ def main():
     t = np.linspace(0, 2 * np.pi, frame_count)
     x = 100 + 50 * np.cos(t)
     y = 100 + 50 * np.sin(t)
-    fpoints = [[FPoint([x[i], y[i]], 0, 0) for i in range(frame_count)]]
+    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
 
     # --- Dummy OCR data ---
     ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(frame_count)]]

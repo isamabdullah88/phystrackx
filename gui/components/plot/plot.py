@@ -153,7 +153,7 @@ def main():
     t = np.linspace(0, 2 * np.pi, 150)
     x = 50 + 30 * np.cos(t)
     y = 50 + 30 * np.sin(t)
-    fpoints = [[FPoint([x[i], y[i]], 0, 0) for i in range(len(x))]]
+    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
 
     # --- Create DataManager ---
     datamanager = DataManager(
