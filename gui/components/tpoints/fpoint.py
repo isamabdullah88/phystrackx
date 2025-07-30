@@ -26,7 +26,7 @@ class FPoint:
         button (CTkButton): A reference to a button (e.g., delete button).
         cpt (int | None): Canvas object ID if drawn, otherwise None.
     """
-    def __init__(self, pt, fx, fy, button):
+    def __init__(self, pt, fx, fy):
         """
         Initialize a point with position offset and button reference.
 
@@ -39,7 +39,7 @@ class FPoint:
         self.x, self.y = pt.copy()
         self.x += fx
         self.y += fy
-        self.button = button
+        # self.button = button
         self.cpt = None  # Canvas point ID
 
     def draw(self, canvas):

@@ -65,7 +65,7 @@ class TPoints:
         button.image = ctkimg
         return button
 
-    def addpoints(self, tpts: list[list[list[int]]], fx: int, fy: int) -> None:
+    def addpoints(self, tpts: list[list[int]], fx: int, fy: int) -> None:
         """
         Adds tracked points and places toggle button.
 
