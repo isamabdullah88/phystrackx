@@ -87,7 +87,7 @@ class RigidApp(App):
         
         # self.loadcomponents()
         
-        self.spinner = Spinner(self.videoview, self.crop)
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.crop)
 
         def load(spinner):
             self.videoapp.loadvideo(videopath)
@@ -98,7 +98,7 @@ class RigidApp(App):
         threading.Thread(target=load, args=(self.spinner,)).start()
         
     def trimvideo(self, startidx, endidx):
-        self.spinner = Spinner(self.videoview, self.crop)
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.crop)
 
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
@@ -114,7 +114,7 @@ class RigidApp(App):
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
 
         self.crop.set(self.videoapp.fwidth, self.videoapp.fheight)
-        self.videoapp.setview()
+        # self.videoapp.setview()
         
         print('seekbar.disable: ', self.seekbar.disable)
         if self.seekbar.disable:

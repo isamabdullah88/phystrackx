@@ -23,12 +23,13 @@ class Spinner:
         crop (Optional[Crop]): Optional crop object for offset positioning.
     """
 
-    def __init__(self, canvas: CTkCanvas, crop: Optional[Crop] = None) -> None:
+    def __init__(self, canvas: CTkCanvas, imgview, crop: Optional[Crop] = None) -> None:
         self.running: bool = True
         self.canvas: CTkCanvas = canvas
         self.crop: Optional[Crop] = crop
         self.index: int = 0
 
+        self.imgview = imgview
         self.vwidth: int = self.canvas.winfo_width()
         self.vheight: int = self.canvas.winfo_height()
 
@@ -41,12 +42,14 @@ class Spinner:
             for img in raw_frames
         ]
 
-        self.imgview: int = self.canvas.create_image(
-            self.vwidth // 2,
-            self.vheight // 2,
-            image=self.frames[0],
-            anchor="center"
-        )
+        # self.imgview: int = self.canvas.create_image(
+        #     self.vwidth // 2,
+        #     self.vheight // 2,
+        #     image=self.frames[0],
+        #     anchor="center"
+        # )
+        # self.imgview.coords
+        self.canvas.itemconfig(self.imgview, image=self.frames[0])
 
         self.animate()
 
