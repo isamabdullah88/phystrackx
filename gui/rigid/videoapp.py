@@ -20,6 +20,7 @@ from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar
 from gui.components.rect import Rect
 from core import filexists
+from experiments.components.ocr import OCRData
 
 
 class Video:
@@ -85,6 +86,11 @@ class Video:
     def trackpts(self) -> list:
         """Tracking points recorded from video."""
         return self.rigid.trackpts
+    
+    @property
+    def ocrdata(self) -> list:
+        """OCR data extracted from video"""
+        return self.rigid.texts
 
     @property
     def texts(self) -> list:

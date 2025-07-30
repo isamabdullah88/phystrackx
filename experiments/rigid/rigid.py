@@ -13,6 +13,7 @@ import numpy as np
 from tqdm import tqdm
 from customtkinter import IntVar
 from experiments.experiment import Experiment
+from experiments.components import OCRData
 from core import NormalizedRect
 from gui.plugins import Crop, Filters
 
@@ -41,7 +42,7 @@ class Rigid(Experiment):
         """
         super().__init__(trimpath, vwidth, vheight)
         self.tkqueue = tkqueue
-        self.trackpts: list[list[list[int]]] = []
+        self.trackpts: list[list[int]] = []
         self.texts: list[list[str]] = []
 
     def ocr(
@@ -172,6 +173,8 @@ class Rigid(Experiment):
         # Final formatting
         for i in range(len(self.trackpts)):
             self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
+            
+        self.texts = OCRData(self.texts)
 
 
 if __name__ == "__main__":

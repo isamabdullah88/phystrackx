@@ -12,17 +12,13 @@ from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
 from gui.components.tpoints import TPoints
 from gui.components.subtoolbar import SubToolbar
-from gui.components.save import Save
-from gui.components.checkbox import Checkbox
+from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
 from gui.components.titlebar import TitleBar
 from gui.components.tooltip import ToolTip
 from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry
-from experiments.components.ocr import OCRData
-from core import PlotType
-from .plot import Plot
 from .videoapp import Video
 
 class RigidApp(App):
@@ -78,6 +74,10 @@ class RigidApp(App):
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
         
         self.seekbar.settrim(trimvideo=self.trimvideo)
+        
+        self.save = None
+        self.plot = None
+        self.datamanager = None
 
     def loadvideo(self, videopath:str, clear=True):
         """Loads a new video from user click."""
@@ -90,9 +90,7 @@ class RigidApp(App):
         self.spinner = Spinner(self.videoview, self.crop)
 
         def load(spinner):
-            print('spinner')
             self.videoapp.loadvideo(videopath)
-            print('after ended')
             self.root.after(0, spinner.destroy())
             
             self.loadcomponents()
@@ -103,9 +101,7 @@ class RigidApp(App):
         self.spinner = Spinner(self.videoview, self.crop)
 
         def trim(spinner):
-            print('trim start')
             self.videoapp.trimvideo(startidx, endidx)
-            print('trim ended')
             self.videoapp.loadvideo(self.videoapp.trimpath)
             self.loadcomponents()
             self.root.after(0, spinner.destroy())
@@ -113,11 +109,9 @@ class RigidApp(App):
         threading.Thread(target=trim, args=(self.spinner,)).start()
         
         
-    def loadcomponents(self, trim=True):
+    def loadcomponents(self):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
-        
-        # self.resize(self.videoapp.fwidth, self.videoapp.fheight)
 
         self.crop.set(self.videoapp.fwidth, self.videoapp.fheight)
         self.videoapp.setview()
@@ -228,7 +222,7 @@ class RigidApp(App):
 
             # self.loadvideo(self.videoapp.trackpath, clear=False)
             # self.seekbar = ViewSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, fcount=self.videoapp.fcount, callback=self.updateframe)
-            self.loadcomponents(trim=False)
+            self.loadcomponents()
 
         threading.Thread(target=trackbg, args=(self.processanim,self.progressbar)).start()
         
@@ -254,33 +248,48 @@ class RigidApp(App):
         self.loadvideo(self.videopath)
     
     def plot(self):
-        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):
+        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
             messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         # TODO: Remove points from plot data as well when user removed the point
-        self.gen_plotdata() 
+        # self.gen_plotdata()
         
-        Checkbox(self.videoview, PlotType, self.pdata.showplots)
+        if self.datamanager is not None:
+            self.plot = Plot(self.videoview, self.datamanager)
+        else:
+            self.datamanager = DataManager(self.tpoints.tpts, self.videoapp.ocrdata, self.axes, self.vwidth, self.vheight,
+                                self.fwidth, self.fheight, self.videoapp.fps, self.scruler.scalef)
+            self.datamanager.transform()
+            self.plot = Plot(self.videoview, self.datamanager)
 
     def savedata(self):
         """
         Saves the tracked data to a CSV file.
         """
-        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.texts) == 0):
+        if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
             messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
             return
         
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
-        self.gen_plotdata()
-        ocrdata = OCRData(self.videoapp.texts)
         
-        save = Save(self.pdata, ocrdata)
-        save.askfilepath()
-        save.savedata()
+        if self.datamanager is not None:
+            self.save = Save(self.videoview, self.datamanager)
+        else:
+            self.datamanager = DataManager(self.tpoints.tpts, self.videoapp.ocrdata, self.axes, self.vwidth, self.vheight,
+                                self.fwidth, self.fheight, self.videoapp.fps, self.scruler.scalef)
+            self.datamanager.transform()
+            self.save = Save(self.videoview, self.datamanager)
+        # Checkbox(self.videoview, PlotType, self.pdata.showplots)
         
-        messagebox.showinfo("Success", "Tracked data saved successfully.")
+        # self.gen_plotdata()
+        # ocrdata = OCRData(self.videoapp.ocrdata)
+        
+        # save = Save(self.pdata, ocrdata)
+        # save.askfilepath()
+        # save.savedata()
+        
         
     def plugins(self):
         """
@@ -290,12 +299,12 @@ class RigidApp(App):
         self.subtoolbar.toggle()
         
     
-    def gen_plotdata(self):
-        """Evolve raw data into plot data"""
-        if self.pdata is None:    
-            scale = 1
-            if self.scruler is not None:
-                scale = self.scruler.scalef
+    # def gen_plotdata(self):
+    #     """Evolve raw data into plot data"""
+    #     if self.pdata is None:    
+    #         scale = 1
+    #         if self.scruler is not None:
+    #             scale = self.scruler.scalef
                 
-            self.pdata = Plot(self.videoapp.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-                    self.fheight, scale=scale, fps=self.videoapp.fps)
+    #         self.pdata = Plot(self.videoapp.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
+    #                 self.fheight, scale=scale, fps=self.videoapp.fps)
