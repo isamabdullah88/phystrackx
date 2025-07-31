@@ -77,6 +77,10 @@ class Video:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Video App initialized")
         self.trimvideo = self.rigid.trim
+        
+        self.imgview = self.canvas.create_image(
+            self.crop.fx, self.crop.fy, anchor="nw"
+        )
 
     @property
     def fcount(self) -> int:
@@ -120,9 +124,6 @@ class Video:
         Args:
             videopath (str): Path to video file.
         """
-        self.imgview = self.canvas.create_image(
-            self.crop.fx, self.crop.fy, anchor="nw"
-        )
         
         if not filexists(videopath):
             self.logger.warning("Loading trim video")
@@ -130,11 +131,13 @@ class Video:
                 self.logger.error("Trim video not found!")
                 return
             self.rigid.addvideo(self.trimpath)
+            self.logger.info("Video added from: %s", self.trimpath)
         else:
             self.rigid.addvideo(videopath)
             self.logger.info("Video added from: %s", videopath)
-
-    # def setview(self):
+        
+        self.crop.set(self.fwidth, self.fheight)
+        # self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
 
     def resizef(self, frame: any, fwidth: int, fheight: int) -> any:
         """
@@ -176,7 +179,6 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        # self.canvas.tag_lower(self.imgview)
         self.rigid.track(
             trect.rects,
             ocr.rects,

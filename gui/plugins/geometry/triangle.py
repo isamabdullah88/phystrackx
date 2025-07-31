@@ -99,8 +99,6 @@ class Triangle:
                 fill="#d82995"
             )
             self.points[-1].settk(self.tkpt)
-            
-            self.canvas.tag_lower(self.tkline)
 
     def ondrag(self, event) -> None:
         """

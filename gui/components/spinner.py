@@ -42,14 +42,8 @@ class Spinner:
             for img in raw_frames
         ]
 
-        # self.imgview: int = self.canvas.create_image(
-        #     self.vwidth // 2,
-        #     self.vheight // 2,
-        #     image=self.frames[0],
-        #     anchor="center"
-        # )
-        # self.imgview.coords
-        self.canvas.itemconfig(self.imgview, image=self.frames[0])
+        self.canvas.coords(self.imgview, self.vwidth // 2 - 100, self.vheight // 2 - 100)
+        self.canvas.itemconfig(self.imgview, image=self.frames[0], anchor="nw")
 
         self.animate()
 
@@ -69,7 +63,6 @@ class Spinner:
         Stop animation and remove spinner from the canvas.
         """
         self.running = False
-        self.canvas.delete(self.imgview)
 
 
 def main() -> None:
@@ -80,11 +73,12 @@ def main() -> None:
     root.geometry("900x600")
     root.title("Spinner Preview")
 
-    canvas: CTkCanvas = ctk.CTkCanvas(root, width=900, height=600, bg="white")
+    canvas: CTkCanvas = ctk.CTkCanvas(root, width=900, height=600, bg="grey")
     canvas.pack(fill="both", expand=True)
+    imgview = canvas.create_image(0, 0)
 
     def launch_spinner() -> None:
-        spinner = Spinner(canvas)
+        spinner = Spinner(canvas, imgview)
         canvas.after(5000, spinner.destroy)
 
     canvas.after(100, launch_spinner)
