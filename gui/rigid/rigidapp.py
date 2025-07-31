@@ -83,11 +83,7 @@ class RigidApp(App):
         """Loads a new video from user click."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         
-        # self.videoapp.loadvideo(videopath)
-        
-        # self.loadcomponents()
-        
-        self.spinner = Spinner(self.videoview, self.crop)
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview)
 
         def load(spinner):
             self.videoapp.loadvideo(videopath)
@@ -98,7 +94,7 @@ class RigidApp(App):
         threading.Thread(target=load, args=(self.spinner,)).start()
         
     def trimvideo(self, startidx, endidx):
-        self.spinner = Spinner(self.videoview, self.crop)
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.crop)
 
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
@@ -112,17 +108,11 @@ class RigidApp(App):
     def loadcomponents(self):
         # Show frame count
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
-
-        self.crop.set(self.videoapp.fwidth, self.videoapp.fheight)
-        self.videoapp.setview()
         
-        print('seekbar.disable: ', self.seekbar.disable)
         if self.seekbar.disable:
             self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-            print('fcount: ', self.videoapp.fcount)
             self.seekbar.set(self.videoapp.fcount)
             self.seekbar.pack()
-            print('packed')
         else:
             self.seekbar.set(self.videoapp.fcount)
         
@@ -219,9 +209,6 @@ class RigidApp(App):
             
             self.root.after(0, processanim.destroy())
             self.root.after(0, progressbar.destroy())
-
-            # self.loadvideo(self.videoapp.trackpath, clear=False)
-            # self.seekbar = ViewSeekBar(self.vidframe, self.cwidth-self.twidth, self.seekbarh, fcount=self.videoapp.fcount, callback=self.updateframe)
             self.loadcomponents()
 
         threading.Thread(target=trackbg, args=(self.processanim,self.progressbar)).start()
@@ -231,7 +218,6 @@ class RigidApp(App):
     # TODO: Clear implementation of clear/abort while processing
     def clearcomponents(self):
         """Clear components"""
-        # self.crop.cleardata()
         self.filters.clear()
         self.axes.clear()
         self.tpoints.clear()
@@ -253,8 +239,6 @@ class RigidApp(App):
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
-        # TODO: Remove points from plot data as well when user removed the point
-        # self.gen_plotdata()
         
         if self.datamanager is not None:
             self.plot = Plot(self.videoview, self.datamanager)
@@ -281,14 +265,6 @@ class RigidApp(App):
                                 self.fwidth, self.fheight, self.videoapp.fps, self.scruler.scalef)
             self.datamanager.transform()
             self.save = Save(self.videoview, self.datamanager)
-        # Checkbox(self.videoview, PlotType, self.pdata.showplots)
-        
-        # self.gen_plotdata()
-        # ocrdata = OCRData(self.videoapp.ocrdata)
-        
-        # save = Save(self.pdata, ocrdata)
-        # save.askfilepath()
-        # save.savedata()
         
         
     def plugins(self):
@@ -297,14 +273,3 @@ class RigidApp(App):
         """
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()
-        
-    
-    # def gen_plotdata(self):
-    #     """Evolve raw data into plot data"""
-    #     if self.pdata is None:    
-    #         scale = 1
-    #         if self.scruler is not None:
-    #             scale = self.scruler.scalef
-                
-    #         self.pdata = Plot(self.videoapp.trackpts, self.axes, self.vwidth, self.vheight, self.fwidth,
-    #                 self.fheight, scale=scale, fps=self.videoapp.fps)

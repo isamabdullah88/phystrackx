@@ -16,6 +16,7 @@ from customtkinter import CTkCanvas, IntVar
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
+from gui.components.processanim import ProcessAnimation
 from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar
 from gui.components.rect import Rect
@@ -36,7 +37,7 @@ class Video:
         crop: Crop,
         seekbar: TrimSeekBar,
         filters: Filters,
-        spinner: Spinner
+        processanim: ProcessAnimation
     ) -> None:
         """
         Initialize the Video app.
@@ -48,7 +49,7 @@ class Video:
             crop (Crop): Crop handler.
             seekbar (TrimSeekBar): Seekbar for video navigation.
             filters (Filters): Filters to apply on video.
-            spinner (Spinner): UI spinner to show progress or status.
+            processanim (Spinner): UI processanim to show progress or status.
         """
         self.canvas = canvas
         self.vwidth = vwidth
@@ -56,7 +57,7 @@ class Video:
         self.crop = crop
         self.seekbar = seekbar
         self.filters = filters
-        self.spinner = spinner
+        self.processanim = processanim
 
         self.frame: Optional[any] = None
         self.imgview = None
@@ -70,12 +71,16 @@ class Video:
             trimpath=self.trimpath,
             vwidth=600,
             vheight=500,
-            tkqueue=self.spinner.queue
+            tkqueue=self.processanim.queue
         )
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Video App initialized")
         self.trimvideo = self.rigid.trim
+        
+        self.imgview = self.canvas.create_image(
+            self.crop.fx, self.crop.fy, anchor="nw"
+        )
 
     @property
     def fcount(self) -> int:
@@ -119,20 +124,20 @@ class Video:
         Args:
             videopath (str): Path to video file.
         """
+        
         if not filexists(videopath):
             self.logger.warning("Loading trim video")
             if not filexists(self.trimpath):
                 self.logger.error("Trim video not found!")
                 return
             self.rigid.addvideo(self.trimpath)
+            self.logger.info("Video added from: %s", self.trimpath)
         else:
             self.rigid.addvideo(videopath)
             self.logger.info("Video added from: %s", videopath)
-
-    def setview(self):
-        self.imgview = self.canvas.create_image(
-            self.crop.fx, self.crop.fy, anchor="nw"
-        )
+        
+        self.crop.set(self.fwidth, self.fheight)
+        # self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
 
     def resizef(self, frame: any, fwidth: int, fheight: int) -> any:
         """
@@ -174,7 +179,6 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        self.canvas.tag_lower(self.imgview)
         self.rigid.track(
             trect.rects,
             ocr.rects,
