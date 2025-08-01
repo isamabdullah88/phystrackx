@@ -13,6 +13,9 @@ import customtkinter as ctk
 from PIL import Image, ImageSequence, ImageEnhance
 from core import abspath
 from .rigid.rigidapp import RigidApp
+import tkinter as tk
+import webbrowser
+
 
 
 class AnimatedGIF(ctk.CTkLabel):
@@ -29,13 +32,13 @@ class AnimatedGIF(ctk.CTkLabel):
         self.idx = 0
         self.on_end = on_end
         super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
-        self.after(25, self._play_once)
+        self.after(1, self._play_once)
 
     def _play_once(self):
         if self.idx < len(self.frames):
             self.configure(image=self.frames[self.idx])
             self.idx += 1
-            self.after(25, self._play_once)
+            self.after(1, self._play_once)
         elif self.on_end:
             self.on_end()
 
@@ -76,6 +79,29 @@ class MenuScreen:
         self.img_label.bind("<Button-1>", self._launch_rigid_app)
         self.img_label.bind("<Enter>", self._hover_in)
         self.img_label.bind("<Leave>", self._hover_out)
+
+        self._show_donate_button()  # 👈 Add this line to show donation button
+
+    def _show_donate_button(self):
+        """Displays a donation button linking to donation section."""
+        def open_donation():
+            webbrowser.open("https://github.com/isamabdullah88/phystrackx/tree/isam/documentation?tab=readme-ov-file#-support-this-project")
+
+        imgpath = abspath("assets/logos/donation.png")  # Ensure this image exists
+        img = Image.open(imgpath).convert("RGBA").resize((50, 50))
+        dimg = ctk.CTkImage(light_image=img, dark_image=img, size=(50, 50))
+
+        self.donate_button = ctk.CTkButton(
+            self.root,
+            image=dimg,
+            command=open_donation,
+            text="",
+            width=50,
+            height=50
+        )
+        self.donate_button.image = dimg  # Prevent GC
+        self.donate_button.place(x=1200, y=650)  # Adjust position if needed
+
 
     def _load_start_images(self):
         """Load normal and hover images for the start button."""
