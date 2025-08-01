@@ -8,8 +8,8 @@ customtkinter.set_default_color_theme("dark-blue")
 
 class GUI:
     def __init__(self):
-        self.width = 1200
-        self.hegiht = 800
+        self.width = 1280
+        self.hegiht = 720
 
     def start(self):
 

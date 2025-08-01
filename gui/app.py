@@ -67,7 +67,7 @@ class App:
             ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
             ("assets/ruler.png", self.scale, "Add Scale"),
             ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
-            ("assets/start.png", self.strack, "Start Tracking"),
+            ("assets/track.png", self.strack, "Start Tracking"),
             ("assets/plot.png", self.plot, "Plot Tracked Data"),
             ("assets/save.png", self.savedata, "Save Tracked Data"),
             ("assets/reset.png", self.reset, "Clear Everything")
