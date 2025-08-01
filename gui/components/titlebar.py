@@ -12,7 +12,7 @@ class TitleBar:
         self.draw_shadow(0, height, vwidth)
         
         # === Add logo ===
-        self.logo = ImageTk.PhotoImage(Image.open(abspath("./assets/logo.png")).resize((50, 50)))
+        self.logo = ImageTk.PhotoImage(Image.open(abspath("./assets/logos/logo.png")).resize((50, 50)))
         self.canvas.create_image(20, 10, image=self.logo, anchor="nw")
 
         # === Add title text (left aligned) ===

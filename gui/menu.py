@@ -1,141 +1,110 @@
-# import tkinter as tk
 import customtkinter as ctk
-from tkinter import ttk
-from PIL import Image, ImageTk, ImageDraw, ImageFilter
-
-from .rigid.rigidapp import RigidApp
-from .nonrigid.nonrigid import NonRigid
+from PIL import Image, ImageSequence, ImageEnhance
 from core import abspath
-import os
+from .rigid.rigidapp import RigidApp
+
+class AnimatedGIF(ctk.CTkLabel):
+    def __init__(self, master, gif_path, on_end=None, *args, **kwargs):
+        self.sequence = [
+            frame.copy().convert("RGBA").resize((1280, 720))
+            for frame in ImageSequence.Iterator(Image.open(gif_path))
+        ]
+        self.frames = [ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence]
+        self.idx = 0
+        self.on_end = on_end  # Callback to run after last frame
+        super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
+        self.after(25, self.play)
+
+    def play(self):
+        if self.idx < len(self.frames):
+            self.configure(image=self.frames[self.idx])
+            self.idx += 1
+            self.after(25, self.play)
+        else:
+            if self.on_end:
+                self.on_end()  # Call the callback when done
+
 
 class MenuScreen:
     def __init__(self, root):
         self.root = root
-        self.root.title("Select Tracking Type")
+        self.root.title("PhysTrack Front Page")
+        self.root.geometry("1280x720")
 
-        dirpath = 'assets/logos'
-        imgpaths = [os.path.join(dirpath, imgname) for imgname in ['astrolab.png', 'kss.png', 'qosain.png', 'physlab.png']]
+        # Container frame
+        self.main_frame = ctk.CTkFrame(self.root, width=1280, height=720)
+        self.main_frame.pack(fill="both", expand=True)
+        self.canvas = ctk.CTkCanvas(self.main_frame)
+        self.canvas.pack(fill="both", expand=True)
 
-        # Background image
-        self.bg_img = self.loadimg("assets/logos/AIbackground1.jpg", 1280, 720)
-        self.bg_label = ctk.CTkLabel(self.root, text="", image=self.bg_img)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
-
-        # Main PhysTrack logo (on top of bg)
-        phystrack_img = self.loadimg('assets/logos/logo.png', 100, 100)
-        self.phystrack_logo = ctk.CTkLabel(self.root, image=phystrack_img, text="", corner_radius=10)
-        self.phystrack_logo.place(relx=0.3, rely=0.1, anchor="n")
-        
-        self.titlerect = ctk.CTkLabel(self.root,
-            fg_color="#78e955", width=500, height=100, corner_radius=10
-        )
-        self.titlerect.place(relx=0.6, rely=0.1, anchor="n")
-        
-        # Styled title label: PhysTrack Rigid
-        self.title_label = ctk.CTkLabel(
+        # Animated GIF background
+        # Play animation, then call self.show_start_button
+        self.animated_bg = AnimatedGIF(
             self.root,
-            text=" PhysTrack: Rigid ",
-            font=("Segoe UI", 60, "bold"),
-            text_color="#1010d6",
-            bg_color="#78e955"
+            abspath("assets/logos/frontpage.gif"),
+            on_end=self.show_start_button
         )
-        self.title_label.place(relx=0.6, rely=0.11, anchor="n")
-
-        # Start button
-        self.mkbutton(self.root, "assets/start.png", self.rigid, 200, 100, relx=0.5, rely=0.70)
-        
-        # Logos placed directly on background with styled labels
-        self.logo_labels = []
-        # positions = [0.2, 0.4, 0.6, 0.8]
-        width = 1200*0.4
-        xs = int((1200-width)/2)
-        # for pos, imgpath in zip(positions, imgpaths):
-        idx = 0
-        for i in range(xs, int(width+xs), int(width/4)):
-            imgpath = imgpaths[idx]
-            idx += 1
-            w = int(width/4)
-            img = self.loadimg(imgpath, w-20, w-20)
-            logo_container = ctk.CTkFrame(self.root, width=w, height=w, corner_radius=20, bg_color="#CA3737",
-                                          border_color="#44B62A")
-            logo_container.configure(fg_color=("#ffffff", "#111111"))
-            # logo_container.place(relx=pos, rely=0.8, anchor="center")
-            logo_container.place(x=i, y=700)
-            lbl = ctk.CTkLabel(logo_container, image=img, text="")
-            lbl.pack(padx=10, pady=10)
-            self.logo_labels.append(logo_container)
+        self.animated_bg.place(x=0, y=0, relwidth=1, relheight=1)
 
 
-        # Optional animation text
-        # self.label = ctk.CTkLabel(self.root, text="Welcome to PhysTrackX", font=("Helvetica", 24))
-        # self.label.place(relx=0.5, rely=0.9, anchor="center")
-        # self._tid = self.root.after(500, self.texanim)
+    def show_start_button(self):
+        # Load original and hover images
+        self.img_original = Image.open(abspath("assets/start.png")).convert("RGBA").resize((170, 72))
+        enhancer = ImageEnhance.Brightness(self.img_original)
+        self.img_hovered = enhancer.enhance(1.2)  # Brighter version
 
-    def mkbutton(self, frame, imgpath, command, width, height, relx=0.5, rely=0.5):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(width, height))
-        button = ctk.CTkButton(frame, image=img, text="", width=width, height=height,
-                               compound="left", command=command, corner_radius=5, bg_color="transparent")
-        button.place(relx=relx, rely=rely, anchor="center")
-    # def mkbutton(self, frame, imgpath, command, width, height, relx=0.5, rely=0.5):
-    #     """
-    #     Creates a button with an image and a command, adding a simulated shadow and gradient background.
-    #     """
-    #     # Load and resize image
-    #     img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
-    #     img = ctk.CTkImage(dark_image=img, size=(width, height))
+        self.tk_img_normal = ctk.CTkImage(light_image=self.img_original, size=self.img_original.size)
+        self.tk_img_hover = ctk.CTkImage(light_image=self.img_hovered, size=self.img_hovered.size)
 
-    #     # Shadow layer (simulated)
-    #     shadow = ctk.CTkFrame(frame, width=width + 20, height=height + 20, corner_radius=20)
-    #     shadow.configure(fg_color="#222222")  # Dark background as shadow
-    #     shadow.place(relx=relx, rely=rely + 0.01, anchor="center")  # Slight offset for shadow
+        # Create transparent label as image button
+        self.img_label = ctk.CTkLabel(
+            self.root,
+            text="",
+            image=self.tk_img_normal,
+            fg_color="transparent",
+            cursor="hand2"  # Change cursor to hand
+        )
+        self.img_label.place(x=591, y=467)
 
-    #     # Button frame with gradient-like bg
-    #     btn_bg = ctk.CTkFrame(frame, width=width, height=height, corner_radius=20)
-    #     btn_bg.configure(fg_color=("#ccccff", "#6666aa"))  # Light to dark simulated gradient
-    #     btn_bg.place(relx=relx, rely=rely, anchor="center")
+        # Bind events
+        self.img_label.bind("<Button-1>", self.rigid)
+        self.img_label.bind("<Enter>", self.on_enter)
+        self.img_label.bind("<Leave>", self.on_leave)
 
-    #     # Actual button on top
-    #     button = ctk.CTkButton(
-    #         btn_bg,
-    #         image=img,
-    #         text="",
-    #         width=width,
-    #         height=height,
-    #         compound="left",
-    #         fg_color="transparent",  # Transparent to use bg from btn_bg
-    #         hover_color="#444477",
-    #         command=command
+    def on_click(self, event):
+        print("Image button clicked!")
+
+    def on_enter(self, event):
+        self.img_label.configure(image=self.tk_img_hover)
+
+    def on_leave(self, event):
+        self.img_label.configure(image=self.tk_img_normal)
+
+    # def _mkbutton(self, imgpath: str, command: callable, width, height) -> ctk.CTkButton:
+    #     """Creates a CTkButton with an image and command."""
+    #     img = Image.open(abspath(imgpath)).resize(
+    #         (width, height), Image.Resampling.LANCZOS
     #     )
-    #     button.place(relx=0.5, rely=0.5, anchor="center")
-        # return button
+    #     ctkimg = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
+    #     button = ctk.CTkButton(
+    #         self.canvas, text="", width=0, height=0, corner_radius=50,
+    #         command=command, image=ctkimg, border_spacing=0, border_width=0, fg_color="transparent", bg_color="black"
+    #     )
+    #     button.image = ctkimg
+    #     return button
 
-
-    def loadimg(self, imgpath, width, height):
-        imgpath = abspath(imgpath)
-        img = Image.open(imgpath).convert("RGBA").resize((width, height), Image.Resampling.LANCZOS)
-        return ctk.CTkImage(dark_image=img, size=img.size)
-
-    def texanim(self):
-        text = self.label.cget("text")
-        if text.endswith("..."):
-            self.label.configure(text="Welcome to PhysTrackX")
-        else:
-            self.label.configure(text=text + ".")
-        self._tid = self.root.after(500, self.texanim)
-
-    def rigid(self):
-        self.root.after_cancel(self._tid)
+    def rigid(self, event):
         self.clear_screen()
-        RigidApp(self.root)
-
-    def nonrigid(self):
-        self.root.after_cancel(self._tid)
-        NonRigid(self.root)
-
+        
+        rigid = RigidApp(self.root)
+        
     def clear_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
+
+if __name__ == "__main__":
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
+    root = ctk.CTk()
+    MenuScreen(root)
+    root.mainloop()
