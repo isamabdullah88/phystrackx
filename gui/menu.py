@@ -1,93 +1,109 @@
-# import tkinter as tk
-import customtkinter as ctk
-from tkinter import ttk
-from PIL import Image, ImageTk
+"""
+menu.py
 
-from .rigid.rigidapp import RigidApp
-from .nonrigid.nonrigid import NonRigid
+Main menu screen for PhysTrackX.
+
+This module defines the startup interface, including animated background,
+and a custom transparent image-based start button that launches the Rigid Motion module.
+
+Author: Isam Balghari
+"""
+
+import customtkinter as ctk
+from PIL import Image, ImageSequence, ImageEnhance
 from core import abspath
+from .rigid.rigidapp import RigidApp
+
+
+class AnimatedGIF(ctk.CTkLabel):
+    """Plays a GIF animation once and calls a callback at the end."""
+
+    def __init__(self, master, gif_path: str, on_end=None, *args, **kwargs):
+        self.sequence = [
+            frame.copy().convert("RGBA").resize((1280, 720))
+            for frame in ImageSequence.Iterator(Image.open(gif_path))
+        ]
+        self.frames = [
+            ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence
+        ]
+        self.idx = 0
+        self.on_end = on_end
+        super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
+        self.after(25, self._play_once)
+
+    def _play_once(self):
+        if self.idx < len(self.frames):
+            self.configure(image=self.frames[self.idx])
+            self.idx += 1
+            self.after(25, self._play_once)
+        elif self.on_end:
+            self.on_end()
+
 
 class MenuScreen:
+    """Main menu screen with animation and image button to launch PhysTrack Rigid."""
+
     def __init__(self, root):
         self.root = root
-        self.root.title("Select Tracking Type")
-        # self.root.geometry("960x640")
-        
-        # Title label
-        self.label = ctk.CTkLabel(root, text="Welcome to PhysTrackX", font=("Helvetica", 24))
-        self.label.pack(pady=(20, 0))
+        self.root.title("PhysTrack Front Page")
+        self.root.geometry("1280x720")
 
-        # Subtitle label
-        subtlabel = ctk.CTkLabel(root, text="A Project By Dr. Sabieh, Isam", font=("Helvetica", 18))
-        subtlabel.pack(pady=(10, 0))
-        
-        # Load and display the logo, resized to fit the window
-        self.displogo(root)
-        
-        self.texanim()
-        
-        # === Center frame to hold the grid ===
-        center_frame = ctk.CTkFrame(self.root)
-        center_frame.place(relx=0.5, rely=0.5, anchor="center")  # center the frame
+        # === Frame for layout ===
+        self.main_frame = ctk.CTkFrame(self.root, width=1280, height=720)
+        self.main_frame.pack(fill="both", expand=True)
 
-        # === Create grid of icon buttons ===
-        
-        self.button(center_frame, "assets/rigid.png", self.rigid, 0, 0)
-        
-        self.button(center_frame, "assets/nonrigid.png", self.nonrigid, 0, 1)
+        # === Background animation ===
+        self.animated_bg = AnimatedGIF(
+            master=self.main_frame,
+            gif_path=abspath("assets/logos/frontpage.gif"),
+            on_end=self._show_start_button
+        )
+        self.animated_bg.place(x=0, y=0, relwidth=1, relheight=1)
 
-    def button(self, frame, imgpath, command, row, col, btnsize=80):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(frame, image=img, text="", width=btnsize, height=btnsize,
-                               compound="left", command=command)
-        button.grid(row=row, column=col, padx=10, pady=10)
+    def _show_start_button(self):
+        """Display the start button after the GIF ends."""
+        self._load_start_images()
 
-    def displogo(self, root):
-        # Load the image
-        imgpath = abspath("assets/logo.png")
-        img = Image.open(imgpath)
+        self.img_label = ctk.CTkLabel(
+            master=self.main_frame,
+            text="",
+            image=self.tk_img_normal,
+            fg_color="transparent",
+            cursor="hand2"
+        )
+        self.img_label.place(x=591, y=467)
 
-        # Resize the img to fit the window width while maintaining aspect ratio
-        base_width = 700  # Set width smaller than the window width for padding considerations
-        w_percent = (base_width / float(img.size[0]))
-        h_size = int((float(img.size[1]) * float(w_percent)))
-        img = img.resize((base_width, h_size), Image.Resampling.LANCZOS)
+        self.img_label.bind("<Button-1>", self._launch_rigid_app)
+        self.img_label.bind("<Enter>", self._hover_in)
+        self.img_label.bind("<Leave>", self._hover_out)
 
-        # photo = ImageTk.PhotoImage(img)
-        photo = ctk.CTkImage(dark_image=img, size=(base_width, h_size))
+    def _load_start_images(self):
+        """Load normal and hover images for the start button."""
+        img_path = abspath("assets/start.png")
+        base_img = Image.open(img_path).convert("RGBA").resize((170, 72))
+        bright_img = ImageEnhance.Brightness(base_img).enhance(1.2)
 
-        # Create a label to display the image
-        image_label = ctk.CTkLabel(root, image=photo, text="")
-        image_label.image = photo  # Keep a reference, prevent GC
-        image_label.pack(pady=(10, 0))
-        
-    def texanim(self):
-        text = self.label.cget("text")
-        if text.endswith("..."):
-            self.label.configure(text="Welcome to PhysTrackX")
-        else:
-            self.label.configure(text=text + ".")
-            
-        self._tid = self.root.after(500, self.texanim)
+        self.tk_img_normal = ctk.CTkImage(light_image=base_img, size=base_img.size)
+        self.tk_img_hover = ctk.CTkImage(light_image=bright_img, size=bright_img.size)
 
-    def rigid(self):
-        self.root.after_cancel(self._tid)  # Stop the text animation
-        # self.root.destroy()
-        self.clear_screen()
-        
-        rigid = RigidApp(self.root)
-        
+    def _hover_in(self, _):
+        self.img_label.configure(image=self.tk_img_hover)
 
-    def nonrigid(self):
-        self.root.after_cancel(self._tid)  # Stop the text animation
-        # self.root.destroy()
-        
-        NonRigid(self.root)
-        
-    def clear_screen(self):
+    def _hover_out(self, _):
+        self.img_label.configure(image=self.tk_img_normal)
+
+    def _launch_rigid_app(self, _):
+        self._clear_screen()
+        RigidApp(self.root)
+
+    def _clear_screen(self):
         for widget in self.root.winfo_children():
             widget.destroy()
+
+
+if __name__ == "__main__":
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
+    root = ctk.CTk()
+    MenuScreen(root)
+    root.mainloop()
