@@ -1,9 +1,9 @@
-""# PhysTrackX
+# PhysTrackX
 
 **PhysTrackX** is a user-friendly, visually engaging application designed for physics education and analysis. It allows high school and early undergraduate students to interactively engage with real-world experiments using video analysis, mathematical tools, and data visualization. The software turns ordinary experiment footage into a powerful source of measurement, exploration, and understanding.
 
 <p align="center">
-  <img src="https://i.imgur.com/8gQOyoQ.gif" alt="PhysTrackX Demo" width="700"/>
+  <img src="https://postimg.cc/RWK46B7h" alt="PhysTrackX Demo" width="700"/>
 </p>
 
 ---
@@ -71,16 +71,6 @@ A Windows `.exe` binary version is available for download [here](https://github.
 
 ---
 
-## 🎥 Screenshots
-
-<p float="left">
-  <img src="https://i.imgur.com/N9EtDWx.png" width="320"/>
-  <img src="https://i.imgur.com/poT2cHa.png" width="320"/>
-  <img src="https://i.imgur.com/R2HpNTI.png" width="320"/>
-</p>
-
----
-
 ## ☕ Support This Project
 
 If PhysTrackX has helped you or your students learn physics better, consider supporting:
@@ -89,7 +79,7 @@ If PhysTrackX has helped you or your students learn physics better, consider sup
 
 or contribute to science outreach by donating to:
 
-### 👉 [Khwarizmi Science Society](https://ksslsf.org/donate/)
+### 👉 [Khwarizmi Science Society](https://khwarizmi.org/support-us/)
 
 ---
 
