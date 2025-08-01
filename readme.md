@@ -95,4 +95,3 @@ Have suggestions, ideas, or want to collaborate?
 
 - GitHub: [github.com/isamabdullah88](https://github.com/isamabdullah88)
 - Email: isambalghari[at]gmail.com
-""
