@@ -22,8 +22,7 @@ class AnimatedGIF(ctk.CTkLabel):
 
     def __init__(self, master, gif_path: str, on_end=None, *args, **kwargs):
         self.sequence = [
-            frame.copy().convert("RGBA").resize((1280, 720))
-            for frame in ImageSequence.Iterator(Image.open(gif_path))
+            frame.copy() for frame in ImageSequence.Iterator(Image.open(gif_path))
         ]
         self.frames = [
             ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence

@@ -36,10 +36,7 @@ class Spinner:
         gif_path: str = abspath("./assets/process.gif")
         raw_frames = ImageSequence.Iterator(Image.open(gif_path))
         self.frames: list[ImageTk.PhotoImage] = [
-            ImageTk.PhotoImage(
-                img.resize((200, 200), Image.Resampling.LANCZOS)
-            )
-            for img in raw_frames
+            ImageTk.PhotoImage(img.convert("RGBA")) for img in raw_frames
         ]
 
         self.canvas.coords(self.imgview, self.vwidth // 2 - 100, self.vheight // 2 - 100)
@@ -56,7 +53,7 @@ class Spinner:
 
         self.index = (self.index + 1) % len(self.frames)
         self.canvas.itemconfig(self.imgview, image=self.frames[self.index])
-        self.canvas.after(50, self.animate)
+        self.canvas.after(5, self.animate)
 
     def destroy(self) -> None:
         """
