@@ -75,7 +75,7 @@ A Windows `.exe` binary version is available for download [here](https://github.
 
 If PhysTrackX has helped you or your students learn physics better, consider supporting:
 
-### 👉 [Buy me a coffee](https://www.buymeacoffee.com/isambalghari)
+### 👉 [Support me on Gumroad](https://isamabdullah.gumroad.com/l/phystrackx)
 
 or contribute to science outreach by donating to:
 
