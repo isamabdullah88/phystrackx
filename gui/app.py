@@ -52,7 +52,7 @@ class App:
         """
         Creates a button with an image and a command.
         """
-        img = Image.open(abspath(imgpath)).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
+        img = Image.open(abspath(imgpath))
         img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
         button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
                                image=img, command=command)

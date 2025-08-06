@@ -13,7 +13,6 @@ import customtkinter as ctk
 from PIL import Image, ImageSequence, ImageEnhance
 from core import abspath
 from .rigid.rigidapp import RigidApp
-import tkinter as tk
 import webbrowser
 
 
@@ -23,8 +22,7 @@ class AnimatedGIF(ctk.CTkLabel):
 
     def __init__(self, master, gif_path: str, on_end=None, *args, **kwargs):
         self.sequence = [
-            frame.copy().convert("RGBA").resize((1280, 720))
-            for frame in ImageSequence.Iterator(Image.open(gif_path))
+            frame.copy() for frame in ImageSequence.Iterator(Image.open(gif_path))
         ]
         self.frames = [
             ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence
@@ -32,13 +30,13 @@ class AnimatedGIF(ctk.CTkLabel):
         self.idx = 0
         self.on_end = on_end
         super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
-        self.after(1, self._play_once)
+        self.after(25, self._play_once)
 
     def _play_once(self):
         if self.idx < len(self.frames):
             self.configure(image=self.frames[self.idx])
             self.idx += 1
-            self.after(1, self._play_once)
+            self.after(25, self._play_once)
         elif self.on_end:
             self.on_end()
 
@@ -85,7 +83,7 @@ class MenuScreen:
     def _show_donate_button(self):
         """Displays a donation button linking to donation section."""
         def open_donation():
-            webbrowser.open("https://github.com/isamabdullah88/phystrackx/tree/isam/documentation?tab=readme-ov-file#-support-this-project")
+            webbrowser.open("https://github.com/isamabdullah88/phystrackx?files=1#-buy-me-a-coffee")
 
         imgpath = abspath("assets/logos/donation.png")  # Ensure this image exists
         img = Image.open(imgpath).convert("RGBA").resize((50, 50))
@@ -100,7 +98,7 @@ class MenuScreen:
             height=50
         )
         self.donate_button.image = dimg  # Prevent GC
-        self.donate_button.place(x=1200, y=650)  # Adjust position if needed
+        self.donate_button.place(x=1200, y=15)  # Adjust position if needed
 
 
     def _load_start_images(self):
