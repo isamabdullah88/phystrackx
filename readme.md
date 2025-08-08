@@ -3,7 +3,7 @@
 **PhysTrackX** is a user-friendly, visually engaging application designed for physics education and analysis. It allows high school and early undergraduate students to interactively engage with real-world experiments using video analysis, mathematical tools, and data visualization. The software turns ordinary experiment footage into a powerful source of measurement, exploration, and understanding.
 
 <p align="center">
-  <img src="https://i.postimg.cc/sDSFqGn7/Front-Page.png" alt="PhysTrackX Demo" width="700"/>
+  <img src="https://i.postimg.cc/zDjTb3pN/app.png" alt="PhysTrackX Demo" width="700"/>
 </p>
 
 ---
