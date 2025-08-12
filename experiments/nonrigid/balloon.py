@@ -21,20 +21,22 @@ from filters import Smoothen
 from .utils import ptsellpise
 
 class Balloon(Experiment):
-    def __init__(self, trackpath):
-        super().__init__()
+    def __init__(self, trimpath, vwidth, vheight, tkqueue):
+        super().__init__(trimpath, vwidth, vheight)
 
-        self._trackpath = trackpath
+        self.tkqueue = tkqueue
+        self.trackpts: list[list[int]] = []
+        self.texts: list[list[str]] = []
 
-    def resize(self):
-        """Resize frame shape to lower"""
-        if self.fheight <= 360:
-            return self.fwidth, self.fheight
+    # def resize(self):
+    #     """Resize frame shape to lower"""
+    #     if self.fheight <= 360:
+    #         return self.fwidth, self.fheight
         
-        self.aspratio = self.fwidth/self.fheight
+    #     self.aspratio = self.fwidth/self.fheight
 
-        self.fheight = 360
-        self.fwidth = floor(self.aspratio * self.fheight)
+    #     self.fheight = 360
+    #     self.fwidth = floor(self.aspratio * self.fheight)
 
 
     def preprocess(self, frame, mask=None):
@@ -155,7 +157,7 @@ class Balloon(Experiment):
 
 
 
-    def track(self, mask, rect, startidx=0, endidx=0):
+    def track(self, mask, rect, ocrrects, filters, crop, progress):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -167,23 +169,29 @@ class Balloon(Experiment):
         It then tracks the ellipse in time to detect time evolving ellipse.
         Note: Make sure that the first frame has almost perfectly accurate detection.
         """
-        # Do OCR detection
-        if rect is not None:
-            rectp = rect.norm2pix(self.fwidth, self.fheight)
-            self.ocr(rectp, startidx=startidx, endidx=endidx)
+        if ocrrects:
+            import pytesseract
+            import platform
+            if platform.system() == "Windows":
+                pytesseract.pytesseract.tesseract_cmd = (
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                )
+
+        self.resize()
 
         # Tracking
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        # self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-                                            (self.fwidth, self.fheight))
+        # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        # # self.resize()
+        # self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
+        #                                     (self.fwidth, self.fheight))
 
-        self._vidreader.seek(startidx)
-        
-        if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
-        else:
-            fcount = endidx - startidx
+        crwidth = crop.crprect.width if crop.crprect else self.fwidth
+        crheight = crop.crprect.height if crop.crprect else self.fheight
+
+        self._vidreader.seek(0)
+        frame = self._vidreader.read()
+        frame = cv2.resize(frame, (self.fwidth, self.fheight))
+        frame = filters.appfilter(crop.appcrop(frame))
 
         mask = cv2.resize(mask, (self.fwidth, self.fheight))
         
@@ -208,11 +216,13 @@ class Balloon(Experiment):
         smoothena = Smoothen(tol=50, winlen=5)
         smoothenb = Smoothen(tol=50, winlen=5)
 
+        fcount = self._vidreader.fcount
         startrect = rect
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            frame = filters.appfilter(crop.appcrop(frame))
 
             rectp, ellipse = self.offellipse(ellipse, rect, 100)
             initpts = ptsellpise(ellipse, 100)
@@ -265,11 +275,18 @@ class Balloon(Experiment):
             cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
                         endAngle=360, thickness=2)
             
+            for j, rect in enumerate(ocrrects):
+                pixrect = rect.norm2pix(crwidth, crheight)
+                text = self.ocr(frame, pixrect, pytesseract)
+                self.texts[j].append(text)
 
-            self._videowriter.write(frame)
+            if progress is not None:
+                progress.set((i / (fcount - 1)) * 100)
+
+            # self._videowriter.write(frame)
 
 
-        self._videowriter.release()
+        # self._videowriter.release()
 
 
 
