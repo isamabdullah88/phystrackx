@@ -1,6 +1,8 @@
 import customtkinter as ctk
 from customtkinter import CTkCanvas
 from PIL import Image
+import numpy as np
+import cv2
 from core import abspath
 from core import PixelRect
 from .label import Label
@@ -17,6 +19,8 @@ class Circle:
         self.canvascircles = []
         self._tkcircles = []
         
+        self.mask = None
+
         self.toggle = toggle
         self.btnsize = 30
         self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
@@ -88,6 +92,20 @@ class Circle:
 
             rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)            
             self.circles.append(rect.pix2norm(fwidth, fheight))
+
+            mask = np.zeros((fheight, fwidth), dtype=np.uint8)
+
+            # Calculate center of ellipse
+            center = ((rect.xmin + rect.xmax) // 2, (rect.ymin + rect.ymax) // 2)
+
+            # Calculate axes lengths (half of width and height)
+            axes = (abs(rect.xmax - rect.xmin) // 2, abs(rect.ymax - rect.ymin) // 2)
+
+            # Draw filled ellipse on the mask (255 = white)
+            cv2.ellipse(mask, center, axes, angle=0, startAngle=0, endAngle=360,
+                        color=255, thickness=-1)
+            
+            self.mask = mask
             
             self.canvas.unbind("<Button-1>")
             self.canvas.unbind("<B1-Motion>")
