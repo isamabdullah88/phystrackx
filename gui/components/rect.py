@@ -23,7 +23,7 @@ class Rect:
         self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
-        self.applied = False
+        # self.applied = False
         
         self.btnlist = btnlist
         self.activebtn = activebtn
@@ -125,11 +125,8 @@ class Rect:
         self.button.place_forget()
         self.applybtn.place_forget()
         
-        self.applied = True
+        # self.applied = True
         
-        # if self.toggle:
-        #     self.toggle()
-            
         for i,rect in enumerate(self.canvasrects):
             x, y, w, h = rect.totuple()
             text = f"Rect-{i+1}: x={x:.0f}, y={y:.0f}, width={w:.0f}, height={h:.0f}"
