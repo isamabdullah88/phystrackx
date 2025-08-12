@@ -1,133 +1,144 @@
 """
-menu.py
-
-Main menu screen for PhysTrackX.
-
-This module defines the startup interface, including animated background,
-and a custom transparent image-based start button that launches the Rigid Motion module.
+menuscreen.py
+GUI menu for selecting tracking type in PhysTrackX.
 
 Author: Isam Balghari
 """
 
 import customtkinter as ctk
-from PIL import Image, ImageSequence, ImageEnhance
-from core import abspath
+from PIL import Image
+from tkinter import Tk, Widget
+
 from .rigid.rigidapp import RigidApp
-import webbrowser
-
-
-
-class AnimatedGIF(ctk.CTkLabel):
-    """Plays a GIF animation once and calls a callback at the end."""
-
-    def __init__(self, master, gif_path: str, on_end=None, *args, **kwargs):
-        self.sequence = [
-            frame.copy() for frame in ImageSequence.Iterator(Image.open(gif_path))
-        ]
-        self.frames = [
-            ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence
-        ]
-        self.idx = 0
-        self.on_end = on_end
-        super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
-        self.after(25, self._play_once)
-
-    def _play_once(self):
-        if self.idx < len(self.frames):
-            self.configure(image=self.frames[self.idx])
-            self.idx += 1
-            self.after(25, self._play_once)
-        elif self.on_end:
-            self.on_end()
+from .nonrigid.nonrigid import NonRigid
+from core import abspath
 
 
 class MenuScreen:
-    """Main menu screen with animation and image button to launch PhysTrack Rigid."""
+    """Main menu screen for selecting between rigid and non-rigid tracking modes."""
 
-    def __init__(self, root):
+    def __init__(self, root: Tk) -> None:
+        """
+        Initialize the MenuScreen.
+
+        Args:
+            root (Tk): The main application root window.
+        """
         self.root = root
-        self.root.title("PhysTrack Front Page")
-        self.root.geometry("1280x720")
+        self.root.title("Select Tracking Type")
 
-        # === Frame for layout ===
-        self.main_frame = ctk.CTkFrame(self.root, width=1280, height=720)
-        self.main_frame.pack(fill="both", expand=True)
+        # self._create_title_labels()
+        # self._display_logo()
+        # self._start_text_animation()
+        self._create_icon_grid()
 
-        # === Background animation ===
-        self.animated_bg = AnimatedGIF(
-            master=self.main_frame,
-            gif_path=abspath("assets/logos/frontpage.gif"),
-            on_end=self._show_start_button
+    # ================== UI Construction Methods ================== #
+
+    # def _create_title_labels(self) -> None:
+    #     """Create and place the main title and subtitle labels."""
+    #     self.label = ctk.CTkLabel(
+    #         self.root, text="Welcome to PhysTrackX", font=("Helvetica", 24)
+    #     )
+    #     self.label.pack(pady=(20, 0))
+
+    #     subtlabel = ctk.CTkLabel(
+    #         self.root, text="A Project By Dr. Sabieh, Isam", font=("Helvetica", 18)
+    #     )
+    #     subtlabel.pack(pady=(10, 0))
+
+    def _create_icon_grid(self) -> None:
+        """Create a centered frame with buttons for selecting tracking type."""
+        center_frame = ctk.CTkFrame(self.root)
+        center_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+        self._create_icon_button(
+            center_frame, "assets/rigid.png", self._rigid_mode, row=0, col=0
         )
-        self.animated_bg.place(x=0, y=0, relwidth=1, relheight=1)
+        self._create_icon_button(
+            center_frame, "assets/nonrigid.png", self._nonrigid_mode, row=0, col=1
+        )
 
-    def _show_start_button(self):
-        """Display the start button after the GIF ends."""
-        self._load_start_images()
+    def _create_icon_button(
+        self,
+        frame: Widget,
+        img_path: str,
+        command: callable,
+        row: int,
+        col: int,
+        btn_size: int = 80
+    ) -> None:
+        """
+        Create a button with an image and a command.
 
-        self.img_label = ctk.CTkLabel(
-            master=self.main_frame,
+        Args:
+            frame (Widget): Parent frame to hold the button.
+            img_path (str): Path to the button icon.
+            command (callable): Function to execute when clicked.
+            row (int): Row index in grid.
+            col (int): Column index in grid.
+            btn_size (int, optional): Button size in pixels. Defaults to 80.
+        """
+        img = Image.open(abspath(img_path)).resize(
+            (btn_size, btn_size), Image.Resampling.LANCZOS
+        )
+        img_ctk = ctk.CTkImage(dark_image=img, size=(btn_size, btn_size))
+        button = ctk.CTkButton(
+            frame,
+            image=img_ctk,
             text="",
-            image=self.tk_img_normal,
-            fg_color="transparent",
-            cursor="hand2"
+            width=btn_size,
+            height=btn_size,
+            compound="left",
+            command=command
         )
-        self.img_label.place(x=591, y=467)
+        button.grid(row=row, column=col, padx=10, pady=10)
 
-        self.img_label.bind("<Button-1>", self._launch_rigid_app)
-        self.img_label.bind("<Enter>", self._hover_in)
-        self.img_label.bind("<Leave>", self._hover_out)
+    def _display_logo(self) -> None:
+        """Load and display the application logo."""
+        img_path = abspath("assets/logo.png")
+        img = Image.open(img_path)
 
-        self._show_donate_button()  # 👈 Add this line to show donation button
+        base_width = 700
+        w_percent = base_width / float(img.size[0])
+        h_size = int(float(img.size[1]) * w_percent)
+        img = img.resize((base_width, h_size), Image.Resampling.LANCZOS)
 
-    def _show_donate_button(self):
-        """Displays a donation button linking to donation section."""
-        def open_donation():
-            webbrowser.open("https://github.com/isamabdullah88/phystrackx?files=1#-buy-me-a-coffee")
+        photo = ctk.CTkImage(dark_image=img, size=(base_width, h_size))
+        image_label = ctk.CTkLabel(self.root, image=photo, text="")
+        image_label.image = photo  # Prevent garbage collection
+        image_label.pack(pady=(10, 0))
 
-        imgpath = abspath("assets/logos/donation.png")  # Ensure this image exists
-        img = Image.open(imgpath).convert("RGBA").resize((50, 50))
-        dimg = ctk.CTkImage(light_image=img, dark_image=img, size=(50, 50))
+    # ================== Animation ================== #
 
-        self.donate_button = ctk.CTkButton(
-            self.root,
-            image=dimg,
-            command=open_donation,
-            text="",
-            width=50,
-            height=50
-        )
-        self.donate_button.image = dimg  # Prevent GC
-        self.donate_button.place(x=1200, y=15)  # Adjust position if needed
+    def _start_text_animation(self) -> None:
+        """Start animating the welcome text."""
+        self._animate_text()
 
+    def _animate_text(self) -> None:
+        """Append dots to the welcome text in a loop."""
+        text = self.label.cget("text")
+        if text.endswith("..."):
+            self.label.configure(text="Welcome to PhysTrackX")
+        else:
+            self.label.configure(text=text + ".")
+        self._tid = self.root.after(500, self._animate_text)
 
-    def _load_start_images(self):
-        """Load normal and hover images for the start button."""
-        img_path = abspath("assets/start.png")
-        base_img = Image.open(img_path).convert("RGBA").resize((170, 72))
-        bright_img = ImageEnhance.Brightness(base_img).enhance(1.2)
+    # ================== Event Handlers ================== #
 
-        self.tk_img_normal = ctk.CTkImage(light_image=base_img, size=base_img.size)
-        self.tk_img_hover = ctk.CTkImage(light_image=bright_img, size=bright_img.size)
-
-    def _hover_in(self, _):
-        self.img_label.configure(image=self.tk_img_hover)
-
-    def _hover_out(self, _):
-        self.img_label.configure(image=self.tk_img_normal)
-
-    def _launch_rigid_app(self, _):
-        self._clear_screen()
+    def _rigid_mode(self) -> None:
+        """Switch to the rigid tracking mode."""
+        # self.root.after_cancel(self._tid)
+        self.clear_screen()
         RigidApp(self.root)
 
-    def _clear_screen(self):
+    def _nonrigid_mode(self) -> None:
+        """Switch to the non-rigid tracking mode."""
+        # self.root.after_cancel(self._tid)
+        NonRigid(self.root)
+
+    # ================== Utility ================== #
+
+    def clear_screen(self) -> None:
+        """Remove all widgets from the root window."""
         for widget in self.root.winfo_children():
             widget.destroy()
-
-
-if __name__ == "__main__":
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
-    root = ctk.CTk()
-    MenuScreen(root)
-    root.mainloop()

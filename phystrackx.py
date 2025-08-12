@@ -7,7 +7,7 @@ Author: Isam Balghari
 """
 
 import customtkinter as ctk
-from gui.menu import MenuScreen
+from gui.frontpage import FrontPage
 from core import setup_logging
 
 
@@ -25,7 +25,7 @@ class GUI:
         """Initializes and starts the main GUI loop."""
         root = ctk.CTk()
         root.geometry(f"{self.width}x{self.height}")
-        MenuScreen(root)
+        FrontPage(root)
         root.mainloop()
 
 
