@@ -13,7 +13,8 @@ import cv2
 from PIL import Image, ImageTk
 
 from customtkinter import CTkCanvas, IntVar
-from experiments.rigid.rigid import Rigid
+from experiments.nonrigid.balloon import Balloon
+from experiments.nonrigid.nonrigid import NonRigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
 from gui.components.processanim import ProcessAnimation
@@ -34,6 +35,7 @@ class Video:
         canvas: CTkCanvas,
         vwidth: int,
         vheight: int,
+        NonRigid,
         crop: Crop,
         seekbar: TrimSeekBar,
         filters: Filters,
@@ -65,9 +67,16 @@ class Video:
 
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
-        self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
+        self.trimpath = os.path.join(tempdir, "track-nonrigid.mp4")
 
-        self.rigid = Rigid(
+        # self.nonrigid = Rigid(
+        #     trimpath=self.trimpath,
+        #     vwidth=600,
+        #     vheight=500,
+        #     tkqueue=self.processanim.queue
+        # )
+
+        self.nonrigid = NonRigid(
             trimpath=self.trimpath,
             vwidth=600,
             vheight=500,
@@ -76,7 +85,7 @@ class Video:
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Video App initialized")
-        self.trimvideo = self.rigid.trim
+        self.trimvideo = self.nonrigid.trim
         
         self.imgview = self.canvas.create_image(
             self.crop.fx, self.crop.fy, anchor="nw"
@@ -85,37 +94,37 @@ class Video:
     @property
     def fcount(self) -> int:
         """Total number of frames in loaded video."""
-        return self.rigid.fcount
+        return self.nonrigid.fcount
 
     @property
     def trackpts(self) -> list:
         """Tracking points recorded from video."""
-        return self.rigid.trackpts
+        return self.nonrigid.trackpts
     
     @property
     def ocrdata(self) -> list:
         """OCR data extracted from video"""
-        return self.rigid.texts
+        return self.nonrigid.texts
 
     @property
     def texts(self) -> list:
         """Text overlays on tracked frames."""
-        return self.rigid.texts
+        return self.nonrigid.texts
 
     @property
     def fps(self) -> int:
         """Video frames per second."""
-        return self.rigid.fps
+        return self.nonrigid.fps
 
     @property
     def fwidth(self) -> int:
         """Current video frame width."""
-        return self.rigid.fwidth
+        return self.nonrigid.fwidth
 
     @property
     def fheight(self) -> int:
         """Current video frame height."""
-        return self.rigid.fheight
+        return self.nonrigid.fheight
 
     def loadvideo(self, videopath: str) -> None:
         """
@@ -130,10 +139,10 @@ class Video:
             if not filexists(self.trimpath):
                 self.logger.error("Trim video not found!")
                 return
-            self.rigid.addvideo(self.trimpath)
-            self.logger.info("Video added from: %s", self.trimpath)
+            self.nonrigid.addvideo(self.trimpath)
+            self.logger.info("Video added from trimpath: %s", self.trimpath)
         else:
-            self.rigid.addvideo(videopath)
+            self.nonrigid.addvideo(videopath)
             self.logger.info("Video added from: %s", videopath)
         
         self.crop.set(self.fwidth, self.fheight)
@@ -160,7 +169,7 @@ class Video:
         Args:
             idx (int): Index of the frame to display.
         """
-        frame = self.rigid.frame(index=idx)
+        frame = self.nonrigid.frame(index=idx)
         frame = self.filters.appfilter(frame)
         self.frame = self.crop.appcrop(frame)
 
@@ -170,7 +179,7 @@ class Video:
         self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
 
-    def track(self, trect: Rect, ocr: Rect, progress: IntVar) -> None:
+    def track(self, mask, trect: Rect, ocr: Rect, progress: IntVar) -> None:
         """
         Perform object tracking on the video using selected regions.
 
@@ -179,7 +188,8 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        self.rigid.track(
+        self.nonrigid.track(
+            mask,
             trect.rects,
             ocr.rects,
             self.filters,
@@ -191,4 +201,4 @@ class Video:
         """
         Clear stored tracking points from memory.
         """
-        self.rigid.trackpts.clear()
+        self.nonrigid.trackpts.clear()

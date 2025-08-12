@@ -19,102 +19,11 @@ from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry
 from .videoapp import Video
+from experiments.nonrigid import Balloon
 
 class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
-        
-        # img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        # self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-        #                               image=img, command=self.scale)
-        # self.ruler.pack(padx=5, pady=5)
-        # self.ruler.image = img
-
-        # For drawing ellipse over tracking area
-        # img = Image.open(abspath("assets/circlebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        # self.circlebd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-        #                               image=img, command=self.drawcircle)
-        # self.circlebd.pack(pady=10)
-        
-        # For drawing rectangle over text area
-    #     img = Image.open(abspath("assets/rectanglebd.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-    #     img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-    #     self.rectbd = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-    #                                   image=img, command=self.drawrect)
-    #     self.rectbd.pack(pady=10)
-        
-
-    #     self.seekbar = TrimSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
-        
-    #     # self.scroll_toolbar.pack()
-        
-    #     self.scruler = None
-
-    #     self.ccoords = (0, 0)
-
-    #     # mask from user for tracking
-    #     self._mask = None
-    #     # rect for text detection
-    #     self._rect = None
-
-    #     tempdir = './temp'
-    #     if not os.path.exists(tempdir):
-    #         os.makedirs(tempdir)
-
-    #     self._trackpath = os.path.join(tempdir, 'track-balloon.mp4')
-
-    #     self.balloon = Balloon(trackpath=self._trackpath)
-
-
-
-    # def loadvideo(self, videopath):
-    #     self.balloon.addvideo(videopath)
-        
-    #     self.seekbar.setcount(self.balloon.fcount)
-
-    #     frame1 = self.balloon.frame(0)
-    #     self.dispframe(frame1)
-
-    # def dispframe(self, frame):
-    #     fwidth = self.balloon.fwidth
-    #     fheight = self.balloon.fheight
-    #     frame = self.resizeframe(frame, fwidth, fheight)
-    #     self.fheight, self.fwidth = frame.shape[:2]
-
-    #     img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
-    #     self.photo = ImageTk.PhotoImage(image=img)
-    #     self._frame = frame
-        
-    #     self.fx = floor(self.vwidth/2 - self.fwidth/2)
-    #     self.fy = floor(self.vheight/2 - self.fheight/2)
-        
-    #     # Default coordinate system
-    #     if self.ox is None:
-    #         self.ox = self.fx
-        
-    #     if self.oy is None:
-    #         self.oy = self.fy + self.fheight
-
-    #     self.imgview = self.videoview.create_image(self.fx, self.fy, image=self.photo, anchor='nw')
-        
-    # def updateframe(self):
-    #     """Updates the frame displayed in the video view based on the slider position."""
-    #     frame = self.balloon.frame(index=self.seekbar.idx)
-    #     fwidth = self.balloon.fwidth
-    #     fheight = self.balloon.fheight
-
-    #     frame = self.resizeframe(frame, fwidth, fheight)
-
-    #     img = Image.fromarray(cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2RGB))
-    #     self.photo = ImageTk.PhotoImage(image=img)
-    #     self._frame = frame
-
-    #     self.videoview.itemconfig(self.imgview, image=self.photo)
-
-    # def scale(self):
-    #     self.scruler = ScaleRuler(self.videoview, cwidth=self.cwidth, cheight=self.cheight)
 
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
 
@@ -130,6 +39,9 @@ class BalloonApp(App):
             ToolTip(self.btn, tooltip)
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
 
+
+        self.circlebtn = self.mkbutton("assets/circlebd.png", self.drawcircle)
+        ToolTip(self.circlebtn, "Draw Circle Boundary")
         self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
         ToolTip(self.pluginsbtn, "Plugins")
 
@@ -149,11 +61,10 @@ class BalloonApp(App):
 
         self.circle = Circle(self.videoview, self.vwidth, self.vheight)
 
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, Balloon, self.crop, self.seekbar, self.filters, self.processanim)
         self.seekbar.settrim(trimvideo=self.trimvideo)
 
         self.save = None
-        self.plot = None
         self.datamanager = None
 
     def loadvideo(self, videopath: str):
@@ -363,27 +274,49 @@ class BalloonApp(App):
     #     self.videoview.bind("<Button-1>", ondown)
     #     self.videoview.bind("<B1-Motion>", inrect)
 
-
     def strack(self):
-        """
-        Detects and tracks radius for the main balloon circle using classical techniques.
-        """
-        if self.balloon.fcount < 10:
+        """Performs point tracking across video frames and visualizes result."""
+        if (self.videoapp.fcount < 10) or ((len(self.circle.circles) == 0) and (len(self.ocrrects.rects) == 0)):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
 
-        self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
+        self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
+        self.axes.clear()
+        self.trects.clearrects()
+        self.ocrrects.clearrects()
 
-        def trackbg(popup):
-            startidx = self.seekbar.startidx
-            endidx = self.seekbar.endidx
-            self.balloon.track(self._mask, self._rect, startidx, endidx)
+        self.processanim.pack()
+        self.progressbar.pack()
+
+        def trackbg(processanim, progressbar):
+            self.videoapp.track(self.circle.mask, self.trects, self.ocrrects, self.progressbar.progress)
+            self.root.after(0, processanim.destroy())
+            self.root.after(0, progressbar.destroy())
+            self.loadcomponents()
+
+        threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
+        self.progressbar.update()
+
+    # def strack(self):
+    #     """
+    #     Detects and tracks radius for the main balloon circle using classical techniques.
+    #     """
+    #     if self.balloon.fcount < 10:
+    #         messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+    #         return
+
+    #     self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
+
+    #     def trackbg(popup):
+    #         startidx = self.seekbar.startidx
+    #         endidx = self.seekbar.endidx
+    #         self.balloon.track(self._mask, self._rect, startidx, endidx)
             
-            self.root.after(0, popup.destroy())
+    #         self.root.after(0, popup.destroy())
 
-            self.loadvideo(self._trackpath)
+    #         self.loadvideo(self._trackpath)
 
-        threading.Thread(target=trackbg, args=(self.popup,)).start()
+    #     threading.Thread(target=trackbg, args=(self.popup,)).start()
 
 
 
