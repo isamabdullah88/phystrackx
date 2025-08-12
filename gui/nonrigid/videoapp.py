@@ -1,93 +1,194 @@
-from customtkinter import CTkCanvas, IntVar
-from experiments import Marangoni
-from gui.plugins import Crop, Filters
-from gui.components.seekbar import TrimSeekBar
-from gui.components.spinner import Spinner
-from gui.components.rect import Rect
+"""
+videoapp.py
 
+Defines the Video class which handles video display, frame manipulations, and tracking logic.
+
+Author: Isam Balghari
+"""
+
+from typing import Optional
 import os
+import logging
 import cv2
 from PIL import Image, ImageTk
 
+from customtkinter import CTkCanvas, IntVar
+from experiments.rigid.rigid import Rigid
+from gui.plugins.crop import Crop
+from gui.plugins.filters import Filters
+from gui.components.processanim import ProcessAnimation
+from gui.components.spinner import Spinner
+from gui.components.seekbar import TrimSeekBar
+from gui.components.rect import Rect
+from core import filexists
+from experiments.components.ocr import OCRData
+
 
 class Video:
-    """Class to handle video viewing, frame manipulations"""
-    def __init__(self, canvas:CTkCanvas, vwidth:int, vheight:int, crop:Crop, seekbar:TrimSeekBar, filters:Filters, spinner:Spinner):
+    """
+    Video handler for loading, displaying, trimming, and tracking frames on a canvas.
+    """
+
+    def __init__(
+        self,
+        canvas: CTkCanvas,
+        vwidth: int,
+        vheight: int,
+        crop: Crop,
+        seekbar: TrimSeekBar,
+        filters: Filters,
+        processanim: ProcessAnimation
+    ) -> None:
+        """
+        Initialize the Video app.
+
+        Args:
+            canvas (CTkCanvas): Canvas to render video frames.
+            vwidth (int): Width of the video display area.
+            vheight (int): Height of the video display area.
+            crop (Crop): Crop handler.
+            seekbar (TrimSeekBar): Seekbar for video navigation.
+            filters (Filters): Filters to apply on video.
+            processanim (Spinner): UI processanim to show progress or status.
+        """
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
         self.crop = crop
         self.seekbar = seekbar
         self.filters = filters
-        # self.fcount = 0
-        self.frame = None
+        self.processanim = processanim
+
+        self.frame: Optional[any] = None
+        self.imgview = None
+        self.tkimg = None
+
+        tempdir = "temp"
+        os.makedirs(tempdir, exist_ok=True)
+        self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
+
+        self.rigid = Rigid(
+            trimpath=self.trimpath,
+            vwidth=600,
+            vheight=500,
+            tkqueue=self.processanim.queue
+        )
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("Video App initialized")
+        self.trimvideo = self.rigid.trim
         
-        tempdir = './temp'
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
-        self.trackpath = os.path.join(tempdir, 'track-rigid.mp4')
-        self.rigid = Marangoni(trackpath=self.trackpath, vwidth=self.vwidth, vheight=self.vheight, tkqueue=spinner.queue)
-        
-        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
-    
+        self.imgview = self.canvas.create_image(
+            self.crop.fx, self.crop.fy, anchor="nw"
+        )
+
     @property
-    def fcount(self):
+    def fcount(self) -> int:
+        """Total number of frames in loaded video."""
         return self.rigid.fcount
-    
+
     @property
-    def trackpts(self):
+    def trackpts(self) -> list:
+        """Tracking points recorded from video."""
         return self.rigid.trackpts
     
     @property
-    def texts(self):
+    def ocrdata(self) -> list:
+        """OCR data extracted from video"""
         return self.rigid.texts
-    
+
     @property
-    def fps(self):
+    def texts(self) -> list:
+        """Text overlays on tracked frames."""
+        return self.rigid.texts
+
+    @property
+    def fps(self) -> int:
+        """Video frames per second."""
         return self.rigid.fps
-    
+
     @property
-    def fwidth(self):
+    def fwidth(self) -> int:
+        """Current video frame width."""
         return self.rigid.fwidth
-    
+
     @property
-    def fheight(self):
+    def fheight(self) -> int:
+        """Current video frame height."""
         return self.rigid.fheight
-    
-    def loadvideo(self, videopath):
-        self.rigid.addvideo(videopath)
+
+    def loadvideo(self, videopath: str) -> None:
+        """
+        Load a video from file or fallback to trimmed path.
+
+        Args:
+            videopath (str): Path to video file.
+        """
         
+        if not filexists(videopath):
+            self.logger.warning("Loading trim video")
+            if not filexists(self.trimpath):
+                self.logger.error("Trim video not found!")
+                return
+            self.rigid.addvideo(self.trimpath)
+            self.logger.info("Video added from: %s", self.trimpath)
+        else:
+            self.rigid.addvideo(videopath)
+            self.logger.info("Video added from: %s", videopath)
         
-        
-    def resizef(self, frame, fwidth, fheight):
-        """Resizes frame according to current fwidth and fheight"""
-        frame = cv2.resize(frame, (fwidth, fheight))
-        return frame
-        
-        
-    def showframe(self):
-        """Updates and shows the frame to video view"""
-        
-        frame = self.rigid.frame(index=self.seekbar.idx)
-        frame = self.resizef(frame, self.fwidth, self.fheight)
-        
-        # Apply filter
+        self.crop.set(self.fwidth, self.fheight)
+        # self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
+
+    def resizef(self, frame: any, fwidth: int, fheight: int) -> any:
+        """
+        Resize frame to current video dimensions.
+
+        Args:
+            frame (np.ndarray): Original frame.
+            fwidth (int): Target width.
+            fheight (int): Target height.
+
+        Returns:
+            np.ndarray: Resized frame.
+        """
+        return cv2.resize(frame, (fwidth, fheight))
+
+    def showframe(self, idx: int) -> None:
+        """
+        Fetch and display a video frame on the canvas.
+
+        Args:
+            idx (int): Index of the frame to display.
+        """
+        frame = self.rigid.frame(index=idx)
         frame = self.filters.appfilter(frame)
-        
-        # Apply crop
         self.frame = self.crop.appcrop(frame)
-        
+
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.tkimg = ImageTk.PhotoImage(image=img)
-        
+
         self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
-        
-    def track(self, trect:Rect, ocr:Rect, progress:IntVar):
-        startidx = self.seekbar.startidx
-        endidx = self.seekbar.endidx
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, startidx, endidx, progress)
-        
-        
-        
-        
+
+    def track(self, trect: Rect, ocr: Rect, progress: IntVar) -> None:
+        """
+        Perform object tracking on the video using selected regions.
+
+        Args:
+            trect (Rect): Region to track.
+            ocr (Rect): OCR target region.
+            progress (IntVar): Variable for UI progress tracking.
+        """
+        self.rigid.track(
+            trect.rects,
+            ocr.rects,
+            self.filters,
+            self.crop,
+            progress
+        )
+
+    def clear(self) -> None:
+        """
+        Clear stored tracking points from memory.
+        """
+        self.rigid.trackpts.clear()
