@@ -34,6 +34,20 @@ class RigidApp(App):
         """Initializes the RigidApp interface and its associated components."""
         super().__init__(root)
 
+        buttons = [
+            ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
+            ("assets/track.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/reset.png", self.reset, "Clear Everything"),
+            ("assets/plugin.png", self.reset, "Plugins")
+        ]
+
+        for imgpath, command, tooltip in buttons:
+            btn = self.mkbutton(imgpath, command)
+            ToolTip(btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = btn
+
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
 
         buttons = [
@@ -48,8 +62,8 @@ class RigidApp(App):
             ToolTip(self.btn, tooltip)
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
 
-        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbtn, "Plugins")
+        # self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
+        # ToolTip(self.pluginsbtn, "Plugins")
 
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)

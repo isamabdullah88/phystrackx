@@ -25,6 +25,21 @@ class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
 
+        # Remove rectanlge
+        buttons = [
+            ("assets/circlebd.png", self.drawcircle, "Draw Circle Boundary"),
+            ("assets/track.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/reset.png", self.reset, "Clear Everything"),
+            ("assets/plugin.png", self.plugins, "Plugins")
+        ]
+
+        for imgpath, command, tooltip in buttons:
+            btn = self.mkbutton(imgpath, command)
+            ToolTip(btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = btn
+
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
 
         buttons = [
@@ -40,18 +55,18 @@ class BalloonApp(App):
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
 
 
-        self.circlebtn = self.mkbutton("assets/circlebd.png", self.drawcircle)
-        ToolTip(self.circlebtn, "Draw Circle Boundary")
-        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbtn, "Plugins")
+        # self.circlebtn = self.mkbutton("assets/circlebd.png", self.drawcircle)
+        # ToolTip(self.circlebtn, "Draw Circle Boundary")
+        # self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
+        # ToolTip(self.pluginsbtn, "Plugins")
 
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
 
         self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-        self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
+        # self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['ocr'], toggle=self.subtoolbar.toggle)
         self.contpoints = ContPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
 
@@ -121,13 +136,13 @@ class BalloonApp(App):
         """Displays the scale ruler on canvas."""
         self.scruler.pack()
 
-    def drawrect(self):
-        """Enables rectangle drawing mode for object tracking."""
-        self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
-        if self.videoapp.fcount < 10:
-            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
-            return
-        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+    # def drawrect(self):
+    #     """Enables rectangle drawing mode for object tracking."""
+    #     self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
+    #     if self.videoapp.fcount < 10:
+    #         messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+    #         return
+    #     self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
 
     def appfilter(self):
         """Activates video filter UI for user input."""
@@ -175,7 +190,7 @@ class BalloonApp(App):
         self.clearcomponents()
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
-        self.trects.clear()
+        # self.trects.clear()
         self.crop.clear()
         self.seekbar.clear()
         self.loadvideo(self.videopath)
@@ -235,7 +250,7 @@ class BalloonApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
         self.axes.clear()
-        self.trects.clearrects()
+        # self.trects.clearrects()
         self.ocrrects.clearrects()
         self.circle.clearrects()
 
@@ -248,7 +263,7 @@ class BalloonApp(App):
             self.loadcomponents()
 
         def trackbg():
-            self.videoapp.track(self.circle.mask, self.trects, self.ocrrects, self.progressbar.progress)
+            self.videoapp.track(self.circle.mask, self.ocrrects, self.progressbar.progress)
             self.root.after(0, oncomplete)
 
         threading.Thread(target=trackbg).start()
