@@ -17,7 +17,7 @@ from PIL import Image
 from core import abspath
 from ..togglebutton import ToggleButton
 from .contpoint import ContPoint
-from .selectpoints import SelectPoints
+from .selectconts import SelectConts
 
 
 class ContPoints:
@@ -48,7 +48,7 @@ class ContPoints:
             commandoff=self.toggleoff
         )
 
-        self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize)
+        self.selectpoints: SelectConts = SelectConts(trsize=self.trsize)
 
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
 
@@ -79,8 +79,8 @@ class ContPoints:
 
         self.tpts = [[] for _ in range(len(tpts))]
         for i, tpt in enumerate(tpts):
-            for pt in tpt:
-                self.tpts[i].append(TrackPoint(pt[0], pt[1], fx, fy))
+            for contpt in tpt:
+                self.tpts[i].append(ContPoint(contpt, fx, fy))
 
         self.togglebtn.place(
             x=self.vwidth - 80,
@@ -111,12 +111,11 @@ class ContPoints:
         self.selectpoints.currpts.clear()
 
         for i, tpts in enumerate(self.tpts):
-            for idx in range(max(self.fidx - self.trsize, 0), self.fidx + 1):
-                if tpts[idx] is None:
-                    continue
-                tpt = tpts[idx]
-                tpt.draw(self.canvas)
-                self.selectpoints.currpts.append([tpt.cpt, i, self.fidx])
+            if tpts[self.fidx] is None:
+                continue
+            tpt = tpts[self.fidx]
+            tpt.draw(self.canvas)
+            self.selectpoints.currpts.append([tpt.cpt, i, self.fidx])
 
     def matchid(self, cid: int) -> Optional[list[int]]:
         """
@@ -185,29 +184,33 @@ class ContPoints:
 # === Demo App ===
 
 def main() -> None:
+    import numpy as np
     """Sample GUI to demonstrate tracked point visualization."""
-    import random
     ctk.set_appearance_mode("light")
     root = ctk.CTk()
     root.geometry("800x600")
     root.title("ContPoints Demo")
 
+    # Canvas
     canvas = ctk.CTkCanvas(root, width=800, height=600, bg="white")
     canvas.pack(fill="both", expand=True)
 
-    tp = ContPoints(canvas, vwidth=800, vheight=600)
+    # Create ContPoints instance
+    cp = ContPoints(canvas, vwidth=800, vheight=600)
 
     # Generate dummy tracked points: 2 objects, each with 5 points
-    tracks: list[list[float]] = []
-    for _ in range(2):
-        track = []
-        x, y = random.randint(100, 300), random.randint(100, 300)
+    cpts = []
+    for j in range(2):
+        cpt = []
         for i in range(5):
-            track.append([x + i * 10, y + i * 5])
-        tracks.append(track)
+            pts = np.random.randint(0, 500, size=(100,2))
+            cpt.append(pts)
 
-    tp.addpoints(tracks, fx=0, fy=0)
-    tp.drawpoints(fidx=4)
+        cpts.append(cpt)
+
+    # Add and draw points
+    cp.addpoints(cpts, fx=0, fy=0)
+    cp.drawpoints(fidx=4)
 
     root.mainloop()
 
