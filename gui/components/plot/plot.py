@@ -127,7 +127,7 @@ def main():
     """
     import numpy as np
     import customtkinter as ctk
-    from gui.components.tpoints import TrackPoint
+    from gui.components.points import TrackPoint
     from gui.components.axes import Axes
     from gui.components.plot.datamanager import DataManager
     from gui.components.plot.plot import Plot
