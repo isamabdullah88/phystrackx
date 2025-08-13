@@ -157,7 +157,7 @@ class Balloon(Experiment):
 
 
 
-    def track(self, mask, rect, ocrrects, filters, crop, progress):
+    def track(self, mask, ocrrects, filters, crop, progress):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
