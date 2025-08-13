@@ -8,7 +8,7 @@ from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
-from gui.components.tpoints import TPoints
+from gui.components.points import ContPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
@@ -52,7 +52,7 @@ class BalloonApp(App):
         self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
-        self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
+        self.contpoints = ContPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
 
         self.processanim = ProcessAnimation(self.videoview, self.crop)
@@ -94,7 +94,7 @@ class BalloonApp(App):
     def loadcomponents(self):
         """Loads and updates components after video is loaded or modified."""
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
-
+        
         if self.seekbar.disable:
             self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
             self.seekbar.set(self.videoapp.fcount)
@@ -102,7 +102,7 @@ class BalloonApp(App):
         else:
             self.seekbar.set(self.videoapp.fcount)
 
-        self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
+        self.contpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
 
     def loadseek(self):
@@ -113,9 +113,9 @@ class BalloonApp(App):
         self.seekbar.pack()
 
     def updateframe(self):
-        """Updates canvas to show current frame and overlays points."""
+        """Updates canvas to show current frame and overlays contpoints."""
         self.videoapp.showframe(self.seekbar.idx)
-        self.tpoints.drawpoints(self.seekbar.idx)
+        self.contpoints.drawpoints(self.seekbar.idx)
 
     def scale(self):
         """Displays the scale ruler on canvas."""
@@ -162,34 +162,40 @@ class BalloonApp(App):
         self.geometry.pack()
         self.subtoolbar.toggle()
 
-    def strack(self):
-        """Performs point tracking across video frames and visualizes result."""
-        if (self.videoapp.fcount < 10) or ((len(self.trects.rects) == 0) and (len(self.ocrrects.rects) == 0)):
-            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
-            return
+    # def strack(self):
+    #     """Performs point tracking across video frames and visualizes result."""
+    #     if (self.videoapp.fcount < 10) or ((len(self.circle.circles) == 0) and (len(self.ocrrects.rects) == 0)):
+    #         messagebox.showerror("Error", "No task to track, upload video and mark points first!")
+    #         return
 
-        self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
-        self.axes.clear()
-        self.trects.clearrects()
-        self.ocrrects.clearrects()
+    #     self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
+    #     self.axes.clear()
+    #     self.trects.clearrects()
+    #     self.ocrrects.clearrects()
 
-        self.processanim.pack()
-        self.progressbar.pack()
+    #     self.processanim.pack()
+    #     self.progressbar.pack()
 
-        def trackbg(processanim, progressbar):
-            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
-            self.root.after(0, processanim.destroy())
-            self.root.after(0, progressbar.destroy())
-            self.loadcomponents()
+    #     def trackbg(processanim, progressbar):
+    #         self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
+    #         print('tracking completed!')
+    #         self.root.after(0, processanim.destroy())
+    #         self.root.after(0, progressbar.destroy())
 
-        threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
-        self.progressbar.update()
+    #     t = threading.Thread(target=trackbg, args=(self.processanim, self.progressbar))
+    #     t.start()
+    #     self.progressbar.update()
+
+    #     t.join()
+    #     print('before loading components')
+    #     self.loadcomponents()
+    #     print('after loading components')
 
     def clearcomponents(self):
         """Clears all active UI drawing elements and overlays."""
         self.filters.clear()
         self.axes.clear()
-        self.tpoints.clear()
+        self.contpoints.clear()
         self.scruler.clear()
 
     def reset(self):
@@ -215,7 +221,7 @@ class BalloonApp(App):
             self.plot = Plot(self.videoview, self.datamanager)
         else:
             self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                self.points.tpts, self.videoapp.ocrdata, self.axes,
                 self.vwidth, self.vheight, self.fwidth, self.fheight,
                 self.videoapp.fps, self.scruler.scalef
             )
@@ -234,7 +240,7 @@ class BalloonApp(App):
             self.save = Save(self.videoview, self.datamanager)
         else:
             self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                self.points.tpts, self.videoapp.ocrdata, self.axes,
                 self.vwidth, self.vheight, self.fwidth, self.fheight,
                 self.videoapp.fps, self.scruler.scalef
             )
@@ -264,11 +270,23 @@ class BalloonApp(App):
         self.processanim.pack()
         self.progressbar.pack()
 
-        def trackbg(processanim, progressbar):
-            self.videoapp.track(self.circle.mask, self.trects, self.ocrrects, self.progressbar.progress)
-            self.root.after(0, processanim.destroy())
-            self.root.after(0, progressbar.destroy())
+        def oncomplete():
+            self.processanim.destroy()
+            self.progressbar.destroy()
             self.loadcomponents()
 
-        threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
+        def trackbg():
+            self.videoapp.track(self.circle.mask, self.trects, self.ocrrects, self.progressbar.progress)
+            self.root.after(0, oncomplete)
+            # self.loadcomponents()
+
+        threading.Thread(target=trackbg).start()
+        # t.start()
         self.progressbar.update()
+
+
+
+        # t.join()
+        # print('before loading components')
+        # self.loadcomponents()
+        # print('after loading components')

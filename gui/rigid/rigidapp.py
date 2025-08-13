@@ -181,13 +181,16 @@ class RigidApp(App):
         self.processanim.pack()
         self.progressbar.pack()
 
-        def trackbg(processanim, progressbar):
-            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
-            self.root.after(0, processanim.destroy())
-            self.root.after(0, progressbar.destroy())
+        def oncomplete():
+            self.processanim.destroy()
+            self.progressbar.destroy()
             self.loadcomponents()
 
-        threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
+        def trackbg():
+            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
+            self.root.after(0, oncomplete)
+
+        threading.Thread(target=trackbg).start()
         self.progressbar.update()
 
     def clearcomponents(self):
