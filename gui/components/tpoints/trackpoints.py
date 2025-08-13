@@ -3,7 +3,7 @@ tpoints.py
 
 Tracked Points Visualization using CustomTkinter.
 
-This module defines the `TPoints` class, which manages and displays tracked points (e.g., from 
+This module defines the `TrackPoints` class, which manages and displays tracked points (e.g., from 
 motion tracking or video annotation) on a `customtkinter.CTkCanvas`. Features include toggling 
 visibility of point trails, selecting individual trajectories, and deleting selected ones 
 interactively.
@@ -16,11 +16,11 @@ import customtkinter as ctk
 from PIL import Image
 from core import abspath
 from ..togglebutton import ToggleButton
-from .fpoint import FPoint
+from .trackpoint import TrackPoint
 from .selectpoints import SelectPoints
 
 
-class TPoints:
+class TrackPoints:
     """
     Manages multiple tracked points on a canvas.
 
@@ -33,7 +33,7 @@ class TPoints:
         self.vwidth = vwidth
         self.vheight = vheight
 
-        self.tpts: list[list[FPoint]] = []
+        self.tpts: list[list[TrackPoint]] = []
         self.currpts: list[list[int]] = []
 
         self.trsize: int = 15
@@ -80,7 +80,7 @@ class TPoints:
         self.tpts = [[] for _ in range(len(tpts))]
         for i, tpt in enumerate(tpts):
             for pt in tpt:
-                self.tpts[i].append(FPoint(pt[0], pt[1], fx, fy))
+                self.tpts[i].append(TrackPoint(pt[0], pt[1], fx, fy))
 
         self.togglebtn.place(
             x=self.vwidth - 80,
@@ -190,12 +190,12 @@ def main() -> None:
     ctk.set_appearance_mode("light")
     root = ctk.CTk()
     root.geometry("800x600")
-    root.title("TPoints Demo")
+    root.title("TrackPoints Demo")
 
     canvas = ctk.CTkCanvas(root, width=800, height=600, bg="white")
     canvas.pack(fill="both", expand=True)
 
-    tp = TPoints(canvas, vwidth=800, vheight=600)
+    tp = TrackPoints(canvas, vwidth=800, vheight=600)
 
     # Generate dummy tracked points: 2 objects, each with 5 points
     tracks: list[list[float]] = []

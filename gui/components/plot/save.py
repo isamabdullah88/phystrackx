@@ -112,7 +112,7 @@ def main():
     import numpy as np
     import customtkinter as ctk
     from gui.components.axes import Axes
-    from gui.components.tpoints import FPoint
+    from gui.components.tpoints import TrackPoint
     from gui.components.plot.datamanager import DataManager
     from experiments.components.ocr import OCRData
     from gui.components.plot.save import Save
@@ -133,12 +133,12 @@ def main():
     btnlist = {"dummy": dummy_btn}
     axes = Axes(root, canvas, vwidth=640, vheight=480, btnlist=btnlist, activebtn=dummy_btn)
 
-    # --- Dummy FPoint data ---
+    # --- Dummy TrackPoint data ---
     frame_count = 100
     t = np.linspace(0, 2 * np.pi, frame_count)
     x = 100 + 50 * np.cos(t)
     y = 100 + 50 * np.sin(t)
-    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
+    fpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
 
     # --- Dummy OCR data ---
     ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(frame_count)]]

@@ -1,22 +1,22 @@
 """
 fpoint.py
 
-This module defines the FPoint class for creating, drawing, and removing interactive 
+This module defines the TrackPoint class for creating, drawing, and removing interactive 
 points on a CustomTkinter canvas. These points are intended to be part of a graphical 
 interface that tracks and allows interaction with motion paths or individual markers.
 
 Classes:
-    FPoint: Represents a single point that can be drawn on and removed from a canvas.
+    TrackPoint: Represents a single point that can be drawn on and removed from a canvas.
 
 Typical usage:
-    point = FPoint([100, 200], fx=5, fy=10, button=delete_button)
+    point = TrackPoint([100, 200], fx=5, fy=10, button=delete_button)
     point.draw(canvas)
     point.undraw(canvas)
     
 Author: [Isam Balghari]
 """
 
-class FPoint:
+class TrackPoint:
     """
     Represents a single interactive and drawable point on a canvas.
     

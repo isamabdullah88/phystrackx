@@ -2,7 +2,7 @@
 selectpoints.py
 
 This module defines the SelectPoints class, which provides functionality
-for selecting and toggling the visibility of tracked points (FPoint instances)
+for selecting and toggling the visibility of tracked points (TrackPoint instances)
 on a tkinter or CustomTkinter canvas.
 
 It is typically used to:
@@ -18,7 +18,7 @@ Author: [Isam Balghari]
 
 import tkinter as tk
 from typing import List, Optional
-from .fpoint import FPoint
+from .trackpoint import TrackPoint
 
 
 class SelectPoints:
@@ -32,7 +32,7 @@ class SelectPoints:
         """
         self.trsize: int = trsize
 
-        self.selectedpoints: List[FPoint] = []
+        self.selectedpoints: List[TrackPoint] = []
         self.currpts: List[List[int]] = []  # Format: [canvas_id, traj_index, frame_index]
 
         self.tidx: Optional[int] = None  # Selected trajectory index
@@ -42,7 +42,7 @@ class SelectPoints:
         self.selected: bool = False
         self.toggled: bool = True
 
-    def select(self, canvas: tk.Canvas, points: List[List[FPoint]], tidx: int, fidx: int) -> None:
+    def select(self, canvas: tk.Canvas, points: List[List[TrackPoint]], tidx: int, fidx: int) -> None:
         """
         Toggle selection for a trajectory. Highlights the selected trail on the canvas.
 
@@ -65,7 +65,7 @@ class SelectPoints:
                 pt.select(canvas)
             self.selected = True
 
-    def toggleon(self, canvas: tk.Canvas, points: List[List[FPoint]]) -> None:
+    def toggleon(self, canvas: tk.Canvas, points: List[List[TrackPoint]]) -> None:
         """
         Show all currently valid points (within trail size) on the canvas.
 
@@ -83,7 +83,7 @@ class SelectPoints:
 
         self.toggled = True
 
-    def toggleoff(self, canvas: tk.Canvas, points: List[List[FPoint]]) -> None:
+    def toggleoff(self, canvas: tk.Canvas, points: List[List[TrackPoint]]) -> None:
         """
         Hide all points for the current frame's trail from the canvas.
 

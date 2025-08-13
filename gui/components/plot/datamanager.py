@@ -7,7 +7,7 @@ Author: Isam Balghari
 """
 
 import numpy as np
-from gui.components.tpoints import FPoint
+from gui.components.tpoints import TrackPoint
 from gui.components.axes import Axes
 from experiments.components.ocr import OCRData
 
@@ -15,7 +15,7 @@ from experiments.components.ocr import OCRData
 class DataManager:
     def __init__(
         self,
-        tpoints: list[list[FPoint]],
+        tpoints: list[list[TrackPoint]],
         ocrdata: OCRData,
         axes: Axes,
         vwidth: int,
@@ -29,7 +29,7 @@ class DataManager:
         Initializes the data manager with tracking points and transformation settings.
 
         Args:
-            tpoints (list[list[FPoint]]): Time-series tracking points for each object.
+            tpoints (list[list[TrackPoint]]): Time-series tracking points for each object.
             ocrdata (OCRData): OCR result object containing frame-wise text.
             axes (Axes): Reference to the user-defined coordinate frame.
             vwidth (int): Width of the video view canvas.
