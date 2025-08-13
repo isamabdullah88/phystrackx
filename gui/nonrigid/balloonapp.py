@@ -162,35 +162,6 @@ class BalloonApp(App):
         self.geometry.pack()
         self.subtoolbar.toggle()
 
-    # def strack(self):
-    #     """Performs point tracking across video frames and visualizes result."""
-    #     if (self.videoapp.fcount < 10) or ((len(self.circle.circles) == 0) and (len(self.ocrrects.rects) == 0)):
-    #         messagebox.showerror("Error", "No task to track, upload video and mark points first!")
-    #         return
-
-    #     self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
-    #     self.axes.clear()
-    #     self.trects.clearrects()
-    #     self.ocrrects.clearrects()
-
-    #     self.processanim.pack()
-    #     self.progressbar.pack()
-
-    #     def trackbg(processanim, progressbar):
-    #         self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
-    #         print('tracking completed!')
-    #         self.root.after(0, processanim.destroy())
-    #         self.root.after(0, progressbar.destroy())
-
-    #     t = threading.Thread(target=trackbg, args=(self.processanim, self.progressbar))
-    #     t.start()
-    #     self.progressbar.update()
-
-    #     t.join()
-    #     print('before loading components')
-    #     self.loadcomponents()
-    #     print('after loading components')
-
     def clearcomponents(self):
         """Clears all active UI drawing elements and overlays."""
         self.filters.clear()
@@ -266,6 +237,7 @@ class BalloonApp(App):
         self.axes.clear()
         self.trects.clearrects()
         self.ocrrects.clearrects()
+        self.circle.clearrects()
 
         self.processanim.pack()
         self.progressbar.pack()
@@ -278,15 +250,6 @@ class BalloonApp(App):
         def trackbg():
             self.videoapp.track(self.circle.mask, self.trects, self.ocrrects, self.progressbar.progress)
             self.root.after(0, oncomplete)
-            # self.loadcomponents()
 
         threading.Thread(target=trackbg).start()
-        # t.start()
         self.progressbar.update()
-
-
-
-        # t.join()
-        # print('before loading components')
-        # self.loadcomponents()
-        # print('after loading components')
