@@ -250,30 +250,6 @@ class BalloonApp(App):
         """Draws circle"""
         self.circle.drawcircle(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
 
-    
-    # def drawrect(self):
-    #     """Draws rectangle with simple lines"""
-    #     self.rbox = None
-        
-    #     def ondown(event):
-    #         if self.rbox is not None:
-    #             self.videoview.delete(self.rbox)
-            
-    #         self.rcoords = (event.x, event.y)
-            
-    #         self.rbox = self.videoview.create_rectangle(event.x, event.y, event.x, event.y, outline="red")
-            
-    #     def inrect(event):
-    #         sx, sy = self.rcoords
-    #         ex, ey = (event.x, event.y)
-            
-    #         self.videoview.coords(self.rbox, sx, sy, event.x, event.y)
-
-    #         self._rect = PixelRect(sx-self.fx, sy-self.fy, ex-sx, ey-sy).pix2norm(self.fwidth, self.fheight)
-
-    #     self.videoview.bind("<Button-1>", ondown)
-    #     self.videoview.bind("<B1-Motion>", inrect)
-
     def strack(self):
         """Performs point tracking across video frames and visualizes result."""
         if (self.videoapp.fcount < 10) or ((len(self.circle.circles) == 0) and (len(self.ocrrects.rects) == 0)):
@@ -296,61 +272,3 @@ class BalloonApp(App):
 
         threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
         self.progressbar.update()
-
-    # def strack(self):
-    #     """
-    #     Detects and tracks radius for the main balloon circle using classical techniques.
-    #     """
-    #     if self.balloon.fcount < 10:
-    #         messagebox.showerror("Error", "No task to track, upload video and mark points first!")
-    #         return
-
-    #     self.popup = Spinner(self.videoview, self.vwidth, self.vheight)
-
-    #     def trackbg(popup):
-    #         startidx = self.seekbar.startidx
-    #         endidx = self.seekbar.endidx
-    #         self.balloon.track(self._mask, self._rect, startidx, endidx)
-            
-    #         self.root.after(0, popup.destroy())
-
-    #         self.loadvideo(self._trackpath)
-
-    #     threading.Thread(target=trackbg, args=(self.popup,)).start()
-
-
-
-    # def clear(self):
-    #     """Clears almost everything"""
-    #     super().clear()
-        
-    #     del self.balloon
-    #     self.balloon = Balloon(trackpath=self._trackpath)
-        
-    #     self.scruler = None
-    #     self._rcoords = None
-    #     self._rects = []
-        
-    #     self.seekbar.setcount(100)
-
-
-    # def plot_distances(self):
-    #     if len(self.balloon.trackpts) < 1:
-    #         messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
-    #         return
-
-    #     num_tracks = len(self.balloon.trackpts)
-    #     _, axes = plt.subplots(num_tracks+1, 2, figsize=(6, 5))
-
-    #     for i in range(num_tracks):
-    #         trackpts = self.balloon.trackpts[i]
-    #         xcoords = trackpts[0, :] - self.fx
-    #         ycoords = trackpts[1, :] - self.fy
-
-    #         axes[i][0].plot(xcoords)
-    #         axes[i][0].set_title("x coordinates")
-    #         axes[i][1].plot(ycoords)
-    #         axes[i][1].set_title("y coordinates")
-
-    #     plt.tight_layout()
-    #     plt.show()
