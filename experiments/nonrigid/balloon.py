@@ -157,7 +157,7 @@ class Balloon(Experiment):
 
 
 
-    def track(self, mask, rect, ocrrects, filters, crop, progress):
+    def track(self, mask, ocrrects, filters, crop, progress):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -188,10 +188,10 @@ class Balloon(Experiment):
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
 
-        self._vidreader.seek(0)
-        frame = self._vidreader.read()
-        frame = cv2.resize(frame, (self.fwidth, self.fheight))
-        frame = filters.appfilter(crop.appcrop(frame))
+        # self._vidreader.seek(0)
+        # frame = self._vidreader.read()
+        # frame = cv2.resize(frame, (self.fwidth, self.fheight))
+        # frame = filters.appfilter(crop.appcrop(frame))
 
         mask = cv2.resize(mask, (self.fwidth, self.fheight))
         
@@ -218,6 +218,7 @@ class Balloon(Experiment):
 
         fcount = self._vidreader.fcount
         startrect = rect
+        self.trackpts = [[]]
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
@@ -275,7 +276,7 @@ class Balloon(Experiment):
             cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
                         endAngle=360, thickness=2)
             
-            self.trackpts.append(snakecont)
+            self.trackpts[0].append(snakecont.reshape(-1, 2))
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
@@ -286,6 +287,9 @@ class Balloon(Experiment):
                 progress.set((i / (fcount - 1)) * 100)
 
             # self._videowriter.write(frame)
+        # self._vidreader.release()
+
+        print('video reader released')
 
 
         # self._videowriter.release()

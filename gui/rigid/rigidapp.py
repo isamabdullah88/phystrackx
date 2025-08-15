@@ -17,7 +17,7 @@ from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
-from gui.components.tpoints import TPoints
+from gui.components.points import TrackPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
@@ -34,6 +34,20 @@ class RigidApp(App):
         """Initializes the RigidApp interface and its associated components."""
         super().__init__(root)
 
+        buttons = [
+            ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
+            ("assets/track.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/reset.png", self.reset, "Clear Everything"),
+            ("assets/plugin.png", self.reset, "Plugins")
+        ]
+
+        for imgpath, command, tooltip in buttons:
+            btn = self.mkbutton(imgpath, command)
+            ToolTip(btn, tooltip)
+            self.btnlist[imgpath.split('/')[-1][:-4]] = btn
+
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
 
         buttons = [
@@ -48,8 +62,8 @@ class RigidApp(App):
             ToolTip(self.btn, tooltip)
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
 
-        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbtn, "Plugins")
+        # self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
+        # ToolTip(self.pluginsbtn, "Plugins")
 
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
@@ -58,7 +72,7 @@ class RigidApp(App):
         self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
-        self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
+        self.tpoints = TrackPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
 
         self.processanim = ProcessAnimation(self.videoview, self.crop)
@@ -181,13 +195,16 @@ class RigidApp(App):
         self.processanim.pack()
         self.progressbar.pack()
 
-        def trackbg(processanim, progressbar):
-            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
-            self.root.after(0, processanim.destroy())
-            self.root.after(0, progressbar.destroy())
+        def oncomplete():
+            self.processanim.destroy()
+            self.progressbar.destroy()
             self.loadcomponents()
 
-        threading.Thread(target=trackbg, args=(self.processanim, self.progressbar)).start()
+        def trackbg():
+            self.videoapp.track(self.trects, self.ocrrects, self.progressbar.progress)
+            self.root.after(0, oncomplete)
+
+        threading.Thread(target=trackbg).start()
         self.progressbar.update()
 
     def clearcomponents(self):

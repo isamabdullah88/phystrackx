@@ -127,7 +127,7 @@ def main():
     """
     import numpy as np
     import customtkinter as ctk
-    from gui.components.tpoints import FPoint
+    from gui.components.points import TrackPoint
     from gui.components.axes import Axes
     from gui.components.plot.datamanager import DataManager
     from gui.components.plot.plot import Plot
@@ -153,7 +153,7 @@ def main():
     t = np.linspace(0, 2 * np.pi, 150)
     x = 50 + 30 * np.cos(t)
     y = 50 + 30 * np.sin(t)
-    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
+    fpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
 
     # --- Create DataManager ---
     datamanager = DataManager(

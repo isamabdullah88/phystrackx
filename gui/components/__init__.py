@@ -5,7 +5,7 @@
 # from .Progressbar import ProgressBar
 # from .Axes import Axes
 # from .Rect import Rect
-# from .TPoints import TPoints
+# from .TrackPoints import TrackPoints
 # from .SubToolbar import SubToolbar
 # from .Save import Save
 # from .Checkbox import Checkbox

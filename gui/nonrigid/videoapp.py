@@ -179,7 +179,7 @@ class Video:
         self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
 
-    def track(self, mask, trect: Rect, ocr: Rect, progress: IntVar) -> None:
+    def track(self, mask, ocr: Rect, progress: IntVar) -> None:
         """
         Perform object tracking on the video using selected regions.
 
@@ -190,7 +190,6 @@ class Video:
         """
         self.nonrigid.track(
             mask,
-            trect.rects,
             ocr.rects,
             self.filters,
             self.crop,
