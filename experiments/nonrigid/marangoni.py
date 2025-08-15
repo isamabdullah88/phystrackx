@@ -16,27 +16,16 @@ from customtkinter import IntVar
 from queue import Queue
 
 class Marangoni(Experiment):
-    def __init__(self, trackpath, vwidth, vheight, tkqueue:Queue=None):
-        super().__init__(vwidth, vheight)
+    def __init__(self, trimpath, vwidth, vheight, tkqueue:Queue=None):
+        super().__init__(trimpath, vwidth, vheight)
 
-        self._trackpath = trackpath
-        # self.model = StarDist2D.from_pretrained("2D_versatile_fluo")
-        self.trackpts = []
-        
         self.tkqueue = tkqueue
+        self.trackpts: list[list[np.ndarray]] = []
+        self.texts: list[list[str]] = []
 
-    def track(self, mask, filters:Filters, crop:Crop, startidx=0, endidx=0, progress: IntVar=None):
-        """Tracks the radius in marangoni effect
-
-        Args:
-            mask (np.ndarray): A mask that specifies diameter inside which the experiment is
-            happening. It has size of gui canvas.
-        """
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-                                            (self.fwidth, self.fheight))
-
-        mask = cv2.resize(mask, (self.fwidth, self.fheight))
+    def ocr(self, rect, startidx=0, endidx=0):
+        import pytesseract
+        # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
         self._vidreader.seek(startidx)
         
@@ -45,13 +34,63 @@ class Marangoni(Experiment):
         else:
             fcount = endidx - startidx
 
+        x, y, w, h = rect.totuple()
+        print('rect: ', rect.totuple())
+        print('fw, fh: ', (self.fwidth, self.fheight))
+            
+        for i in range(fcount):
+
+            frame = self._vidreader.read()
+            frame = frame[y:y+h, x:x+w]
+            # Convert to grayscale
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Optional: thresholding to improve contrast
+            # plt.imshow(gray)
+            # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
+            
+            custom_config = r'--oem 3 --psm 6 outputbase digits'
+            numbers = pytesseract.image_to_string(gray, config=custom_config)
+            print("Number:", numbers)
+
+
+    def track(self, mask, ocrrects, filters:Filters, crop:Crop, progress: IntVar=None):
+        """Tracks the radius in marangoni effect
+
+        Args:
+            mask (np.ndarray): A mask that specifies diameter inside which the experiment is
+            happening. It has size of gui canvas.
+        """
+        if ocrrects:
+            import pytesseract
+            import platform
+            if platform.system() == "Windows":
+                pytesseract.pytesseract.tesseract_cmd = (
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                )
+
+        self.resize()
+
+        crwidth = crop.crprect.width if crop.crprect else self.fwidth
+        crheight = crop.crprect.height if crop.crprect else self.fheight
+
+        mask = cv2.resize(mask, (self.fwidth, self.fheight))
+
+        # self._vidreader.seek(startidx)
+        
+        # if endidx == 0:
+        #     fcount = self._vidreader.fcount - startidx
+        # else:
+        #     fcount = endidx - startidx
+
         # Filters for trajectory smoothing
         smoothenx = Smoothen(tol=50)
         smootheny = Smoothen(tol=50)
         smoothenr = Smoothen(tol=100)
 
-
-        for i in tqdm(range(fcount), desc="Marangoni", total=fcount):
+        fcount = self._vidreader.fcount
+        self.trackpts = [[]]
+        for i in tqdm(range(fcount-1), desc="Marangoni", total=fcount-1):
 
             frame = self._vidreader.read()
 
@@ -92,22 +131,16 @@ class Marangoni(Experiment):
             x = floor(smoothenx.smoothen(x))
             y = floor(smootheny.smoothen(y))
             r = floor(smoothenr.smoothen(r))
+            
+            self.trackpts[0].append(contourr.reshape(-1, 2))
 
-            # Draw the circle
-            cv2.circle(frame, (x, y), r, (0, 0, 255), 2)  # Green circle
-
-            # Store data
-            self.trackpts.append(Circle(r, x, y))
+            for j, rect in enumerate(ocrrects):
+                pixrect = rect.norm2pix(crwidth, crheight)
+                text = self.ocr(frame, pixrect, pytesseract)
+                self.texts[j].append(text)
             
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
-
-            self._videowriter.write(frame)
-
-        self._videowriter.release()
-
-        # Store tracked points for later analysis
-        # self.processor.points_tracked = points_tracked
 
 
 

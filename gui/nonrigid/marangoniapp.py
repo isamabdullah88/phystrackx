@@ -1,265 +1,344 @@
-import os
-import cv2
-import threading
-import customtkinter as ctk
-from PIL import Image, ImageTk
-from matplotlib import pyplot as plt
-from tkinter import messagebox
-from math import floor
+"""
+balloonapp.py
+Application for non-rigid balloon tracking in PhysTrackX.
 
-from experiments.nonrigid import Marangoni
+Author: Isam Balghari
+"""
+
+import threading
+from tkinter import messagebox, Tk
+
 from gui.app import App
+from gui.components.processanim import ProcessAnimation
 from gui.components.spinner import Spinner
-from gui.components.seekbar import TrimSeekBar
+from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
+from gui.components.progressbar import ProgressBar
+from gui.components.rect import Rect
+from gui.components.points import ContPoints
 from gui.components.subtoolbar import SubToolbar
+from gui.components.plot import Save, Plot, DataManager
+from gui.components.label import Label
 from gui.components.titlebar import TitleBar
 from gui.components.tooltip import ToolTip
-from gui.components.label import Label
-from gui.components.rect import Rect
 from gui.components.circle import Circle
-from gui.plugins import Crop, Filters, Geometry
-from core import abspath
+from gui.plugins.filters import Filters
+from gui.plugins.crop import Crop
+from gui.plugins.geometry.geometry import Geometry
 from .videoapp import Video
+from experiments.nonrigid import Marangoni
+
 
 class MarangoniApp(App):
-    def __init__(self, root):
+    """Application for tracking balloon deformation and extracting motion data."""
+
+    def __init__(self, root: Tk) -> None:
+        """
+        Initialize the balloon tracking application.
+
+        Args:
+            root (Tk): The root tkinter window.
+        """
         super().__init__(root)
+        self._setup_main_toolbar()
+        self._setup_sub_toolbar()
+        self._init_plugins_and_tools()
+        self._init_video_components()
 
-        # img = Image.open(abspath("assets/ruler.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        # self.ruler = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-        #                               image=img, command=self.scale)
-        # self.ruler.pack(padx=5, pady=5)
-        # self.ruler.image = img
+        self.save = None
+        self.datamanager = None
 
-        # img = Image.open(abspath("assets/marangoni.png")).resize((self.btnsize, self.btnsize), Image.Resampling.LANCZOS)
-        # img = ctk.CTkImage(dark_image=img, size=(self.btnsize, self.btnsize))
-        # self.boundary = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-        #                             image=img, command=self.drawcircle)
-        # self.boundary.pack(padx=5, pady=5)
-        self.btn = self.mkbutton("assets/marangoni.png", self.drawcircle)
-        ToolTip(self.btn, "Mark Circle")
-        
-        self._idx = 0
+    # ================== UI Setup ================== #
 
-        self.seekbar = TrimSeekBar(self.vidframe, width=self.cwidth-self.twidth, height=self.seekbarh, ondrag=self.updateframe)
+    def _setup_main_toolbar(self) -> None:
+        """Create main toolbar buttons with tooltips."""
+        main_buttons = [
+            ("assets/circlebd.png", self.drawcircle, "Draw Circle Boundary"),
+            ("assets/track.png", self.strack, "Start Tracking"),
+            ("assets/plot.png", self.plot, "Plot Tracked Data"),
+            ("assets/save.png", self.savedata, "Save Tracked Data"),
+            ("assets/reset.png", self.reset, "Clear Everything"),
+            ("assets/plugin.png", self.plugins, "Plugins"),
+        ]
+        for img_path, command, tooltip in main_buttons:
+            btn = self.mkbutton(img_path, command)
+            ToolTip(btn, tooltip)
+            self.btnlist[img_path.split("/")[-1][:-4]] = btn
 
-        # self.scroll_toolbar.pack()
-        
-        self.ccoords = (0, 0)
-
-        # mask from user for tracking
-        self._mask = None
-        
-        # Plugins ---------------------------------------------------------------------------------
-        self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
-        
-        # TODO: Use enum for these
-        buttons = [
+    def _setup_sub_toolbar(self) -> None:
+        """Create plugin toolbar buttons with tooltips."""
+        self.subtoolbar = SubToolbar(
+            self.videoview, width=self.twidth, btnsize=self.btnsize
+        )
+        sub_buttons = [
             ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
             ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
             ("assets/plugins/ocr.png", self.drawocr, "Draw to Apply OCR"),
-            ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool")
+            ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool"),
         ]
-        
-        for imgpath, command, tooltip in buttons:
-            self.btn = self.subtoolbar.mkbutton(imgpath, command)
-            ToolTip(self.btn, tooltip)
-        # self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
-        # self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
-        # self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
-        # self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
-        
-        btn = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(btn, "Plugins")
-        
-        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
-        
-        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
-        
-        self.spinner = Spinner(self.videoview, self.crop)
-        
-        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight)
-        
-        # Main Toolbar ----------------------------------------------------------------------------
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, toggle=self.subtoolbar.toggle)
-        
+        for img_path, command, tooltip in sub_buttons:
+            btn = self.subtoolbar.mkbutton(img_path, command)
+            ToolTip(btn, tooltip)
+            self.btnlist[img_path.split("/")[-1][:-4]] = btn
+
+    def _init_plugins_and_tools(self) -> None:
+        """Initialize plugin modules and drawing tools."""
+        self.filters = Filters(
+            self.scrollframe,
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            self.updateframe,
+            self.subtoolbar.toggle,
+        )
+        self.crop = Crop(
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            self.updateframe,
+            self.subtoolbar.toggle,
+        )
+        self.geometry = Geometry(
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            self.btnlist,
+            self.btnlist["geometry"],
+        )
+        self.seekbar = TrimSeekBar(
+            self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe
+        )
+        self.ocrrects = Rect(
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            self.btnlist,
+            self.btnlist["ocr"],
+            toggle=self.subtoolbar.toggle,
+        )
+        self.contpoints = ContPoints(self.videoview, self.vwidth, self.vheight)
+        self.processanim = ProcessAnimation(self.videoview, self.crop)
+        self.progressbar = ProgressBar(
+            self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight
+        )
+        self.scruler = ScaleRuler(
+            self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"]
+        )
         self.circle = Circle(self.videoview, self.vwidth, self.vheight)
-        
-        
-        # Video Handler ---------------------------------------------------------------------------
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.spinner)
-        # tempdir = './temp'
-        # if not os.path.exists(tempdir):
-        #     os.makedirs(tempdir)
 
-        # self._trackpath = os.path.join(tempdir, 'track-marangoni.mp4')
+    def _init_video_components(self) -> None:
+        """Initialize the video player and processing backend."""
+        self.videoapp = Video(
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            Marangoni,
+            self.crop,
+            self.seekbar,
+            self.filters,
+            self.processanim,
+        )
+        self.seekbar.settrim(trimvideo=self.trimvideo)
 
-        # self.marangoni = Marangoni(trackpath=self._trackpath)
+    # ================== Video Loading & Processing ================== #
 
-
-
-    def loadvideo(self, videopath, clear=True):
-        """Loads a new video from user click."""
+    def loadvideo(self, videopath: str) -> None:
+        """Load the video into the viewer and initialize related components."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
-        
-        if clear:
-            self.clear()
-        else:
-            self.clearcomponents()
-        
-        # Show frame count
-        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=10)
-        
-        self.videoapp.loadvideo(videopath)
-        
-        self.resize(self.videoapp.fwidth, self.videoapp.fheight)
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview)
 
-        self.crop.set(self.fwidth, self.fheight)
-        
-        
-        self.seekbar.setcount(self.videoapp.fcount)
-        
-        # self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
-        
+        def load(spinner: Spinner) -> None:
+            self.videoapp.loadvideo(videopath)
+            self.root.after(0, spinner.destroy)
+            self.loadcomponents()
+
+        threading.Thread(target=load, args=(self.spinner,)).start()
+
+    def trimvideo(self, startidx: int, endidx: int) -> None:
+        """Trim the video based on user-defined start and end indices."""
+        self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.crop)
+
+        def trim(spinner: Spinner) -> None:
+            self.videoapp.trimvideo(startidx, endidx)
+            self.videoapp.loadvideo(self.videoapp.trimpath)
+            self.loadcomponents()
+            self.root.after(0, spinner.destroy)
+
+        threading.Thread(target=trim, args=(self.spinner,)).start()
+
+    def loadcomponents(self) -> None:
+        """Load and update components after video is loaded or modified."""
+        Label(
+            self.videoview, text=f"Frame Count: {self.videoapp.fcount}"
+        ).place(x=10, y=80)
+
+        if self.seekbar.disable:
+            self.seekbar = ViewSeekBar(
+                self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe
+            )
+            self.seekbar.set(self.videoapp.fcount)
+            self.seekbar.pack()
+        else:
+            self.seekbar.set(self.videoapp.fcount)
+
+        self.contpoints.addpoints(
+            self.videoapp.trackpts, self.crop.crpx, self.crop.crpy
+        )
         self.updateframe()
 
-    def updateframe(self):
-        """Updates the frame displayed in the video view based on the slider position."""
-        self.videoapp.showframe()
-        
-        # draw tracked points
-        # self.tpoints.drawpoint(self.seekbar.idx)
+    # ================== UI Actions ================== #
 
-    def scale(self):
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth, cheight=self.cheight)
-        
-    def drawcircle(self):
-        """Draws circle"""
-        self.circle.drawcircle(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
-
-    def drawrect(self):
-        """Draws rectangle with simple lines"""
-        self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
-        
+    def loadseek(self) -> None:
+        """Display seekbar if video has enough frames."""
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
-        
-        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.seekbar.pack()
 
-    def plugins(self):
-        """
-        Opens a spinner to select a filter type and apply it to the video frame.
-        """
-        self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
-        self.subtoolbar.toggle()
-    
-    def appfilter(self):
+    def updateframe(self) -> None:
+        """Update canvas to show current frame and overlays."""
+        self.videoapp.showframe(self.seekbar.idx)
+        self.contpoints.drawpoints(self.seekbar.idx)
+
+    def scale(self) -> None:
+        """Display the scale ruler on canvas."""
+        self.scruler.pack()
+
+    def appfilter(self) -> None:
+        """Activate video filter UI for user input."""
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
             return
-        
         self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
         self.filters.spawnfilter()
         self.subtoolbar.toggle()
-        
-    def drawcrop(self):
-        """Crop for crop plugin. This crop the all frames of video"""
+
+    def drawcrop(self) -> None:
+        """Activate the cropping tool."""
         if self.videoapp.fcount < 10:
-            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            messagebox.showerror("Error", "No video to crop. Please upload a video!")
             return
-        
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         self.crop.drawrect()
         self.subtoolbar.toggle()
-        
-    def drawocr(self):
-        """Draws rectangle for OCR"""
+
+    def drawocr(self) -> None:
+        """Draw a region for OCR."""
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
-        
         self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
-        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.ocrrects.drawrect(
+            self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy
+        )
         self.subtoolbar.toggle()
-        
-    def dogeometry(self):
-        """Starts geomtry plugin"""
+
+    def dogeometry(self) -> None:
+        """Launch geometry analysis plugin."""
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
         self.subtoolbar.toggle()
-    
-    def scale(self):
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, cwidth=self.cwidth,
-                                cheight=self.cheight)
 
-
-
-
-    def strack(self):
-        """
-        Detects and tracks radius for the main marangoni circle using classical techniques.
-        """
-        if self.videoapp.fcount < 10:
-            messagebox.showerror("Error", "No task to track, upload video and mark points first!")
-            return
-        
-
-        def trackbg(popup):
-            startidx = self.seekbar.startidx
-            endidx = self.seekbar.endidx
-            self.videoapp.track(self._mask, startidx, endidx)
-            
-            self.root.after(0, popup.destroy())
-
-            self.loadvideo(self.videoapp.trackpath, clear=False)
-
-        threading.Thread(target=trackbg, args=(self.spinner,)).start()
-
-    # TODO: Clear implementation of clear/abort while processing
-    def clearcomponents(self):
-        """Clear components"""
-        self.scruler = None
-        self.seekbar.setcount(100)
-        self.crop.cleardata()
-        self.ocrrects.cleardata()
-        # self.trects.cleardata()
+    def clearcomponents(self) -> None:
+        """Clear all active UI overlays."""
         self.filters.clear()
         self.axes.clear()
+        self.contpoints.clear()
+        self.scruler.clear()
 
-    def clear(self):
-        """Clears almost everything"""
-        # super().clear()
-        self.videoapp.trackpts.clear()
+    def reset(self) -> None:
+        """Reset video view and related tracking/overlay data."""
         self.clearcomponents()
-        
-        # del self.marangoni
-        # self.marangoni = Marangoni(trackpath=self._trackpath)
-        
-        # self.scruler = None
-        # self._rcoords = None
-        # self._rects = []
-        
-        # self.seekbar.setcount(100)
+        self.videoapp.trackpts.clear()
+        self.ocrrects.clear()
+        self.crop.clear()
+        self.seekbar.clear()
+        self.loadvideo(self.videopath)
 
-    def plotx(self):
-        if len(self.marangoni.trackpts) < 1:
-            messagebox.showerror("Error", "No tracked points available. Please start tracking first.")
+    def plot(self) -> None:
+        """Create plots from tracked data or OCR values."""
+        if not self.videoapp.trackpts and not self.videoapp.ocrdata:
+            messagebox.showerror(
+                "Error", "No tracked or text data available. Please start tracking first."
+            )
+            return
+        self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
+        if self.datamanager is None:
+            self.datamanager = DataManager(
+                self.points.tpts,
+                self.videoapp.ocrdata,
+                self.axes,
+                self.vwidth,
+                self.vheight,
+                self.fwidth,
+                self.fheight,
+                self.videoapp.fps,
+                self.scruler.scalef,
+            )
+            self.datamanager.transform()
+        self.plot = Plot(self.videoview, self.datamanager)
+
+    def savedata(self) -> None:
+        """Save data from tracking or OCR to file."""
+        if not self.videoapp.trackpts and not self.videoapp.ocrdata:
+            messagebox.showerror(
+                "Error", "No tracked or text data available. Please start tracking first."
+            )
+            return
+        self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
+        if self.datamanager is None:
+            self.datamanager = DataManager(
+                self.points.tpts,
+                self.videoapp.ocrdata,
+                self.axes,
+                self.vwidth,
+                self.vheight,
+                self.fwidth,
+                self.fheight,
+                self.videoapp.fps,
+                self.scruler.scalef,
+            )
+            self.datamanager.transform()
+        self.save = Save(self.videoview, self.datamanager)
+
+    def plugins(self) -> None:
+        """Toggle plugin selection toolbar."""
+        self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
+        self.subtoolbar.toggle()
+
+    def drawcircle(self) -> None:
+        """Draw a circle mask for tracking."""
+        self.circle.drawcircle(
+            self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy
+        )
+
+    def strack(self) -> None:
+        """Perform point tracking and update UI."""
+        if (self.videoapp.fcount < 10 or
+            (not self.circle.circles and not self.ocrrects.rects)):
+            messagebox.showerror(
+                "Error", "No task to track. Upload video and mark points first!"
+            )
             return
 
-        rs = [c.r for c in self.marangoni.trackpts]
-        x = [c.cx for c in self.marangoni.trackpts]
-        y = [c.cy for c in self.marangoni.trackpts]
-        
-        _, axes = plt.subplots(1, 3, figsize=(6, 5))
+        self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
+        self.axes.clear()
+        self.ocrrects.clearrects()
+        self.circle.clearrects()
 
+        self.processanim.pack()
+        self.progressbar.pack()
 
-        axes[0].plot(rs)
-        axes[0].set_title("Radius")
-        axes[1].plot(x, y)
-        axes[1].set_title("Center")
+        def on_complete() -> None:
+            self.processanim.destroy()
+            self.progressbar.destroy()
+            self.loadcomponents()
 
-        plt.tight_layout()
-        plt.show()
+        def track_bg() -> None:
+            self.videoapp.track(
+                self.circle.mask, self.ocrrects, self.progressbar.progress
+            )
+            self.root.after(0, on_complete)
+
+        threading.Thread(target=track_bg).start()
+        self.progressbar.update()
