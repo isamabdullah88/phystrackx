@@ -25,7 +25,6 @@ class BalloonApp(App):
     def __init__(self, root):
         super().__init__(root)
 
-        # Remove rectanlge
         buttons = [
             ("assets/circlebd.png", self.drawcircle, "Draw Circle Boundary"),
             ("assets/track.png", self.strack, "Start Tracking"),
@@ -53,12 +52,6 @@ class BalloonApp(App):
             self.btn = self.subtoolbar.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
             self.btnlist[imgpath.split('/')[-1][:-4]] = self.btn
-
-
-        # self.circlebtn = self.mkbutton("assets/circlebd.png", self.drawcircle)
-        # ToolTip(self.circlebtn, "Draw Circle Boundary")
-        # self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
-        # ToolTip(self.pluginsbtn, "Plugins")
 
         self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
@@ -135,14 +128,6 @@ class BalloonApp(App):
     def scale(self):
         """Displays the scale ruler on canvas."""
         self.scruler.pack()
-
-    # def drawrect(self):
-    #     """Enables rectangle drawing mode for object tracking."""
-    #     self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
-    #     if self.videoapp.fcount < 10:
-    #         messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
-    #         return
-    #     self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
 
     def appfilter(self):
         """Activates video filter UI for user input."""
@@ -250,7 +235,6 @@ class BalloonApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
         self.axes.clear()
-        # self.trects.clearrects()
         self.ocrrects.clearrects()
         self.circle.clearrects()
 
