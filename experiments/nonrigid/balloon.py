@@ -25,19 +25,8 @@ class Balloon(Experiment):
         super().__init__(trimpath, vwidth, vheight)
 
         self.tkqueue = tkqueue
-        self.trackpts: list[list[int]] = []
+        self.trackpts: list[list[float]] = []
         self.texts: list[list[str]] = []
-
-    # def resize(self):
-    #     """Resize frame shape to lower"""
-    #     if self.fheight <= 360:
-    #         return self.fwidth, self.fheight
-        
-    #     self.aspratio = self.fwidth/self.fheight
-
-    #     self.fheight = 360
-    #     self.fwidth = floor(self.aspratio * self.fheight)
-
 
     def preprocess(self, frame, mask=None):
         """Preprocesses the frame to sharpen the edges"""
@@ -285,14 +274,6 @@ class Balloon(Experiment):
 
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
-
-            # self._videowriter.write(frame)
-        # self._vidreader.release()
-
-        print('video reader released')
-
-
-        # self._videowriter.release()
 
 
 
