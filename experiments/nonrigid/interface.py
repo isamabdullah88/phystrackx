@@ -20,20 +20,22 @@ from experiments.experiment import Experiment
 from .utils import ptsline
 
 class Interface(Experiment):
-    def __init__(self, trackpath):
-        super().__init__()
+    def __init__(self, trimpath, vwidth, vheight, tkqueue):
+        super().__init__(trimpath, vwidth, vheight)
 
-        self._trackpath = trackpath
+        self.tkqueue = tkqueue
+        self.trackpts: list[list[float]] = []
+        self.texts: list[list[str]] = []
 
-    def resize(self):
-        """Resize frame shape to lower"""
-        if self.fheight <= 360:
-            return self.fwidth, self.fheight
+    # def resize(self):
+    #     """Resize frame shape to lower"""
+    #     if self.fheight <= 360:
+    #         return self.fwidth, self.fheight
         
-        self.aspratio = self.fwidth/self.fheight
+    #     self.aspratio = self.fwidth/self.fheight
 
-        self.fheight = 360
-        self.fwidth = floor(self.aspratio * self.fheight)
+    #     self.fheight = 360
+    #     self.fwidth = floor(self.aspratio * self.fheight)
 
 
     def preprocess(self, frame, mask=None):
@@ -87,7 +89,7 @@ class Interface(Experiment):
 
 
 
-    def track(self, lcoords: Points, rect, startidx=0, endidx=0):
+    def track(self, lcoords: Points, ocrrects, filters, crop, progress):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -100,8 +102,8 @@ class Interface(Experiment):
         Note: Make sure that the first frame has almost perfectly accurate detection.
         """
         # Do OCR detection
-        if rect is not None:
-            rectp = rect.norm2pix(self.fwidth, self.fheight)
+        if ocrrects is not None:
+            rectp = ocrrects.norm2pix(self.fwidth, self.fheight)
             self.ocr(rectp, startidx=startidx, endidx=endidx)
 
         # Tracking

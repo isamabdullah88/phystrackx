@@ -96,7 +96,7 @@ class App:
     def openvideo(self) -> None:
         """Open a video file using file dialog."""
         self.videopath = filedialog.askopenfilename(
-            filetypes=[("Video files", "*.mp4 *.avi *.mov *.MP4")])
+            filetypes=[("Video files", "*.mp4 *.MP4 *.avi *.mov *.MOV")])
         if self.videopath:
             self.loadvideo(self.videopath)
 
