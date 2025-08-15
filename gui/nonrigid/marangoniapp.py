@@ -1,6 +1,6 @@
 """
-balloonapp.py
-Application for non-rigid balloon tracking in PhysTrackX.
+marangoniapp.py
+Application for non-rigid marangoni tracking in PhysTrackX.
 
 Author: Isam Balghari
 """
