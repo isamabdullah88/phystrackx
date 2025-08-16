@@ -2,7 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from core import abspath
 from core import PixelRect
-from .label import Label
+from ..label import Label
 
 class Rect:
     def __init__(self, canvas, vwidth, vheight, btnlist, activebtn, toggle=None):

@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 from core import abspath
 from core import PixelRect
-from .label import Label
+from ..label import Label
 
 class Circle:
     def __init__(self, canvas:CTkCanvas, vwidth, vheight, toggle=None):
