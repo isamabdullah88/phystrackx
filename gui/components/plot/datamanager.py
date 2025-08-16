@@ -7,7 +7,7 @@ Author: Isam Balghari
 """
 
 import numpy as np
-from gui.components.points import TrackPoint
+from gui.components.visuals import TrackPoint
 from gui.components.axes import Axes
 from experiments.components.ocr import OCRData
 

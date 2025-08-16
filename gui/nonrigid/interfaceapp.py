@@ -14,19 +14,18 @@ from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
-from gui.components.rect import Rect
-from gui.components.points import ContPoints
+from gui.components.structures import Rect, Circle, Line
+from gui.components.visuals import ContPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
 from gui.components.titlebar import TitleBar
 from gui.components.tooltip import ToolTip
-from gui.components.circle import Circle
 from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry
 from .videoapp import Video
-from experiments.nonrigid import Balloon
+from experiments.nonrigid import Interface
 from core import Points
 
 
@@ -122,6 +121,15 @@ class InterfaceApp(App):
         self.seekbar = TrimSeekBar(
             self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe
         )
+
+        self.line = Line(
+            self.videoview,
+            self.vwidth,
+            self.vheight,
+            self.btnlist,
+            self.btnlist["line"]
+        )
+
         self.ocrrects = Rect(
             self.videoview,
             self.vwidth,
@@ -146,7 +154,7 @@ class InterfaceApp(App):
             self.videoview,
             self.vwidth,
             self.vheight,
-            Balloon,
+            Interface,
             self.crop,
             self.seekbar,
             self.filters,
@@ -203,54 +211,55 @@ class InterfaceApp(App):
     # ================== UI Actions ================== #
     def drawline(self):
         """Draws line with filled transparent image laid over region of interest"""
-        self._ctkline = None
+        self.line.drawline(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        # self._ctkline = None
 
-        def onclick(event):
+        # def onclick(event):
             
-            self._lcoords.addpt(event.x-self.fx, event.y-self.fy)
+        #     self._lcoords.addpt(event.x-self.fx, event.y-self.fy)
             
-            for i in range(len(self._lcoords)):
-                x0, y0 = self._lcoords[i]
-                self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2,
-                                           fill="red", outline="black")
+        #     for i in range(len(self._lcoords)):
+        #         x0, y0 = self._lcoords[i]
+        #         self.videoview.create_oval(x0+self.fx-2, y0+self.fy-2, x0+self.fx+2, y0+self.fy+2,
+        #                                    fill="red", outline="black")
                 
-                if i > len(self._lcoords) - 2:
-                    continue
-                x1, y1 = self._lcoords[i+1]
+        #         if i > len(self._lcoords) - 2:
+        #             continue
+        #         x1, y1 = self._lcoords[i+1]
                 
-                self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy,
-                                           fill="magenta", width=3)
+        #         self.videoview.create_line(x0+self.fx, y0+self.fy, x1+self.fx, y1+self.fy,
+        #                                    fill="magenta", width=3)
             
             
-        def ondrag(event):
-            if len(self._lcoords) < 1:
-                return
+        # def ondrag(event):
+        #     if len(self._lcoords) < 1:
+        #         return
             
-            ex, ey = (event.x, event.y)
+        #     ex, ey = (event.x, event.y)
             
-            if self._ctkline is None:
-                x0, y0 = self._lcoords[-1]
-                self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx,
-                                                           ey+self.fy, fill="magenta", width=3)
-                return
+        #     if self._ctkline is None:
+        #         x0, y0 = self._lcoords[-1]
+        #         self._ctkline = self.videoview.create_line(x0+self.fx, y0+self.fy, ex+self.fx,
+        #                                                    ey+self.fy, fill="magenta", width=3)
+        #         return
             
-            x1, y1 = self._lcoords[-1]
-            self.videoview.coords(self._ctkline, x1+self.fx, y1+self.fy, event.x, event.y)
+        #     x1, y1 = self._lcoords[-1]
+        #     self.videoview.coords(self._ctkline, x1+self.fx, y1+self.fy, event.x, event.y)
             
-        def onescape(event):
-            """Escape key to clear the drawn line"""
-            if self._ctkline is not None:
-                self.videoview.delete(self._ctkline)
-                self._ctkline = None
-                # self._lcoords = []
+        # def onescape(event):
+        #     """Escape key to clear the drawn line"""
+        #     if self._ctkline is not None:
+        #         self.videoview.delete(self._ctkline)
+        #         self._ctkline = None
+        #         # self._lcoords = []
             
-            self.videoview.unbind("<Button>")
-            self.videoview.unbind("<Motion>")
-            self.videoview.unbind("<Escape>")
+        #     self.videoview.unbind("<Button>")
+        #     self.videoview.unbind("<Motion>")
+        #     self.videoview.unbind("<Escape>")
 
-        self.videoview.bind("<Button>", onclick)
-        self.videoview.bind("<Motion>", ondrag)
-        self.root.bind("<Escape>", onescape)
+        # self.videoview.bind("<Button>", onclick)
+        # self.videoview.bind("<Motion>", ondrag)
+        # self.root.bind("<Escape>", onescape)
 
     def loadseek(self) -> None:
         """Display seekbar if video has enough frames."""
@@ -379,7 +388,7 @@ class InterfaceApp(App):
     def strack(self) -> None:
         """Perform point tracking and update UI."""
         if (self.videoapp.fcount < 10 or
-            (not self._lcoords and not self.ocrrects.rects)):
+            (not self.line.line and not self.ocrrects.rects)):
             messagebox.showerror(
                 "Error", "No task to track. Upload video and mark points first!"
             )
@@ -400,7 +409,7 @@ class InterfaceApp(App):
 
         def track_bg() -> None:
             self.videoapp.track(
-                self._lcoords.pix2norm(self.fwidth, self.fheight), self.ocrrects, self.progressbar.progress
+                self.line.line.pix2norm(self.fwidth, self.fheight), self.ocrrects, self.progressbar.progress
             )
             self.root.after(0, on_complete)
 

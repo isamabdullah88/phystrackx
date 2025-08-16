@@ -17,9 +17,8 @@ from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
 from gui.components.processanim import ProcessAnimation
-from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar
-from gui.components.rect import Rect
+from gui.components.structures import Rect
 from core import filexists
 from experiments.components.ocr import OCRData
 
