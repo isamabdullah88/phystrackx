@@ -13,13 +13,14 @@ class Line:
         self._ctkline = None
         self.line = Points()
         self.canvaslines = []
-        self._ctklines = []
+        self.tklines = []
+        self.tkpts = []
         
         self.labels = []
         
         self.toggle = toggle
         self.btnsize = 30
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.button = self.mkbutton("assets/bin.png", self.clearline, btnsize=self.btnsize)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         # self.applied = False
@@ -42,22 +43,26 @@ class Line:
         
         return button
         
-    def clearrect(self):
-        """Deletes the last drawn rectangle"""
-        if self._ctklines:
-            self.canvas.delete(self._ctklines[-1])
-            self.line.pop()
-            self._ctklines.pop()
-            if self._ctklines:
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-            else:
-                self.button.place_forget()
+    # def clearrect(self):
+    #     """Deletes the last drawn rectangle"""
+    #     if self.tklines:
+    #         self.canvas.delete(self.tklines[-1])
+    #         self.line.pop()
+    #         self.tklines.pop()
+    #         if self.tklines:
+    #             self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+    #         else:
+    #             self.button.place_forget()
                 
     def clearline(self):
-        """Deletes all drawn rectangles"""
-        for rect in self._ctklines:
-            self.canvas.delete(rect)
-        self._ctklines.clear()
+        """Deletes all drawn points in line"""
+        for tkline in self.tklines:
+            self.canvas.delete(tkline)
+        self.tklines.clear()
+
+        for tkpt in self.tkpts:
+            self.canvas.delete(tkpt)
+        self.tkpts.clear()
         
     def clear(self):
         for label in self.labels:
@@ -88,16 +93,19 @@ class Line:
 
             for i in range(len(self.line)):
                 x0, y0 = self.line[i]
-                self.canvas.create_oval(x0+fx-2, y0+fy-2, x0+fx+2, y0+fy+2,
+                tkpt = self.canvas.create_oval(x0+fx-2, y0+fy-2, x0+fx+2, y0+fy+2,
                                            fill="red", outline="black")
+                self.tkpts.append(tkpt)
                 
                 if i > len(self.line) - 2:
                     continue
 
                 x1, y1 = self.line[i+1]
                 
-                self.canvas.create_line(x0+fx, y0+fy, x1+fx, y1+fy,
+                tkline = self.canvas.create_line(x0+fx, y0+fy, x1+fx, y1+fy,
                                            fill="magenta", width=3)
+                
+                self.tklines.append(tkline)
             
         def inrect(event):
 
@@ -110,6 +118,7 @@ class Line:
                 x0, y0 = self.line[-1]
                 self._ctkline = self.canvas.create_line(x0+fx, y0+fy, ex+fx,
                                                            ey+fy, fill="magenta", width=3)
+                
                 return
             
             x1, y1 = self.line[-1]
@@ -122,9 +131,13 @@ class Line:
                 self._ctkline = None
                 # self._lcoords = []
             
+            self.line = self.line.pix2norm(fwidth, fheight)
+            
             self.canvas.unbind("<Button>")
             self.canvas.unbind("<Motion>")
             self.canvas.unbind("<Escape>")
+
+            print('lines: ', self.line)
 
             
             self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
@@ -138,8 +151,11 @@ class Line:
         
     def onapply(self):
         """Finalize lines and colors on apply"""
-        for tkpoint in self._ctklines:
-            self.canvas.itemconfig(tkpoint, outline="green", width=2)
+        for tkline in self.tklines:
+            self.canvas.itemconfig(tkline, fill="green", width=2)
+
+        for tkpt in self.tkpts:
+            self.canvas.itemconfig(tkpt, fill="green", width=2)
         
         self.button.place_forget()
         self.applybtn.place_forget()
