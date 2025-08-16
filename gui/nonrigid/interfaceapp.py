@@ -146,7 +146,7 @@ class InterfaceApp(App):
         self.scruler = ScaleRuler(
             self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"]
         )
-        self.circle = Circle(self.videoview, self.vwidth, self.vheight)
+        # self.circle = Circle(self.videoview, self.vwidth, self.vheight)
 
     def _init_video_components(self) -> None:
         """Initialize the video player and processing backend."""
@@ -397,7 +397,8 @@ class InterfaceApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
         self.axes.clear()
         self.ocrrects.clearrects()
-        self.circle.clearrects()
+        # self.circle.clearrects()
+        self.line.clearline()
 
         self.processanim.pack()
         self.progressbar.pack()
@@ -409,7 +410,7 @@ class InterfaceApp(App):
 
         def track_bg() -> None:
             self.videoapp.track(
-                self.line.line.pix2norm(self.fwidth, self.fheight), self.ocrrects, self.progressbar.progress
+                self.line.line, self.ocrrects, self.progressbar.progress
             )
             self.root.after(0, on_complete)
 
