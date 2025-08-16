@@ -134,7 +134,11 @@ class Interface(Experiment):
         maxiters = 1000
         
         lcoords = lcoords.norm2pix(crwidth, crheight)
-        rect = lcoords.pts2rect(xoff=100, yoff=100, fwidth=crwidth, fheight=crheight)
+        print('lcoords: ', lcoords)
+
+        xoff = 100
+        yoff = 100
+        rect = lcoords.pts2rect(xoff=xoff, yoff=yoff, fwidth=crwidth, fheight=crheight)
         
         initpts = ptsline(lcoords, numpts=10, xoff=rect.xmin, yoff=rect.ymin)
         self.trackpts = [[]]
@@ -149,19 +153,25 @@ class Interface(Experiment):
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
+            
+            conts = initpts.copy().reshape(-1, 2)[:, [1, 0]]
+
+            # cv2.polylines(framep, [conts.astype(np.int32)], isClosed=False,
+            #               color=(0, 255, 0), thickness=2)
+            # cv2.imwrite(f"frame-{i}.png", framep)
+            
+            conts[:, 0] += rect.xmin
+            conts[:, 1] += rect.ymin
+            self.trackpts[0].append(conts)
+            # plt.imshow(gray, cmap='gray')
+            # plt.figure()
+            # plt.imshow(framep)
+            # plt.show()
 
             initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
                                     gamma=gamma, w_edge=w_edge, w_line=w_line, 
                                     boundary_condition='fixed')
             
-            self.trackpts[0].append(initpts.reshape(-1, 2))
-            # cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False,
-            #               color=(0, 255, 0), thickness=2)
-            
-            # plt.imshow(gray, cmap='gray')
-            # plt.figure()
-            # plt.imshow(framep)
-            # plt.show()
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
                 text = self.ocr(frame, pixrect, pytesseract)
@@ -181,6 +191,7 @@ class Interface(Experiment):
 
 
 if __name__ == '__main__':
+
     # candle = Interface("candle-track.mp4")
     # candle.addvideo("Candle1.mp4")
     # points = Points([0.45, 0.4796875, 0.5015625, 0.51875, 0.525, 0.521875, 0.5109375, 0.478125, 0.45],
