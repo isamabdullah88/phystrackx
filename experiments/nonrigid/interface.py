@@ -57,35 +57,29 @@ class Interface(Experiment):
         return gray
 
 
-    def ocr(self, rect, startidx=0, endidx=0):
-        import pytesseract
-        # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    def ocr(
+        self,
+        frame: np.ndarray,
+        rect: 'PixelRect',
+        pytesseract
+    ) -> str:
+        """
+        Extract text using OCR from the selected rectangular region.
 
-        self._vidreader.seek(startidx)
-        
-        if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
-        else:
-            fcount = endidx - startidx
+        Args:
+            frame: Frame from which to extract.
+            rect: Rectangle to crop before OCR.
+            pytesseract: pytesseract module reference.
 
-        x, y, w, h = rect.totuple()
-        print('rect: ', rect.totuple())
-        print('fw, fh: ', (self.fwidth, self.fheight))
-            
-        for i in range(fcount):
-
-            frame = self._vidreader.read()
-            frame = frame[y:y+h, x:x+w]
-            # Convert to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            # Optional: thresholding to improve contrast
-            # plt.imshow(gray)
-            # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
-            
-            custom_config = r'--oem 3 --psm 6 outputbase digits'
-            numbers = pytesseract.image_to_string(gray, config=custom_config)
-            print("Number:", numbers)
+        Returns:
+            Extracted text.
+        """
+        crop_img = frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
+        gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+        config = r'--oem 3 --psm 6 outputbase digits'
+        text = pytesseract.image_to_string(gray, config=config)
+        cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        return text
 
 
 
@@ -102,22 +96,35 @@ class Interface(Experiment):
         Note: Make sure that the first frame has almost perfectly accurate detection.
         """
         # Do OCR detection
-        if ocrrects is not None:
-            rectp = ocrrects.norm2pix(self.fwidth, self.fheight)
-            self.ocr(rectp, startidx=startidx, endidx=endidx)
+        # if ocrrects is not None:
+        #     rectp = ocrrects.norm2pix(self.fwidth, self.fheight)
+        #     self.ocr(rectp, startidx=startidx, endidx=endidx)
 
         # Tracking
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        # self.resize()
-        self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-                                            (self.fwidth, self.fheight))
+        # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        # # self.resize()
+        # self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
+        #                                     (self.fwidth, self.fheight))
 
-        self._vidreader.seek(startidx)
+        # self._vidreader.seek(startidx)
         
-        if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
-        else:
-            fcount = endidx - startidx
+        # if endidx == 0:
+        #     fcount = self._vidreader.fcount - startidx
+        # else:
+        #     fcount = endidx - startidx
+        if ocrrects:
+            import pytesseract
+            import platform
+            if platform.system() == "Windows":
+                pytesseract.pytesseract.tesseract_cmd = (
+                    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                )
+
+        self.resize()
+
+        crwidth = crop.crprect.width if crop.crprect else self.fwidth
+        crheight = crop.crprect.height if crop.crprect else self.fheight
+        fcount = self._vidreader.fcount
 
         alpha = 0.1
         beta = 0.1
@@ -126,44 +133,65 @@ class Interface(Experiment):
         w_line = 15
         maxiters = 1000
         
-        lcoords = lcoords.norm2pix(self.fwidth, self.fheight)
-        rect = lcoords.pts2rect(xoff=100, yoff=100, fwidth=self.fwidth, fheight=self.fheight)
+        lcoords = lcoords.norm2pix(crwidth, crheight)
+        print('lcoords: ', lcoords)
+
+        xoff = 100
+        yoff = 100
+        rect = lcoords.pts2rect(xoff=xoff, yoff=yoff, fwidth=crwidth, fheight=crheight)
         
         initpts = ptsline(lcoords, numpts=10, xoff=rect.xmin, yoff=rect.ymin)
+        self.trackpts = [[]]
 
         for i in tqdm(range(fcount-1), desc="Interface", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            frame = filters.appfilter(crop.appcrop(frame))
 
             framep = frame.copy()[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
+            
+            conts = initpts.copy().reshape(-1, 2)[:, [1, 0]]
 
-            initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-                                    gamma=gamma, w_edge=w_edge, w_line=w_line, 
-                                    boundary_condition='fixed')
+            # cv2.polylines(framep, [conts.astype(np.int32)], isClosed=False,
+            #               color=(0, 255, 0), thickness=2)
+            # cv2.imwrite(f"frame-{i}.png", framep)
             
-            cv2.polylines(framep, [initpts[:, [1, 0]].astype(np.int32)], isClosed=False,
-                          color=(0, 255, 0), thickness=2)
-            
+            conts[:, 0] += rect.xmin
+            conts[:, 1] += rect.ymin
+            self.trackpts[0].append(conts)
             # plt.imshow(gray, cmap='gray')
             # plt.figure()
             # plt.imshow(framep)
             # plt.show()
 
-            frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
+            initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
+                                    gamma=gamma, w_edge=w_edge, w_line=w_line, 
+                                    boundary_condition='fixed')
+            
+            for j, rect in enumerate(ocrrects):
+                pixrect = rect.norm2pix(crwidth, crheight)
+                text = self.ocr(frame, pixrect, pytesseract)
+                self.texts[j].append(text)
 
-            self._videowriter.write(frame)
+            # frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax] = framep
+
+            # self._videowriter.write(frame)
+
+            if progress is not None:
+                progress.set((i / (fcount - 1)) * 100)
 
 
-        self._videowriter.release()
+        # self._videowriter.release()
 
 
 
 
 if __name__ == '__main__':
+
     # candle = Interface("candle-track.mp4")
     # candle.addvideo("Candle1.mp4")
     # points = Points([0.45, 0.4796875, 0.5015625, 0.51875, 0.525, 0.521875, 0.5109375, 0.478125, 0.45],

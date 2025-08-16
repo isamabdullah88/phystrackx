@@ -14,14 +14,13 @@ from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
-from gui.components.rect import Rect
-from gui.components.points import ContPoints
+from gui.components.structures import Rect, Circle
+from gui.components.visuals import ContPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
 from gui.components.titlebar import TitleBar
 from gui.components.tooltip import ToolTip
-from gui.components.circle import Circle
 from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry

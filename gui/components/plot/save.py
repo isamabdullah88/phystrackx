@@ -112,7 +112,7 @@ def main():
     import numpy as np
     import customtkinter as ctk
     from gui.components.axes import Axes
-    from gui.components.points import TrackPoint
+    from gui.components.visuals import TrackPoint
     from gui.components.plot.datamanager import DataManager
     from experiments.components.ocr import OCRData
     from gui.components.plot.save import Save

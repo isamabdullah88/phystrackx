@@ -13,14 +13,11 @@ import cv2
 from PIL import Image, ImageTk
 
 from customtkinter import CTkCanvas, IntVar
-from experiments.nonrigid.balloon import Balloon
-from experiments.nonrigid.nonrigid import NonRigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
 from gui.components.processanim import ProcessAnimation
-from gui.components.spinner import Spinner
 from gui.components.seekbar import TrimSeekBar
-from gui.components.rect import Rect
+from gui.components.structures import Rect
 from core import filexists
 from experiments.components.ocr import OCRData
 
