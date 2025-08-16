@@ -103,11 +103,16 @@ class Points:
         ymax = min(max(self.y)+yoff, fheight)
         
         return PixelRect(xmin, ymin, xmax - xmin, ymax - ymin)
-        
+
+    def pop(self):
+        self.x.pop()
+        self.y.pop()
+
     def __len__(self):
         """Length of points"""
         return len(self.x)
     
     def __str__(self):
         """String representation of points"""
-        return f"Points(x={self.x}, y={self.y})"        
+        return f"Points(x={self.x}, y={self.y})"
+       
