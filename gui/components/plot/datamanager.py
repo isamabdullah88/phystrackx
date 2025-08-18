@@ -6,6 +6,7 @@ Manages and transforms tracking points and OCR data using user-defined axes.
 Author: Isam Balghari
 """
 
+import customtkinter as ctk
 import numpy as np
 from gui.components.visuals import TrackPoint
 from gui.components.axes import Axes
@@ -52,12 +53,15 @@ class DataManager:
 
         self.datacount = len(tpoints)
         self.samplecount = len(tpoints[0]) if tpoints else 0
+        self.rows = tpoints[0][0].rows if tpoints[0] else 0
+        self.cols = tpoints[0][0].cols if tpoints[0] else 0
+
         self.timestamps = np.linspace(0, self.samplecount / self.fps, self.samplecount)
         self.ocrcount = ocrdata.datacount
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [
-            np.zeros((self.samplecount, 2)) for _ in range(self.datacount)
+            np.zeros((self.samplecount, self.rows, self.cols)) for _ in range(self.datacount)
         ]
 
     def transform(self) -> None:
@@ -66,9 +70,15 @@ class DataManager:
         """
         for i, obj_points in enumerate(self.tpoints):
             for j, pt in enumerate(obj_points):
-                self.processed_points[i][j, :] = np.array(
-                    self.transformxy(pt.x, pt.y)
-                )
+                import matplotlib.pyplot as plt
+                print('x: ', pt.x)
+                print('y: ', pt.y)
+                t = self.transformxy(pt.x, pt.y)
+                print("tx: ", t[0])
+                print("ty: ", t[1])
+                tx, ty = self.transformxy(pt.x, pt.y)
+                self.processed_points[i][j, :, 0] = tx
+                self.processed_points[i][j, :, 1] = ty
 
     def transformxy(self, x: float, y: float) -> tuple[float, float]:
         """
@@ -99,4 +109,85 @@ class DataManager:
             x *= self.scale
             y *= self.scale
 
+        print('inside tx: ', x.shape)
+        print('inside ty: ', y)
+
         return x, y
+
+
+
+def create_mock_data(root, canvas) -> tuple[list[list[TrackPoint]], OCRData, Axes]:
+    """
+    Creates mock tracking data, OCR data, and axes for testing.
+    """
+    from gui.components.visuals import ContPoint
+    # Mock TrackPoints: two objects, 5 frames each
+    # tpoints = [
+    #     [TrackPoint(x=10 + i, y=20 + i, fx=0, fy=0) for i in range(5)],  # object 1
+    #     [TrackPoint(x=30 + i, y=40 + i, fx=0, fy=0) for i in range(5)],  # object 2
+    # ]
+    print(np.random.random((100,2)).shape)
+    tpoints = [
+        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)],
+        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)]
+    ]
+
+    # Mock OCRData
+    ocrdata = OCRData(data=["frame0", "frame1", "frame2", "frame3", "frame4"])
+
+    # Minimal btnlist (needed by Axes)
+    dummy_btn = ctk.CTkButton(canvas, text="dummy")
+    btnlist = {"dummy": dummy_btn}
+
+    # Create Axes object
+    axes = Axes(
+        root=root,
+        canvas=canvas,
+        vwidth=640,
+        vheight=480,
+        btnlist=btnlist,
+        activebtn=dummy_btn
+    )
+    axes.ox = 0
+    axes.oy = 480
+    axes.theta.set(0)
+
+    return tpoints, ocrdata, axes
+
+
+def main() -> None:
+    """
+    Main entry point for testing DataManager.
+    """
+    # Setup hidden Tk root (we don’t need to run the mainloop)
+    root = ctk.CTk()
+    canvas = ctk.CTkCanvas(root, width=640, height=480)
+    canvas.pack()
+
+    # Create mock input data
+    tpoints, ocrdata, axes = create_mock_data(root, canvas)
+
+    # Initialize DataManager
+    manager = DataManager(
+        tpoints=tpoints,
+        ocrdata=ocrdata,
+        axes=axes,
+        vwidth=640,
+        vheight=480,
+        fwidth=640,
+        fheight=480,
+        fps=30,
+        scale=1.0
+    )
+
+    # Perform transformation
+    manager.transform()
+
+    # Print transformed results
+    for i, obj_points in enumerate(manager.processed_points):
+        print(f"Object {i} transformed points:")
+        print(obj_points)
+
+
+if __name__ == "__main__":
+    main()
