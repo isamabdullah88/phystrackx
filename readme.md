@@ -4,7 +4,7 @@
 <a href="https://www.flaticon.com/free-icons/video" title="video icons">Video icons created by Freepik - Flaticon</a>
 
 <p align="center">
-  <img src="https://i.postimg.cc/zDjTb3pN/app.png" alt="PhysTrackX Demo" width="700"/>
+  <img src="https://i.postimg.cc/d3NTMw6w/app.png" alt="PhysTrackX Demo" width="700"/>
 </p>
 
 ---
