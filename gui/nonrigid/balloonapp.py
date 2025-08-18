@@ -287,7 +287,7 @@ class BalloonApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
         if self.datamanager is None:
             self.datamanager = DataManager(
-                self.points.tpts,
+                self.contpoints.tpts,
                 self.videoapp.ocrdata,
                 self.axes,
                 self.vwidth,
