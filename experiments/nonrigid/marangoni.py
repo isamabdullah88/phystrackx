@@ -8,6 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 from experiments.experiment import Experiment
+from experiments.components.ocr import OCRData
 from filters.smoothen import Smoothen
 from core.circle import Circle
 from gui.plugins.filters import Filters 
@@ -132,7 +133,7 @@ class Marangoni(Experiment):
             y = floor(smootheny.smoothen(y))
             r = floor(smoothenr.smoothen(r))
             
-            self.trackpts[0].append(contourr.reshape(-1, 2))
+            self.trackpts[0].append(contourr.reshape(-1, 2).astype(np.float32))
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
@@ -141,6 +142,8 @@ class Marangoni(Experiment):
             
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
+        
+        self.texts = OCRData(self.texts)
 
 
 

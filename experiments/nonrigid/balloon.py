@@ -17,6 +17,7 @@ from skimage.filters import gaussian
 
 from core import PixelRect
 from experiments.experiment import Experiment
+from experiments.components.ocr import OCRData
 from filters import Smoothen
 from .utils import ptsellpise
 
@@ -265,7 +266,7 @@ class Balloon(Experiment):
             cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
                         endAngle=360, thickness=2)
             
-            self.trackpts[0].append(snakecont.reshape(-1, 2))
+            self.trackpts[0].append(snakecont.reshape(-1, 2).astype(np.float32))
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
@@ -274,6 +275,8 @@ class Balloon(Experiment):
 
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
+
+        self.texts = OCRData(self.texts)
 
 
 

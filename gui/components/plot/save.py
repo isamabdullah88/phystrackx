@@ -7,6 +7,7 @@ Author: Isam Balghari
 """
 
 import csv
+import numpy as np
 import customtkinter as ctk
 from gui.components.plot.datamanager import DataManager
 from tkinter import messagebox
@@ -91,10 +92,17 @@ class Save:
                     ts = self.datamanager.timestamps[i]
                     row.append(f"{ts:.06f}")
 
+                import matplotlib.pyplot as plt
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
-                        x, y = self.points[j][i, :]
-                        row.extend([f"{x:.02f}", f"{y:.02f}"])
+                        print('points: ', self.points[j][i, :, :].shape)
+                        datapt = self.points[j][i, :, :].reshape(self.datamanager.rows, self.datamanager.cols)
+                        print('datapt: ', datapt.shape)
+                        print('dataptx: ', datapt[:, 0])
+                        print('datapty: ', datapt[:, 1])
+
+                        for k in range(self.datamanager.rows):
+                            row.extend([f"{datapt[k, 0]:.02f}", f"{datapt[k, 1]:.02f}"])
 
                 if SaveType.OCR.name in savetypes:
                     for o in self.ocr:
@@ -112,7 +120,7 @@ def main():
     import numpy as np
     import customtkinter as ctk
     from gui.components.axes import Axes
-    from gui.components.visuals import TrackPoint
+    from gui.components.visuals import TrackPoint, ContPoint
     from gui.components.plot.datamanager import DataManager
     from experiments.components.ocr import OCRData
     from gui.components.plot.save import Save
@@ -134,11 +142,17 @@ def main():
     axes = Axes(root, canvas, vwidth=640, vheight=480, btnlist=btnlist, activebtn=dummy_btn)
 
     # --- Dummy TrackPoint data ---
+
     frame_count = 100
     t = np.linspace(0, 2 * np.pi, frame_count)
     x = 100 + 50 * np.cos(t)
     y = 100 + 50 * np.sin(t)
-    fpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
+    # tpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
+    pts = np.zeros((100, 2))
+    pts[:, 1] = 5
+    tpoints = [
+        [ContPoint(pts, 0, 0) for _ in range(10)]
+    ]
 
     # --- Dummy OCR data ---
     ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(frame_count)]]
@@ -146,7 +160,7 @@ def main():
 
     # --- DataManager ---
     datamanager = DataManager(
-        tpoints=fpoints,
+        tpoints=tpoints,
         ocrdata=ocrdata,
         axes=axes,
         vwidth=640,
@@ -157,6 +171,8 @@ def main():
         scale=1.0
     )
     datamanager.transform()
+
+    print('processed points: ', datamanager.processed_points[0][0,:,:])
 
     # --- Save handler ---
     saver = Save(root, datamanager=datamanager)

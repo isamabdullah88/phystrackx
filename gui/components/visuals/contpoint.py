@@ -9,6 +9,7 @@ Author: Isam Balghari
 
 from typing import List, Tuple
 import customtkinter as ctk
+import numpy as np
 
 
 class ContPoint:
@@ -28,8 +29,12 @@ class ContPoint:
             fx: X-offset.
             fy: Y-offset.
         """
+        # print('conts: ', conts.shape)
         # Apply offset to each point
-        self.conts = [(int(x) + fx, int(y) + fy) for x, y in conts]
+        self.conts = [(conts[i, 0] + fx, conts[i, 1] + fy) for i in range(conts.shape[0])]
+        self.x = np.squeeze(conts[:, 0]) + fx
+        self.y = np.squeeze(conts[:, 1]) + fy
+        self.rows, self.cols = conts.shape
         self.cpt: int | None = None
 
     def draw(self, canvas: ctk.CTkCanvas) -> None:

@@ -17,6 +17,7 @@ from skimage.segmentation import active_contour
 
 from core import Points
 from experiments.experiment import Experiment
+from experiments.components.ocr import OCRData
 from .utils import ptsline
 
 class Interface(Experiment):
@@ -162,7 +163,7 @@ class Interface(Experiment):
             
             conts[:, 0] += rect.xmin
             conts[:, 1] += rect.ymin
-            self.trackpts[0].append(conts)
+            self.trackpts[0].append(conts.astype(np.float32))
             # plt.imshow(gray, cmap='gray')
             # plt.figure()
             # plt.imshow(framep)
@@ -184,8 +185,7 @@ class Interface(Experiment):
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
 
-
-        # self._videowriter.release()
+        self.texts = OCRData(self.texts)
 
 
 

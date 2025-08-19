@@ -40,7 +40,9 @@ class TrackPoint:
         self.y = y
         self.x += fx
         self.y += fy
-        # self.button = button
+        self.rows = 1
+        self.cols = 2
+
         self.cpt = None  # Canvas point ID
 
     def draw(self, canvas):
