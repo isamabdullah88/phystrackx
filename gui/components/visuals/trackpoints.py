@@ -28,12 +28,13 @@ class TrackPoints:
     specific trajectories, and deleting them.
     """
 
-    def __init__(self, canvas: ctk.CTkCanvas, vwidth: int, vheight: int) -> None:
+    def __init__(self, canvas: ctk.CTkCanvas, vwidth: int, vheight: int, tether: bool = True) -> None:
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
+        self.tether = tether
 
-        self.tpts: list[list[TrackPoint]] = []
+        self.tpoints: list[list[TrackPoint]] = []
         self.currpts: list[list[int]] = []
 
         self.trsize: int = 15
@@ -65,22 +66,22 @@ class TrackPoints:
         button.image = ctkimg
         return button
 
-    def addpoints(self, tpts: list[list[int]], fx: int, fy: int) -> None:
+    def addpoints(self, tpoints: list[list[int]], fx: int, fy: int) -> None:
         """
         Adds tracked points and places toggle button.
 
         Args:
-            tpts: 2D list of [x, y] points.
+            tpoints: 2D list of [x, y] points.
             fx: X offset to apply to all points.
             fy: Y offset to apply to all points.
         """
-        if not isinstance(tpts, list) or len(tpts) == 0:
+        if not isinstance(tpoints, list) or len(tpoints) == 0:
             return
 
-        self.tpts = [[] for _ in range(len(tpts))]
-        for i, tpt in enumerate(tpts):
-            for pt in tpt:
-                self.tpts[i].append(TrackPoint(pt[0], pt[1], fx, fy))
+        self.tpoints = [[] for _ in range(len(tpoints))]
+        for oidx, tpoint in enumerate(tpoints):
+            for fidx, point in enumerate(tpoint):
+                self.tpoints[oidx].append(TrackPoint(point[:, 0], point[:, 1], fx, fy))
 
         self.togglebtn.place(
             x=self.vwidth - 80,
@@ -90,9 +91,9 @@ class TrackPoints:
 
     def undrawpoints(self) -> None:
         """Undraw all points from canvas."""
-        for tpts in self.tpts:
-            for pt in tpts:
-                pt.undraw(self.canvas)
+        for tpoints in self.tpoints:
+            for point in tpoints:
+                point.undraw(self.canvas)
 
     def drawpoints(self, fidx: int) -> None:
         """
@@ -104,19 +105,26 @@ class TrackPoints:
         self.fidx = fidx
         self.selectpoints.fidx = fidx
 
-        if len(self.tpts) < 1 or not self.selectpoints.toggled:
+        if len(self.tpoints) < 1 or not self.selectpoints.toggled:
             return
 
         self.undrawpoints()
         self.selectpoints.currpts.clear()
 
-        for i, tpts in enumerate(self.tpts):
-            for idx in range(max(self.fidx - self.trsize, 0), self.fidx + 1):
-                if tpts[idx] is None:
+        for i, tpoints in enumerate(self.tpoints):
+            if self.tether:
+                for idx in range(max(self.fidx - self.trsize, 0), self.fidx + 1):
+                    if tpoints[idx] is None:
+                        continue
+                    tpoint = tpoints[idx]
+                    tpoint.draw(self.canvas)
+                    self.selectpoints.currpts.append([tpoint.cpt, i, self.fidx])
+            else:
+                if tpoints[self.fidx] is None:
                     continue
-                tpt = tpts[idx]
-                tpt.draw(self.canvas)
-                self.selectpoints.currpts.append([tpt.cpt, i, self.fidx])
+                tpoint = tpoints[self.fidx]
+                tpoint.draw(self.canvas)
+                self.selectpoints.currpts.append([tpoint.cpt, i, self.fidx])
 
     def matchid(self, cid: int) -> Optional[list[int]]:
         """
@@ -141,7 +149,7 @@ class TrackPoints:
             return
 
         _, tidx, fidx = match
-        self.selectpoints.select(self.canvas, self.tpts, tidx, fidx)
+        self.selectpoints.select(self.canvas, self.tpoints, tidx, fidx)
 
         if self.selectpoints.selected:
             self.delbtn.place(
@@ -154,31 +162,35 @@ class TrackPoints:
 
     def toggleon(self) -> None:
         """Toggle on: show currently active trail of points."""
-        self.selectpoints.toggleon(self.canvas, self.tpts)
+        self.selectpoints.toggleon(self.canvas, self.tpoints)
 
     def toggleoff(self) -> None:
         """Toggle off: hide current trail of points and hide delete button."""
-        self.selectpoints.toggleoff(self.canvas, self.tpts)
+        self.selectpoints.toggleoff(self.canvas, self.tpoints)
         self.delbtn.place_forget()
 
     def removept(self) -> None:
         """Remove selected point trail from canvas and internal list."""
         tidx = self.selectpoints.tidx
-        sltdtpts = self.tpts[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
 
-        for pt in sltdtpts:
-            pt.undraw(self.canvas)
+        if self.tether:
+            sltdtpoints = self.tpoints[tidx][max(self.fidx - self.trsize, 0):self.fidx + 1]
+        else:
+            sltdtpoints = self.tpoints[tidx][self.fidx]
 
-        self.tpts.pop(tidx)
+        for point in sltdtpoints:
+            point.undraw(self.canvas)
+
+        self.tpoints.pop(tidx)
         self.delbtn.place_forget()
 
-        if len(self.tpts) == 0:
+        if len(self.tpoints) == 0:
             self.togglebtn.place_forget()
 
     def clear(self) -> None:
         """Remove all points from canvas and clear all data."""
         self.canvas.delete("points")
-        self.tpts.clear()
+        self.tpoints.clear()
         self.delbtn.place_forget()
 
 

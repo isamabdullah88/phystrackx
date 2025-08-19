@@ -16,6 +16,8 @@ Typical usage:
 Author: [Isam Balghari]
 """
 
+import numpy as np
+
 class TrackPoint:
     """
     Represents a single interactive and drawable point on a canvas.
@@ -40,10 +42,15 @@ class TrackPoint:
         self.y = y
         self.x += fx
         self.y += fy
-        self.rows = 1
+
+        if isinstance(self.x, float):
+            self.rows = 1
+        else:
+            self.rows = np.size(self.x)
         self.cols = 2
 
-        self.cpt = None  # Canvas point ID
+
+        self.cpt: int | None = None  # Canvas point ID
 
     def draw(self, canvas):
         """
@@ -55,11 +62,22 @@ class TrackPoint:
         if self.cpt is not None:
             return
 
-        self.cpt = canvas.create_oval(
-            self.x - 6, self.y - 6, self.x + 6, self.y + 6,
-            fill='magenta', outline='black', width=1,
-            tags="points"
-        )
+        if isinstance(self.x, float):
+            self.cpt = canvas.create_oval(
+                self.x - 6, self.y - 6, self.x + 6, self.y + 6,
+                fill='magenta', outline='black', width=1,
+                tags="points"
+            )
+        else:
+            flat = [coord for pt in zip(self.x, self.y) for coord in pt]
+
+            self.cpt = canvas.create_polygon(
+                flat,
+                outline="magenta",
+                fill="",
+                width=2,
+                smooth=False
+            )
 
     def undraw(self, canvas):
         """
