@@ -120,16 +120,16 @@ def create_mock_data(root, canvas) -> tuple[list[list[TrackPoint]], OCRData, Axe
     """
     Creates mock tracking data, OCR data, and axes for testing.
     """
-    from gui.components.visuals import ContPoint
+    # from gui.components.visuals import ContPoint
     # Mock TrackPoints: two objects, 5 frames each
     # tpoints = [
     #     [TrackPoint(x=10 + i, y=20 + i, fx=0, fy=0) for i in range(5)],  # object 1
     #     [TrackPoint(x=30 + i, y=40 + i, fx=0, fy=0) for i in range(5)],  # object 2
     # ]
-    print(np.random.random((100,2)).shape)
+    
     tpoints = [
-        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)],
-        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)]
+        [TrackPoint(np.random.random((100,)), np.random.random((100,)), 0, 0) for _ in range(10)],
+        [TrackPoint(np.random.random((100,)), np.random.random((100,)), 0, 0) for _ in range(10)]
     ]
 
     # Mock OCRData

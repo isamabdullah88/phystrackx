@@ -149,7 +149,7 @@ class Rigid(Experiment):
                 else:
                     ptstrack[j] = p0
                 x, y = self.pts2pt(ptstrack[j])
-                self.trackpts[j].append([x, y])
+                self.trackpts[j].append(np.array([x, y], np.float32).reshape(1, 2))
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
@@ -163,16 +163,16 @@ class Rigid(Experiment):
                 tkframe = frame.copy()
                 for pts in self.trackpts:
                     for k in range(max(0, i - 30), i):
-                        x, y = pts[k]
-                        tkframe = cv2.circle(tkframe, (x, y), 5, (0, 0, 255), 1)
+                        x, y = pts[k][0, :]
+                        tkframe = cv2.circle(tkframe, (int(x), int(y)), 5, (0, 0, 255), 1)
                 self.tkqueue.put(tkframe)
 
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
 
         # Final formatting
-        for i in range(len(self.trackpts)):
-            self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
+        # for i in range(len(self.trackpts)):
+        #     self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
             
         self.texts = OCRData(self.texts)
 
