@@ -72,7 +72,7 @@ class RigidApp(App):
         self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
-        self.tpoints = TrackPoints(self.videoview, self.vwidth, self.vheight)
+        self.trackpoints = TrackPoints(self.videoview, self.vwidth, self.vheight)
         self.pdata = None
 
         self.processanim = ProcessAnimation(self.videoview, self.crop)
@@ -121,7 +121,7 @@ class RigidApp(App):
         else:
             self.seekbar.set(self.videoapp.fcount)
 
-        self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
+        self.trackpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
 
     def loadseek(self):
@@ -134,7 +134,7 @@ class RigidApp(App):
     def updateframe(self):
         """Updates canvas to show current frame and overlays points."""
         self.videoapp.showframe(self.seekbar.idx)
-        self.tpoints.drawpoints(self.seekbar.idx)
+        self.trackpoints.drawpoints(self.seekbar.idx)
 
     def scale(self):
         """Displays the scale ruler on canvas."""
@@ -211,12 +211,11 @@ class RigidApp(App):
         """Clears all active UI drawing elements and overlays."""
         self.filters.clear()
         self.axes.clear()
-        self.tpoints.clear()
+        self.trackpoints.clear()
         self.scruler.clear()
 
     def reset(self):
         """Resets the video view and related tracking/overlay data."""
-        print('Clear')
         self.clearcomponents()
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
@@ -237,7 +236,7 @@ class RigidApp(App):
             self.plot = Plot(self.videoview, self.datamanager)
         else:
             self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                self.trackpoints.tpoints, self.videoapp.ocrdata, self.axes,
                 self.vwidth, self.vheight, self.fwidth, self.fheight,
                 self.videoapp.fps, self.scruler.scalef
             )
@@ -256,7 +255,7 @@ class RigidApp(App):
             self.save = Save(self.videoview, self.datamanager)
         else:
             self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                self.trackpoints.tpoints, self.videoapp.ocrdata, self.axes,
                 self.vwidth, self.vheight, self.fwidth, self.fheight,
                 self.videoapp.fps, self.scruler.scalef
             )

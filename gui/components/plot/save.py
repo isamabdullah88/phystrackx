@@ -95,11 +95,7 @@ class Save:
                 import matplotlib.pyplot as plt
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
-                        print('points: ', self.points[j][i, :, :].shape)
                         datapt = self.points[j][i, :, :].reshape(self.datamanager.rows, self.datamanager.cols)
-                        print('datapt: ', datapt.shape)
-                        print('dataptx: ', datapt[:, 0])
-                        print('datapty: ', datapt[:, 1])
 
                         for k in range(self.datamanager.rows):
                             row.extend([f"{datapt[k, 0]:.02f}", f"{datapt[k, 1]:.02f}"])
@@ -148,10 +144,9 @@ def main():
     x = 100 + 50 * np.cos(t)
     y = 100 + 50 * np.sin(t)
     # tpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
-    pts = np.zeros((100, 2))
-    pts[:, 1] = 5
+    
     tpoints = [
-        [ContPoint(pts, 0, 0) for _ in range(10)]
+        [TrackPoint(np.zeros((100,)), np.ones((100,))*5, 0, 0) for _ in range(10)]
     ]
 
     # --- Dummy OCR data ---

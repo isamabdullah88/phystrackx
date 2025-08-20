@@ -70,12 +70,6 @@ class DataManager:
         """
         for i, obj_points in enumerate(self.tpoints):
             for j, pt in enumerate(obj_points):
-                import matplotlib.pyplot as plt
-                print('x: ', pt.x)
-                print('y: ', pt.y)
-                t = self.transformxy(pt.x, pt.y)
-                print("tx: ", t[0])
-                print("ty: ", t[1])
                 tx, ty = self.transformxy(pt.x, pt.y)
                 self.processed_points[i][j, :, 0] = tx
                 self.processed_points[i][j, :, 1] = ty
@@ -109,9 +103,6 @@ class DataManager:
             x *= self.scale
             y *= self.scale
 
-        print('inside tx: ', x.shape)
-        print('inside ty: ', y)
-
         return x, y
 
 
@@ -120,16 +111,16 @@ def create_mock_data(root, canvas) -> tuple[list[list[TrackPoint]], OCRData, Axe
     """
     Creates mock tracking data, OCR data, and axes for testing.
     """
-    from gui.components.visuals import ContPoint
+    # from gui.components.visuals import ContPoint
     # Mock TrackPoints: two objects, 5 frames each
     # tpoints = [
     #     [TrackPoint(x=10 + i, y=20 + i, fx=0, fy=0) for i in range(5)],  # object 1
     #     [TrackPoint(x=30 + i, y=40 + i, fx=0, fy=0) for i in range(5)],  # object 2
     # ]
-    print(np.random.random((100,2)).shape)
+    
     tpoints = [
-        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)],
-        [ContPoint(np.random.random((100,2)), 0, 0) for _ in range(10)]
+        [TrackPoint(np.random.random((100,)), np.random.random((100,)), 0, 0) for _ in range(10)],
+        [TrackPoint(np.random.random((100,)), np.random.random((100,)), 0, 0) for _ in range(10)]
     ]
 
     # Mock OCRData

@@ -15,7 +15,7 @@ from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.structures import Rect, Circle
-from gui.components.visuals import ContPoints
+from gui.components.visuals import TrackPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
@@ -115,7 +115,7 @@ class BalloonApp(App):
             self.btnlist["ocr"],
             toggle=self.subtoolbar.toggle,
         )
-        self.contpoints = ContPoints(self.videoview, self.vwidth, self.vheight)
+        self.trackpoints = TrackPoints(self.videoview, self.vwidth, self.vheight, tether=False)
         self.processanim = ProcessAnimation(self.videoview, self.crop)
         self.progressbar = ProgressBar(
             self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight
@@ -180,7 +180,7 @@ class BalloonApp(App):
         else:
             self.seekbar.set(self.videoapp.fcount)
 
-        self.contpoints.addpoints(
+        self.trackpoints.addpoints(
             self.videoapp.trackpts, self.crop.crpx, self.crop.crpy
         )
         self.updateframe()
@@ -197,7 +197,7 @@ class BalloonApp(App):
     def updateframe(self) -> None:
         """Update canvas to show current frame and overlays."""
         self.videoapp.showframe(self.seekbar.idx)
-        self.contpoints.drawpoints(self.seekbar.idx)
+        self.trackpoints.drawpoints(self.seekbar.idx)
 
     def scale(self) -> None:
         """Display the scale ruler on canvas."""
@@ -242,7 +242,7 @@ class BalloonApp(App):
         """Clear all active UI overlays."""
         self.filters.clear()
         self.axes.clear()
-        self.contpoints.clear()
+        self.trackpoints.clear()
         self.scruler.clear()
 
     def reset(self) -> None:
@@ -264,7 +264,7 @@ class BalloonApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         if self.datamanager is None:
             self.datamanager = DataManager(
-                self.points.tpts,
+                self.points.tpoints,
                 self.videoapp.ocrdata,
                 self.axes,
                 self.vwidth,
@@ -287,7 +287,7 @@ class BalloonApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
         if self.datamanager is None:
             self.datamanager = DataManager(
-                self.contpoints.tpts,
+                self.trackpoints.tpoints,
                 self.videoapp.ocrdata,
                 self.axes,
                 self.vwidth,

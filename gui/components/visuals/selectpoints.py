@@ -25,12 +25,13 @@ class SelectPoints:
     """
     Handles selection and toggling of point trajectories on a canvas.
     """
-    def __init__(self, trsize: int) -> None:
+    def __init__(self, trsize: int, tether: bool=False) -> None:
         """
         Args:
             trsize: Number of trailing frames to include in selection and visibility.
         """
-        self.trsize: int = trsize
+        self.trsize = trsize
+        self.tether = tether
 
         self.selectedpoints: List[TrackPoint] = []
         self.currpts: List[List[int]] = []  # Format: [canvas_id, traj_index, frame_index]
@@ -60,7 +61,11 @@ class SelectPoints:
         else:
             self.tidx = tidx
             self.fidx = fidx
-            self.selectedpoints = points[tidx][max(fidx - self.trsize, 0):fidx + 1]
+            if self.tether:
+                self.selectedpoints = points[tidx][max(fidx - self.trsize, 0):fidx + 1]
+            else:
+                self.selectedpoints = [points[tidx][fidx]]
+
             for pt in self.selectedpoints:
                 pt.select(canvas)
             self.selected = True
@@ -76,10 +81,16 @@ class SelectPoints:
         if self.fidx is None:
             return
 
-        for i, tpts in enumerate(points):
-            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
-                pt.draw(canvas)
-                self.currpts.append([pt.cpt, i, self.fidx])
+        for i, tpoints in enumerate(points):
+            if self.tether:
+                for point in tpoints[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+                    point.draw(canvas)
+                    self.currpts.append([point.cpt, i, self.fidx])
+            else:
+                if tpoints[self.fidx] is None:
+                    continue
+                tpoint = tpoints[self.fidx]
+                tpoint.draw(canvas)
 
         self.toggled = True
 
@@ -94,8 +105,11 @@ class SelectPoints:
         if self.fidx is None:
             return
 
-        for tpts in points:
-            for pt in tpts[max(self.fidx - self.trsize, 0):self.fidx + 1]:
-                pt.undraw(canvas)
+        for tpoints in points:
+            if self.tether:
+                for pt in tpoints[max(self.fidx - self.trsize, 0):self.fidx + 1]:
+                    pt.undraw(canvas)
+            else:
+                tpoints[self.fidx].undraw(canvas)
 
         self.toggled = False
