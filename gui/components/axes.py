@@ -26,7 +26,7 @@ class Axes:
 
         self.btnlist = btnlist
         self.activebtn = activebtn
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, width=80, height=40)
 
     def clear(self):
         """Clear all canvas drawings related to sliders and axes."""
@@ -126,7 +126,7 @@ class Axes:
         self.canvas.create_window(self.vwidth - 180, self.vheight - 20,
                                   window=self.slider, tags="slider")
 
-        self.applybtn.place(x=self.vwidth - 110, y=self.vheight - 100)
+        self.applybtn.place(x=self.vwidth - 110, y=self.vheight - 55)
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""
@@ -136,12 +136,12 @@ class Axes:
         for btn in self.btnlist.values():
             btn.configure(state="normal")
 
-    def mkbutton(self, imgpath, command, btnsize=30):
+    def mkbutton(self, imgpath, command, width=30, height=30):
         """Create a CTkButton with image loaded from `imgpath`."""
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
+        img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
 
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
+        button = ctk.CTkButton(self.canvas, text="", width=width, height=height,
                                image=img, command=command)
         button.image = img
         return button

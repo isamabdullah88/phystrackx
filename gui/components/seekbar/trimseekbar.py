@@ -152,10 +152,10 @@ class TrimSeekBar:
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
 
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, width=50, height=25)
         self.applybtn.place(
             x=self.width + 10,
-            y=self.height / 2 - self.btnsize / 2 - 5
+            y=self.height / 2 - 20
         )
 
     def set(self, fcount: int) -> None:
@@ -235,41 +235,14 @@ class TrimSeekBar:
         self.clear()
         self.canvas.destroy()
 
-    def mkbutton(
-        self,
-        imgpath: str,
-        command: Callable,
-        btnsize: int = 30
-    ) -> ctk.CTkButton:
-        """
-        Create a CTk image button on the canvas.
+    def mkbutton(self, imgpath, command, width=30, height=30):
+        """Create a CTkButton with image loaded from `imgpath`."""
+        img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
 
-        Args:
-            imgpath (str): Path to image asset.
-            command (Callable): Click event handler.
-            btnsize (int): Size of button.
-
-        Returns:
-            ctk.CTkButton: The created button widget.
-        """
-        img = Image.open(abspath(imgpath)).resize(
-            (btnsize, btnsize),
-            Image.Resampling.LANCZOS
-        )
-        ctkimg = ctk.CTkImage(
-            light_image=img,
-            dark_image=img,
-            size=(btnsize, btnsize)
-        )
-        button = ctk.CTkButton(
-            self.canvas,
-            text="",
-            width=btnsize,
-            height=btnsize,
-            image=ctkimg,
-            command=command
-        )
-        button.image = ctkimg  # prevent garbage collection
+        button = ctk.CTkButton(self.canvas, text="", width=width, height=height,
+                               image=img, command=command)
+        button.image = img
         return button
 
 

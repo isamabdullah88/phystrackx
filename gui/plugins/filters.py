@@ -21,9 +21,6 @@ class Filters:
         
         self.slider = None
         
-        self.btnsize = 30
-        # self.applybtn = self.mkbutton("assets/apply.png", self.onapplybtn, 80)
-        
     def spawnfilter(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.

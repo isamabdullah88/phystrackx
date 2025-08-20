@@ -31,25 +31,21 @@ class ScaleRuler:
             if btn != self.activebtn:
                 btn.configure(state="disabled")
         
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, width=80, height=40)
         
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img, command=command)
-        
+    def mkbutton(self, imgpath, command, width=30, height=30):
+        """Create a CTkButton with image loaded from `imgpath`."""
+        img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
+
+        button = ctk.CTkButton(self.canvas, text="", width=width, height=height,
+                               image=img, command=command)
         button.image = img
-        
         return button
 
     def ondclick(self, event):
         self.askscale()
-        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        self.applybtn.place(x=self.vwidth-110, y=self.vheight-55)
         
     def onapply(self):
         self.applybtn.destroy()

@@ -20,29 +20,22 @@ class Rect:
         
         self.toggle = toggle
         self.btnsize = 30
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
-        
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
-        # self.applied = False
+        self.clearbtn = self.mkbutton("assets/bin.png", self.clearrect, width=30, height=30)
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, width=80, height=40)
         
         self.btnlist = btnlist
         self.activebtn = activebtn
         
         
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img, command=command)
-        
+    def mkbutton(self, imgpath, command, width=30, height=30):
+        """Create a CTkButton with image loaded from `imgpath`."""
+        img = Image.open(abspath(imgpath)).resize((width, height), Image.Resampling.LANCZOS)
+        img = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
+
+        button = ctk.CTkButton(self.canvas, text="", width=width, height=height,
+                               image=img, command=command)
         button.image = img
-        
         return button
-        
     def clearrect(self):
         """Deletes the last drawn rectangle"""
         if self._ctkrects:
@@ -50,9 +43,9 @@ class Rect:
             self.rects.pop()
             self._ctkrects.pop()
             if self._ctkrects:
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+                self.clearbtn.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             else:
-                self.button.place_forget()
+                self.clearbtn.place_forget()
                 
     def clearrects(self):
         """Deletes all drawn rectangles"""
@@ -109,8 +102,8 @@ class Rect:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.unbind("<ButtonRelease-1>")
             
-            self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-            self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+            self.clearbtn.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+            self.applybtn.place(x=self.vwidth-110, y=self.vheight-55)
             
 
         self.canvas.bind("<Button-1>", ondown)
@@ -122,7 +115,7 @@ class Rect:
         for tkrect in self._ctkrects:
             self.canvas.itemconfig(tkrect, outline="green", width=2)
         
-        self.button.place_forget()
+        self.clearbtn.place_forget()
         self.applybtn.place_forget()
         
         # self.applied = True
