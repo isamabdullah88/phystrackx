@@ -43,10 +43,11 @@ class TrackPoint:
         self.x += fx
         self.y += fy
 
-        if isinstance(self.x, float):
-            self.rows = 1
-        else:
-            self.rows = np.size(self.x)
+        print('x: ', np.size(self.x))
+        # if isinstance(self.x, float):
+        #     self.rows = 1
+        # else:
+        self.rows = np.size(self.x)
         self.cols = 2
 
 
@@ -62,11 +63,10 @@ class TrackPoint:
         if self.cpt is not None:
             return
 
-        if isinstance(self.x, float):
+        if self.rows == 1:
             self.cpt = canvas.create_oval(
-                self.x - 6, self.y - 6, self.x + 6, self.y + 6,
-                fill='magenta', outline='black', width=1,
-                tags="points"
+                self.x[0] - 6, self.y[0] - 6, self.x[0] + 6, self.y[0] + 6,
+                fill='magenta', outline='black', width=1, tag="points"
             )
         else:
             flat = [coord for pt in zip(self.x, self.y) for coord in pt]
@@ -76,7 +76,8 @@ class TrackPoint:
                 outline="magenta",
                 fill="",
                 width=2,
-                smooth=False
+                smooth=False,
+                tag="points"
             )
 
     def undraw(self, canvas):

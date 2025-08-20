@@ -49,7 +49,7 @@ class TrackPoints:
             commandoff=self.toggleoff
         )
 
-        self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize)
+        self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize, tether=self.tether)
 
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
 
