@@ -135,7 +135,6 @@ class Interface(Experiment):
         maxiters = 1000
         
         lcoords = lcoords.norm2pix(crwidth, crheight)
-        print('lcoords: ', lcoords)
 
         xoff = 100
         yoff = 100

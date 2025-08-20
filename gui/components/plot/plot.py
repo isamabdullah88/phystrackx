@@ -59,32 +59,32 @@ class Plot:
         plt.show(block=False)
 
     def plotx(self):
-        for tpts in self.points:
+        for tpoints in self.points:
             plt.figure()
             plt.title("X vs Time")
             plt.xlabel("Time (s)")
             plt.ylabel("X")
-            plt.plot(self.timestamps, tpts[:, 0], '-m')
+            plt.plot(self.timestamps, tpoints[:, :, 0], '-m')
 
     def ploty(self):
-        for tpts in self.points:
+        for tpoints in self.points:
             plt.figure()
             plt.title("Y vs Time")
             plt.xlabel("Time (s)")
             plt.ylabel("Y")
-            plt.plot(self.timestamps, tpts[:, 1], '-m')
+            plt.plot(self.timestamps, tpoints[:, :, 1], '-m')
 
     def plotxy(self):
-        for tpts in self.points:
+        for tpoints in self.points:
             plt.figure()
             plt.title("Y vs X")
             plt.xlabel("X")
             plt.ylabel("Y")
-            plt.plot(tpts[:, 0], tpts[:, 1], '-c')
+            plt.plot(tpoints[:, :, 0], tpoints[:, :, 1], '-c')
 
     def plotdx(self):
-        for tpts in self.points:
-            dx_dt = np.gradient(tpts[:, 0], self.timestamps)
+        for tpoints in self.points:
+            dx_dt = np.gradient(np.squeeze(tpoints[:, :, 0]))
             plt.figure()
             plt.title("dx/dt")
             plt.xlabel("Time (s)")
@@ -92,8 +92,8 @@ class Plot:
             plt.plot(self.timestamps, dx_dt, '-g')
 
     def plotdy(self):
-        for tpts in self.points:
-            dy_dt = np.gradient(tpts[:, 1], self.timestamps)
+        for tpoints in self.points:
+            dy_dt = np.gradient(np.squeeze(tpoints[:, :, 1]))
             plt.figure()
             plt.title("dy/dt")
             plt.xlabel("Time (s)")
@@ -101,9 +101,9 @@ class Plot:
             plt.plot(self.timestamps, dy_dt, '-g')
 
     def plotd2x(self):
-        for tpts in self.points:
-            dx_dt = np.gradient(tpts[:, 0], self.timestamps)
-            d2x_dt2 = np.gradient(dx_dt, self.timestamps)
+        for tpoints in self.points:
+            dx_dt = np.gradient(np.squeeze(tpoints[:, :, 0]))
+            d2x_dt2 = np.gradient(dx_dt)
             plt.figure()
             plt.title("d²x/dt²")
             plt.xlabel("Time (s)")
@@ -111,9 +111,9 @@ class Plot:
             plt.plot(self.timestamps, d2x_dt2, '-b')
 
     def plotd2y(self):
-        for tpts in self.points:
-            dy_dt = np.gradient(tpts[:, 1], self.timestamps)
-            d2y_dt2 = np.gradient(dy_dt, self.timestamps)
+        for tpoints in self.points:
+            dy_dt = np.gradient(np.squeeze(tpoints[:, :, 1]))
+            d2y_dt2 = np.gradient(dy_dt)
             plt.figure()
             plt.title("d²y/dt²")
             plt.xlabel("Time (s)")
@@ -131,6 +131,7 @@ def main():
     from gui.components.axes import Axes
     from gui.components.plot.datamanager import DataManager
     from gui.components.plot.plot import Plot
+    from experiments.components.ocr import OCRData
 
     # --- Setup GUI ---
     ctk.set_appearance_mode("System")
@@ -153,11 +154,16 @@ def main():
     t = np.linspace(0, 2 * np.pi, 150)
     x = 50 + 30 * np.cos(t)
     y = 50 + 30 * np.sin(t)
-    fpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
+    fpoints = [[TrackPoint(np.array([x[i]]), np.array([y[i]]), 0, 0) for i in range(len(x))]]
+
+    ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(len(x))]]
+    ocrdata = OCRData(ocr_text)
+
 
     # --- Create DataManager ---
     datamanager = DataManager(
         tpoints=fpoints,
+        ocrdata=ocrdata,
         axes=axes,
         vwidth=640,
         vheight=480,
@@ -170,7 +176,7 @@ def main():
     # --- Setup Axes and Plot after marking ---
     def on_axes_applied():
         datamanager.transform()
-        Plot(parent=root, datamanager=datamanager, theme='ggplot')
+        Plot(parent=root, datamanager=datamanager, theme='ggplot').plotxy()
 
     axes_btn.configure(command=lambda: [axes.markaxes(), root.after(3000, on_axes_applied)])
     root.mainloop()
