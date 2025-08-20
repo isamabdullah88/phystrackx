@@ -216,7 +216,6 @@ class RigidApp(App):
 
     def reset(self):
         """Resets the video view and related tracking/overlay data."""
-        print('Clear')
         self.clearcomponents()
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()

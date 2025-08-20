@@ -227,7 +227,6 @@ class TrimSeekBar:
         """
         self.applybtn.place_forget()
         self.disable = True
-        print("disable:", self.disable)
 
         if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)

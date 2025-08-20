@@ -43,10 +43,6 @@ class TrackPoint:
         self.x += fx
         self.y += fy
 
-        print('x: ', np.size(self.x))
-        # if isinstance(self.x, float):
-        #     self.rows = 1
-        # else:
         self.rows = np.size(self.x)
         self.cols = 2
 

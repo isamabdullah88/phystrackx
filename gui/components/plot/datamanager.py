@@ -70,12 +70,6 @@ class DataManager:
         """
         for i, obj_points in enumerate(self.tpoints):
             for j, pt in enumerate(obj_points):
-                import matplotlib.pyplot as plt
-                print('x: ', pt.x)
-                print('y: ', pt.y)
-                t = self.transformxy(pt.x, pt.y)
-                print("tx: ", t[0])
-                print("ty: ", t[1])
                 tx, ty = self.transformxy(pt.x, pt.y)
                 self.processed_points[i][j, :, 0] = tx
                 self.processed_points[i][j, :, 1] = ty
@@ -108,9 +102,6 @@ class DataManager:
         if self.scale is not None:
             x *= self.scale
             y *= self.scale
-
-        print('inside tx: ', x.shape)
-        print('inside ty: ', y)
 
         return x, y
 

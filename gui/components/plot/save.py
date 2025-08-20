@@ -95,11 +95,7 @@ class Save:
                 import matplotlib.pyplot as plt
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
-                        print('points: ', self.points[j][i, :, :].shape)
                         datapt = self.points[j][i, :, :].reshape(self.datamanager.rows, self.datamanager.cols)
-                        print('datapt: ', datapt.shape)
-                        print('dataptx: ', datapt[:, 0])
-                        print('datapty: ', datapt[:, 1])
 
                         for k in range(self.datamanager.rows):
                             row.extend([f"{datapt[k, 0]:.02f}", f"{datapt[k, 1]:.02f}"])

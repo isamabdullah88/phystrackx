@@ -136,9 +136,6 @@ class Line:
             self.canvas.unbind("<Button>")
             self.canvas.unbind("<Motion>")
             self.canvas.unbind("<Escape>")
-
-            print('lines: ', self.line)
-
             
             self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
