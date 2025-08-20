@@ -64,7 +64,8 @@ class SelectPoints:
             if self.tether:
                 self.selectedpoints = points[tidx][max(fidx - self.trsize, 0):fidx + 1]
             else:
-                self.selectedpoints = points[tidx][fidx]
+                self.selectedpoints = [points[tidx][fidx]]
+
             for pt in self.selectedpoints:
                 pt.select(canvas)
             self.selected = True

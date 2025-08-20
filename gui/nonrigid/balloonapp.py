@@ -15,7 +15,7 @@ from gui.components.seekbar import TrimSeekBar, ViewSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.progressbar import ProgressBar
 from gui.components.structures import Rect, Circle
-from gui.components.visuals import ContPoints, TrackPoints
+from gui.components.visuals import TrackPoints
 from gui.components.subtoolbar import SubToolbar
 from gui.components.plot import Save, Plot, DataManager
 from gui.components.label import Label
