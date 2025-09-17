@@ -17,10 +17,25 @@ import webbrowser
 
 
 
-class AnimatedGIF(ctk.CTkLabel):
-    """Plays a GIF animation once and calls a callback at the end."""
+import customtkinter as ctk
+from PIL import Image, ImageSequence
+import pygame
 
-    def __init__(self, master, gif_path: str, on_end=None, *args, **kwargs):
+
+class AnimatedGIF(ctk.CTkLabel):
+    """Plays a GIF animation once with background music, 
+    and calls a callback at the end."""
+
+    def __init__(self, master, gif_path: str, music_path: str = None, on_end=None,
+                 *args, **kwargs):
+        """
+        Args:
+            master: Parent widget.
+            gif_path (str): Path to the GIF file.
+            music_path (str, optional): Path to the music file to play.
+            on_end (callable, optional): Function to call when animation ends.
+        """
+        # Load GIF frames
         self.sequence = [
             frame.copy() for frame in ImageSequence.Iterator(Image.open(gif_path))
         ]
@@ -29,16 +44,31 @@ class AnimatedGIF(ctk.CTkLabel):
         ]
         self.idx = 0
         self.on_end = on_end
+        self.music_path = music_path
+
+        # Init label with first frame
         super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
-        self.after(25, self._play_once)
+
+        # Play music if given
+        if self.music_path:
+            pygame.mixer.init()
+            pygame.mixer.music.load(self.music_path)
+            pygame.mixer.music.play(-1)  # Loop indefinitely
+
+        # Start animation
+        self.after(64, self._play_once)
 
     def _play_once(self):
         if self.idx < len(self.frames):
             self.configure(image=self.frames[self.idx])
             self.idx += 1
-            self.after(25, self._play_once)
-        elif self.on_end:
-            self.on_end()
+            self.after(64, self._play_once)
+        else:
+            # Stop music once animation ends
+            if self.music_path:
+                pygame.mixer.music.stop()
+            if self.on_end:
+                self.on_end()
 
 
 class MenuScreen:
@@ -57,6 +87,7 @@ class MenuScreen:
         self.animated_bg = AnimatedGIF(
             master=self.main_frame,
             gif_path=abspath("assets/logos/frontpage.gif"),
+            music_path=abspath("assets/logos/startup.mp3"),
             on_end=self._show_start_button
         )
         self.animated_bg.place(x=0, y=0, relwidth=1, relheight=1)
