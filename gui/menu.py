@@ -114,7 +114,7 @@ class MenuScreen:
     def _show_donate_button(self):
         """Displays a donation button linking to donation section."""
         def open_donation():
-            webbrowser.open("https://github.com/isamabdullah88/phystrackx?files=1#-buy-me-a-coffee")
+            webbrowser.open("https://github.com/isamabdullah88/phystrackx?files=1#-support-this-project")
 
         imgpath = abspath("assets/logos/donation.png")  # Ensure this image exists
         img = Image.open(imgpath).convert("RGBA").resize((50, 50))
