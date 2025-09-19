@@ -52,6 +52,22 @@ class Line:
             font=("Arial", 9, "italic")
         )
 
+    def hide(self, canvas: tk.Canvas):
+        """Hides text and lines"""
+        if self.tktxt:
+            canvas.itemconfigure(self.tktxt, state="hidden")
+
+        if self.tkline:
+            canvas.itemconfigure(self.tkline, state="hidden")
+
+    def unhide(self, canvas: tk.Canvas):
+        """Unhides text and lines"""
+        if self.tktxt:
+            canvas.itemconfigure(self.tktxt, state="normal")
+
+        if self.tkline:
+            canvas.itemconfigure(self.tkline, state="normal")
+
     def clear(self, canvas: tk.Canvas):
         """
         Clears text.

@@ -12,6 +12,7 @@ import customtkinter as ctk
 from ..utils import mkbutton
 from .point import Point
 from .triangle import Triangle
+from ...components.togglebutton import ToggleButton
 
 
 class Geometry:
@@ -23,6 +24,7 @@ class Geometry:
         self.vheight = vheight
         self.btnlist = btnlist
         self.activebtn = activebtn
+        self.togglebtn : ToggleButton = ToggleButton(self.canvas, commandon=self.unhide, commandoff=self.hide)
 
         self.currpt = None
         self.lines = []
@@ -67,6 +69,8 @@ class Geometry:
             self.applybtn.place(x=self.vwidth - 90, y=self.vheight - 80)
             self.screenshot.place(x=self.vwidth - 80, y=100)
             self.showbtn = False
+
+            self.togglebtn.pack()
 
     def onclick(self, event):
         """Handle left-click to add points or select triangles."""
@@ -161,6 +165,22 @@ class Geometry:
             triangle.delete()
             self.triangles.remove(triangle)
 
+    def hide(self):
+        """Hides all triangles if they are hidden"""
+        for triangle in self.triangles:
+            triangle.hide()
+
+        # Hide current triangle
+        self.triangle.hide()
+
+    def unhide(self):
+        """Unhides all triangles if they are hidden"""
+        for triangle in self.triangles:
+            triangle.unhide()
+
+        # Unhide current triangle
+        self.triangle.unhide()
+    
     def onexit(self):
         """Cleanup when exiting the geometry tool."""
         self.anglebtn.place_forget()

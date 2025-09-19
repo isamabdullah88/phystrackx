@@ -124,6 +124,18 @@ class DrawAngles:
         self.tks.append(self._draw_angle_arc(canvas, self.pt2, self.pt3, self.pt1, angleb, color))
         self.tks.append(self._draw_angle_arc(canvas, self.pt3, self.pt1, self.pt2, anglec, color))
 
+    def hide(self, canvas: tk.Canvas):
+        """Hides arrs and texts"""
+        for tkarc, tktxt in self.tks:
+            canvas.itemconfigure(tkarc, state="hidden")
+            canvas.itemconfigure(tktxt, state="hidden")
+
+    def unhide(self, canvas: tk.Canvas):
+        """Unhides arrs and texts"""
+        for tkarc, tktxt in self.tks:
+            canvas.itemconfigure(tkarc, state="normal")
+            canvas.itemconfigure(tktxt, state="normal")
+
     def clear(self, canvas: tk.Canvas):
         """
         Clears and removes the arcs and texts.

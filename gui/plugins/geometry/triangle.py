@@ -162,6 +162,34 @@ class Triangle:
     def draw_angles(self) -> None:
             self.drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
             self.drawangles.draw(self.canvas, color="#27e586")
+
+    def hide(self):
+        """Hides the triangle and its components"""
+        # Hides triangle lines and text
+        for line in self.lines:
+            line.hide(self.canvas)
+
+        # Hides arcs and text
+        if self.drawangles:
+            self.drawangles.hide(self.canvas)
+
+        # Hides points
+        for point in self.points:
+            self.canvas.itemconfigure(point.tkpt, state="hidden")
+        
+    def unhide(self):
+        """Unhides triangle and its components"""
+        # Unhides triangle lines and text
+        for line in self.lines:
+            line.unhide(self.canvas)
+
+        # Unhides arcs and text
+        if self.drawangles:
+            self.drawangles.unhide(self.canvas)
+
+        # Unhides points
+        for point in self.points:
+            self.canvas.itemconfigure(point.tkpt, state="normal")
             
     def delete(self) -> None:
         """
