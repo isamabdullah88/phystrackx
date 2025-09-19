@@ -15,7 +15,7 @@ class Checkbox(ctk.CTkToplevel):
     A modal popup that displays checkboxes for each Enum option
     and passes selected options to a callback on confirmation.
     """
-    def __init__(self, parent: ctk.CTk, options: Enum, callback=None):
+    def __init__(self, parent: ctk.CTk, options: Enum, text="Choose", callback=None):
         super().__init__(parent)
         self.title("Select Options")
         self.geometry("480x280")
@@ -26,7 +26,7 @@ class Checkbox(ctk.CTkToplevel):
         self.optionsvar = {}
 
         ctk.CTkLabel(
-            self, text="Choose Filters", font=("Segoe UI", 18, "bold")
+            self, text=text, font=("Segoe UI", 18, "bold")
         ).pack(pady=(15, 5))
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")

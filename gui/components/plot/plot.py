@@ -29,7 +29,7 @@ class Plot:
         self.datamanager = datamanager
 
         plt.style.use(theme)
-        self.checkbox = Checkbox(self.parent, PlotType, self.showplots)
+        self.checkbox = Checkbox(self.parent, PlotType, text="Choose Plots", callback=self.showplots)
 
     @property
     def points(self):
