@@ -16,9 +16,12 @@ from .point import Point
 class DrawAngles:
     """DrawAngles class for computing and displaying angles in a triangle.
     This class provides methods to calculate side lengths, interior angles, and draw angle arcs"""
-    pt1: Point
-    pt2: Point
-    pt3: Point
+    def __init__(self, pt1: Point, pt2: Point, pt3: Point):
+        self.pt1 = pt1
+        self.pt2 = pt2
+        self.pt3 = pt3
+
+        self.tks = []
 
     def side_lengths(self) -> tuple[float, float, float]:
         """
@@ -98,13 +101,15 @@ class DrawAngles:
         bbox = (x - r, y - r, x + r, y + r)
 
         start, extent = self._vector_angle(p1, vertex, p2)
-        canvas.create_arc(bbox, start=start, extent=extent, style="arc", outline=color, width=2)
+        tkarc = canvas.create_arc(bbox, start=start, extent=extent, style="arc", outline=color, width=2)
 
         # Slightly offset label to outside of arc
         mid_angle = math.radians(start + extent / 2)
         label_x = x + 1.2 * r * math.cos(mid_angle)
         label_y = y + 1.2 * r * math.sin(mid_angle)
-        canvas.create_text(label_x, label_y, text=f"{angle_deg:.1f}°", fill=color, font=("Arial", 10, "bold"))
+        tktxt = canvas.create_text(label_x, label_y, text=f"{angle_deg:.1f}°", fill=color, font=("Arial", 10, "bold"))
+
+        return tkarc, tktxt
 
     def draw(self, canvas: tk.Canvas, color: str = "#E62536") -> None:
         """
@@ -115,6 +120,14 @@ class DrawAngles:
             color: Color used for arcs and angle text
         """
         anglea, angleb, anglec = self.interior_angles()
-        self._draw_angle_arc(canvas, self.pt1, self.pt2, self.pt3, anglea, color)
-        self._draw_angle_arc(canvas, self.pt2, self.pt3, self.pt1, angleb, color)
-        self._draw_angle_arc(canvas, self.pt3, self.pt1, self.pt2, anglec, color)
+        self.tks.append(self._draw_angle_arc(canvas, self.pt1, self.pt2, self.pt3, anglea, color))
+        self.tks.append(self._draw_angle_arc(canvas, self.pt2, self.pt3, self.pt1, angleb, color))
+        self.tks.append(self._draw_angle_arc(canvas, self.pt3, self.pt1, self.pt2, anglec, color))
+
+    def clear(self, canvas: tk.Canvas):
+        """
+        Clears and removes the arcs and texts.
+        """
+        for tkarc, tktxt in self.tks:
+            canvas.delete(tkarc)
+            canvas.delete(tktxt)
