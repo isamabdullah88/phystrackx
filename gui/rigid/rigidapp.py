@@ -206,7 +206,9 @@ class RigidApp(App):
         self.trects.clear()
         self.crop.clear()
         self.seekbar.clear()
-        self.loadvideo(self.videopath)
+        
+        if self.videopath:
+            self.loadvideo(self.videopath)
 
     def plot(self):
         """Creates plots from tracked data or OCR values."""

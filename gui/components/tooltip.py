@@ -21,7 +21,7 @@ class ToolTip:
         tw.wm_geometry(f"+{x}+{y}")
 
         label = tk.Label(
-            tw, text=self.text, justify="left",
+            tw, text=self.text, justify="left", foreground="#000000",
             background="#ffffe0", relief="solid", borderwidth=1,
             font=("Segoe UI", 10)
         )
