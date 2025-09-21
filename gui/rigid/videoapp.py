@@ -35,7 +35,6 @@ class Video:
         vwidth: int,
         vheight: int,
         crop: Crop,
-        seekbar: TrimSeekBar,
         filters: Filters,
         processanim: ProcessAnimation
     ) -> None:
@@ -55,7 +54,6 @@ class Video:
         self.vwidth = vwidth
         self.vheight = vheight
         self.crop = crop
-        self.seekbar = seekbar
         self.filters = filters
         self.processanim = processanim
 
@@ -63,6 +61,7 @@ class Video:
         self.imgview = None
         self.tkimg = None
 
+        self.proxypath = Nonep
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
         self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
