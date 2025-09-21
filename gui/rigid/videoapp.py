@@ -61,7 +61,6 @@ class Video:
         self.imgview = None
         self.tkimg = None
 
-        self.proxypath = Nonep
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
         self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
@@ -123,7 +122,7 @@ class Video:
         Args:
             videopath (str): Path to video file.
         """
-        
+        self.rigid.release()
         if not filexists(videopath):
             self.logger.warning("Loading trim video")
             if not filexists(self.trimpath):
