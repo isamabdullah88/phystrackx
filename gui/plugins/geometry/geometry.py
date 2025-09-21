@@ -70,7 +70,7 @@ class Geometry:
             self.screenshot.place(x=self.vwidth - 80, y=100)
             self.showbtn = False
 
-            self.togglebtn.place(x=10, y=100)
+            self.togglebtn.place(x=self.vwidth/2-20, y=100)
 
     def onclick(self, event):
         """Handle left-click to add points or select triangles."""
@@ -188,6 +188,7 @@ class Geometry:
         self.delbtn.place_forget()
         self.applybtn.place_forget()
         self.screenshot.place_forget()
+        self.togglebtn.place_forget()
 
         self.canvas.unbind("<ButtonPress-1>")
         self.canvas.unbind("<B1-Motion>")
