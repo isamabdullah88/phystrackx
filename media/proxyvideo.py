@@ -7,9 +7,18 @@ Author: Isam Balghari
 """
 
 import os
+import sys
 import subprocess
 from typing import Optional
 import logging
+
+def resource_path(relative_path: str) -> str:
+    """
+    Get absolute path to resource, works for dev and for PyInstaller bundle.
+    """
+    if hasattr(sys, "_MEIPASS"):  # PyInstaller temp directory
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 def proxyvideo(
@@ -50,9 +59,11 @@ def proxyvideo(
     os.makedirs(os.path.dirname(writepath), exist_ok=True)
 
     resolution = f"{width}:{height}"
+    
+    ffmpeg_bin = resource_path("ffmpeg/ffmpeg.exe")
 
     command = [
-        "ffmpeg",
+        ffmpeg_bin,
         "-y" if overwrite else "-n",
         "-i", videopath,
         "-vf", f"scale={resolution}",
