@@ -92,7 +92,7 @@ class NonRigid():
 
         groups = sorted(groups, key=lambda x: x[1]-x[0], reverse=True)
         # print(g)
-        print(groups)
+        # print(groups)
         start, end = groups[0]
         
         start = max(start-20, 0)
@@ -192,7 +192,7 @@ class NonRigid():
             plt.imshow(render_label(labels, img=frame))
             plt.axis("off")
             plt.title("prediction + input overlay")
-            print('yup!')
+            # print('yup!')
             # f = tp.locate(fgray, 31, invert=False, maxsize=15)
             # print('after locate')
             # print('after annotate')

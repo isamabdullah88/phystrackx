@@ -135,8 +135,8 @@ class Balloon(Experiment):
             fcount = endidx - startidx
 
         x, y, w, h = rect.totuple()
-        print('rect: ', rect.totuple())
-        print('fw, fh: ', (self.fwidth, self.fheight))
+        # print('rect: ', rect.totuple())
+        # print('fw, fh: ', (self.fwidth, self.fheight))
             
         for i in range(fcount):
 
@@ -151,7 +151,7 @@ class Balloon(Experiment):
             
             custom_config = r'--oem 3 --psm 6 outputbase digits'
             numbers = pytesseract.image_to_string(gray, config=custom_config)
-            print("Number:", numbers)
+            # print("Number:", numbers)
 
 
 
