@@ -86,6 +86,9 @@ class Bar:
         )
         self.canvas.tag_raise(self.tkrect)
 
+    def unpack(self):
+        self.canvas.itemconfigure(self.tkrect, state="hidden")
+
     def clear(self) -> None:
         """
         Remove the bar from the canvas.

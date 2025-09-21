@@ -45,6 +45,9 @@ class Seek:
             fill=self.color
         )
 
+    def unpack(self):
+        self.canvas.itemconfigure(self.tkrect, state="hidden")
+
     def draw(
         self, 
         xstart: float,
@@ -66,6 +69,6 @@ class Seek:
             self.canvas.delete(self.tkrect)
             self.tkrect = None
 
-        if self.tkrect is not None:
-            self.canvas.delete(self.tkrect)
-            self.tkrect = None
+        # if self.tkrect is not None:
+        #     self.canvas.delete(self.tkrect)
+        #     self.tkrect = None

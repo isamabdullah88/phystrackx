@@ -35,7 +35,6 @@ class Video:
         vwidth: int,
         vheight: int,
         crop: Crop,
-        seekbar: TrimSeekBar,
         filters: Filters,
         processanim: ProcessAnimation
     ) -> None:
@@ -55,7 +54,6 @@ class Video:
         self.vwidth = vwidth
         self.vheight = vheight
         self.crop = crop
-        self.seekbar = seekbar
         self.filters = filters
         self.processanim = processanim
 
@@ -124,7 +122,7 @@ class Video:
         Args:
             videopath (str): Path to video file.
         """
-        
+        self.rigid.release()
         if not filexists(videopath):
             self.logger.warning("Loading trim video")
             if not filexists(self.trimpath):

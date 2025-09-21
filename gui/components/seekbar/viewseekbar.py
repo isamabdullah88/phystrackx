@@ -32,13 +32,13 @@ class ViewSeekBar:
 
         Args:
             frame (tk.Frame): Parent frame to attach the canvas.
-            width (int): Width of the seekbar canvas.
-            height (int): Height of the seekbar canvas.
+            width (int): Width of the bar canvas.
+            height (int): Height of the bar canvas.
             fcount (int): Total number of frames in the video.
             callback (Optional[Callable]): Function called when bar is moved.
         """
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
-        self.canvas.pack()
+        # self.canvas.pack()
 
         self.fcount: int = fcount
         self.padx: int = 10
@@ -50,7 +50,7 @@ class ViewSeekBar:
         self.xend: int = 100
 
         self.seek: Optional[Seek] = None
-        self.seekbar: Optional[Bar] = None
+        self.bar: Optional[Bar] = None
         self.disable: bool = False
 
     def setparams(self) -> None:
@@ -60,15 +60,20 @@ class ViewSeekBar:
         self.xstart: int = self.padx
         self.xend: int = self.width - self.padx
 
-        if self.seekbar:
-            self.seekbar.setcount(self.fcount)
+        if self.bar:
+            self.bar.setcount(self.fcount)
 
     def clear(self) -> None:
         """
         Clear the seek bar from the canvas.
         """
-        if self.seekbar:
-            self.seekbar.clear()
+        if self.seek:
+            self.seek.clear()
+
+        if self.bar:
+            self.bar.clear()
+
+        self.canvas.pack_forget()
 
     def pack(self) -> None:
         """
@@ -76,6 +81,7 @@ class ViewSeekBar:
         """
         self.clear()
         self.setparams()
+        self.canvas.pack()
 
         self.seek = Seek(
             self.canvas,
@@ -86,7 +92,7 @@ class ViewSeekBar:
         )
         self.seek.pack()
 
-        self.seekbar = Bar(
+        self.bar = Bar(
             self.canvas,
             self.xstart,
             self.xstart,
@@ -95,10 +101,14 @@ class ViewSeekBar:
             self.fcount,
             callback=self.callback
         )
-        self.seekbar.pack()
+        self.bar.pack()
 
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<B1-Motion>", self.ondrag)
+
+    def unpack(self):
+        self.seek.unpack()
+        self.bar.unpack()
 
     def set(self, fcount: int) -> None:
         """
@@ -117,12 +127,12 @@ class ViewSeekBar:
         Args:
             event (tk.Event): Tkinter event object.
         """
-        if self.seekbar:
-            self.seekbar.onclick(event)
+        if self.bar:
+            self.bar.onclick(event)
 
     def ondrag(self, event: tk.Event) -> None:
         """
-        Handle mouse drag events and update the seekbar position.
+        Handle mouse drag events and update the bar position.
 
         Args:
             event (tk.Event): Tkinter event object.
@@ -131,9 +141,9 @@ class ViewSeekBar:
         def clamp(x: float, xlim: float) -> float:
             return min(x, xlim)
 
-        if self.seekbar:
-            self.seekbar.ondrag(event, clamp, self.xend)
-            self.idx = self.seekbar.idx
+        if self.bar:
+            self.bar.ondrag(event, clamp, self.xend)
+            self.idx = self.bar.idx
 
 
 class App(tk.Tk):
@@ -152,14 +162,14 @@ class App(tk.Tk):
         self.frame = tk.Frame(self, width=700, height=300)
         self.frame.pack(fill="both", expand=True)
 
-        self.seekbar = ViewSeekBar(
+        self.viewseekbar = ViewSeekBar(
             self.frame,
             width=700,
             height=100,
             fcount=100,
             callback=self.callback
         )
-        self.seekbar.pack()
+        self.viewseekbar.pack()
 
     def callback(self) -> None:
         """

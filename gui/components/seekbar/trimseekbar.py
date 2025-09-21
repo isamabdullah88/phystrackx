@@ -41,7 +41,7 @@ class TrimSeekBar:
             callback (Optional[Callable]): Callback on bar movement.
         """
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
-        self.canvas.pack()
+        # self.canvas.pack()
 
         self.btnsize: int = 50
         self.mintrim: int = 50
@@ -93,12 +93,15 @@ class TrimSeekBar:
         """
         if self.leftbar:
             self.leftbar.clear()
-        if self.fixedseek:
-            self.fixedseek.clear()
         if self.rightbar:
             self.rightbar.clear()
+
+        if self.fixedseek:
+            self.fixedseek.clear()
         if self.varseek:
             self.varseek.clear()
+        
+        self.canvas.pack_forget()
 
     def pack(self) -> None:
         """
@@ -106,6 +109,7 @@ class TrimSeekBar:
         """
         self.clear()
         self.setparams()
+        self.canvas.pack()
 
         self.fixedseek = Seek(
             self.canvas,
@@ -157,6 +161,14 @@ class TrimSeekBar:
             x=self.width + 10,
             y=self.height / 2 - self.btnsize / 2 - 5
         )
+        print('at final pack()')
+
+    def unpack(self):
+        print('trim unpacked')
+        self.fixedseek.unpack()
+        self.varseek.unpack()
+        self.leftbar.unpack()
+        self.rightbar.unpack()
 
     def set(self, fcount: int) -> None:
         """
@@ -226,15 +238,16 @@ class TrimSeekBar:
         Apply trimming logic and reload video.
         """
         self.applybtn.place_forget()
-        self.disable = True
-        print("disable:", self.disable)
+        # self.disable = True
+        # print("disable:", self.disable)
 
         if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
 
-        self.clear()
-        self.canvas.destroy()
+        print('trim called')
+        # self.clear()
+        # self.canvas.destroy()
 
     def mkbutton(
         self,

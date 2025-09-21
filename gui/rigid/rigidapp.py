@@ -55,7 +55,8 @@ class RigidApp(App):
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
 
-        self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+        self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
@@ -65,12 +66,13 @@ class RigidApp(App):
         self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
         self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
 
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
-        self.seekbar.settrim(trimvideo=self.trimvideo)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.filters, self.processanim)
+        self.trimseekbar.settrim(trimvideo=self.trimvideo)
 
         self.save = None
         self.plot = None
         self.datamanager = None
+        self.viewsb = False
 
     def loadvideo(self, videopath: str, clear=True):
         """Loads the video into the viewer and initializes related components."""
@@ -90,6 +92,9 @@ class RigidApp(App):
 
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
+            self.viewsb = True
+            # self.trimseekbar.unpack()
+            self.trimseekbar.clear()
             self.videoapp.loadvideo(self.videoapp.trimpath)
             self.loadcomponents()
             self.root.after(0, spinner.destroy())
@@ -100,12 +105,13 @@ class RigidApp(App):
         """Loads and updates components after video is loaded or modified."""
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
 
-        if self.seekbar.disable:
-            self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-            self.seekbar.set(self.videoapp.fcount)
-            self.seekbar.pack()
-        else:
-            self.seekbar.set(self.videoapp.fcount)
+        if self.viewsb:
+            # self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+            self.viewseekbar.set(self.videoapp.fcount)
+            self.viewseekbar.pack()
+            print('view seekbar: ', self.viewseekbar)
+        # else:
+        #     self.seekbar.set(self.videoapp.fcount)
 
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
@@ -115,12 +121,25 @@ class RigidApp(App):
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
-        self.seekbar.pack()
+        
+        self.trimseekbar.set(self.videoapp.fcount)
+        # self.viewseekbar.set(self.videoapp.fcount)
+        print('trimseekbar: ', self.trimseekbar)
+        # print('viewseekbar: ', self.viewseekbar)
+        self.trimseekbar.pack()
+        # self.viewseekbar.pack()
 
     def updateframe(self):
         """Updates canvas to show current frame and overlays points."""
-        self.videoapp.showframe(self.seekbar.idx)
-        self.tpoints.drawpoints(self.seekbar.idx)
+        if self.viewsb:
+            idx = self.viewseekbar.idx
+        else:
+            idx = self.trimseekbar.idx
+
+        self.videoapp.showframe(idx)
+        self.tpoints.drawpoints(idx)
+            
+
 
     def scale(self):
         """Displays the scale ruler on canvas."""
@@ -205,8 +224,22 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
-        self.seekbar.clear()
-        self.loadvideo(self.videopath)
+        # self.seekbar.clear()
+        # print('seekbar (before): ', self.seekbar)
+        # self.trimseekbar.unpack()
+        # self.viewseekbar.unpack()
+        self.trimseekbar.clear()
+        self.viewseekbar.clear()
+        self.viewsb = False
+        # self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+        # print('seekbar (after): ', self.seekbar)
+        # self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
+        # self.videoapp.setseekbar(self.seekbar)
+        # self.seekbar.settrim(trimvideo=self.trimvideo)
+        # self.seekbar.set(self.videoapp.fcount)
+        
+        if self.videopath:
+            self.loadvideo(self.videopath)
 
     def plot(self):
         """Creates plots from tracked data or OCR values."""

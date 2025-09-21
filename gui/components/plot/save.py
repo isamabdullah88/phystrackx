@@ -27,7 +27,7 @@ class Save:
         self.datamanager = datamanager
         self.filepath = None
 
-        self.checkbox = Checkbox(self.parent, SaveType, self.savedata)
+        self.checkbox = Checkbox(self.parent, SaveType, text="Choose Data", callback=self.savedata)
 
     @property
     def datacount(self) -> int:
