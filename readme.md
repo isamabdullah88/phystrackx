@@ -79,9 +79,6 @@ Contribute to science outreach by donating to:
 
 ### 👉 [Khwarizmi Science Society](https://khwarizmi.org/support-us/)
 
-
-### 👉 [Support me on Gumroad](https://isamabdullah.gumroad.com/l/phystrackx)
-
 ---
 
 ## 📄 License
