@@ -109,7 +109,6 @@ class RigidApp(App):
             # self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
             self.viewseekbar.set(self.videoapp.fcount)
             self.viewseekbar.pack()
-            print('view seekbar: ', self.viewseekbar)
         # else:
         #     self.seekbar.set(self.videoapp.fcount)
 
@@ -123,11 +122,7 @@ class RigidApp(App):
             return
         
         self.trimseekbar.set(self.videoapp.fcount)
-        # self.viewseekbar.set(self.videoapp.fcount)
-        print('trimseekbar: ', self.trimseekbar)
-        # print('viewseekbar: ', self.viewseekbar)
         self.trimseekbar.pack()
-        # self.viewseekbar.pack()
 
     def updateframe(self):
         """Updates canvas to show current frame and overlays points."""
@@ -218,7 +213,6 @@ class RigidApp(App):
 
     def reset(self):
         """Resets the video view and related tracking/overlay data."""
-        print('Clear')
         self.clearcomponents()
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
