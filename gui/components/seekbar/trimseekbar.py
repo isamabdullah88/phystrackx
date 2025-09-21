@@ -161,10 +161,8 @@ class TrimSeekBar:
             x=self.width + 10,
             y=self.height / 2 - self.btnsize / 2 - 5
         )
-        print('at final pack()')
 
     def unpack(self):
-        print('trim unpacked')
         self.fixedseek.unpack()
         self.varseek.unpack()
         self.leftbar.unpack()
@@ -245,7 +243,6 @@ class TrimSeekBar:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
 
-        print('trim called')
         # self.clear()
         # self.canvas.destroy()
 
