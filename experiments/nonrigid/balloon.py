@@ -115,35 +115,54 @@ class Balloon(Experiment):
         return PixelRect(x, y, w, h)
 
 
-    def ocr(self, rect, startidx=0, endidx=0):
-        import pytesseract
-        # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    # def ocr(self, rect, startidx=0, endidx=0):
+    #     import pytesseract
+    #     # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-        self._vidreader.seek(startidx)
+    #     self._vidreader.seek(startidx)
         
-        if endidx == 0:
-            fcount = self._vidreader.fcount - startidx
-        else:
-            fcount = endidx - startidx
+    #     if endidx == 0:
+    #         fcount = self._vidreader.fcount - startidx
+    #     else:
+    #         fcount = endidx - startidx
 
-        x, y, w, h = rect.totuple()
-        # print('rect: ', rect.totuple())
-        # print('fw, fh: ', (self.fwidth, self.fheight))
+    #     x, y, w, h = rect.totuple()
+    #     # print('rect: ', rect.totuple())
+    #     # print('fw, fh: ', (self.fwidth, self.fheight))
             
-        for i in range(fcount):
+    #     for i in range(fcount):
 
-            frame = self._vidreader.read()
-            frame = frame[y:y+h, x:x+w]
-            # Convert to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    #         frame = self._vidreader.read()
+    #         frame = frame[y:y+h, x:x+w]
+    #         # Convert to grayscale
+    #         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Optional: thresholding to improve contrast
-            # plt.imshow(gray)
-            # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
+    #         # Optional: thresholding to improve contrast
+    #         # plt.imshow(gray)
+    #         # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
             
-            custom_config = r'--oem 3 --psm 6 outputbase digits'
-            numbers = pytesseract.image_to_string(gray, config=custom_config)
-            # print("Number:", numbers)
+    #         custom_config = r'--oem 3 --psm 6 outputbase digits'
+    #         numbers = pytesseract.image_to_string(gray, config=custom_config)
+    #         # print("Number:", numbers)
+    #         self.texts.append(numbers)
+    def ocr(self, frame: np.ndarray, rect: 'PixelRect', pytesseract) -> str:
+        """
+        Extract text using OCR from the selected rectangular region.
+
+        Args:
+            frame: Frame from which to extract.
+            rect: Rectangle to crop before OCR.
+            pytesseract: pytesseract module reference.
+
+        Returns:
+            Extracted text.
+        """
+        crop_img = frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
+        gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+        config = r'--oem 3 --psm 6 outputbase digits'
+        text = pytesseract.image_to_string(gray, config=config)
+        cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        return text
 
 
 
@@ -185,8 +204,8 @@ class Balloon(Experiment):
 
         mask = cv2.resize(mask, (self.fwidth, self.fheight))
         
-        rect = self.mask2rect(mask)
-        mask = mask[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
+        maskrect = self.mask2rect(mask)
+        mask = mask[maskrect.ymin:maskrect.ymax, maskrect.xmin:maskrect.xmax]
         ellipse = self.prepmask(mask)
 
         # initpts = ptsellpise(ellipse)
@@ -207,18 +226,19 @@ class Balloon(Experiment):
         smoothenb = Smoothen(tol=50, winlen=5)
 
         fcount = self._vidreader.fcount
-        startrect = rect
+        startrect = maskrect
         self.trackpts = [[]]
+        self.texts = [[] for _ in ocrrects]
         for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
             frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             frame = filters.appfilter(crop.appcrop(frame))
 
-            rectp, ellipse = self.offellipse(ellipse, rect, 100)
+            maskrectp, ellipse = self.offellipse(ellipse, maskrect, 100)
             initpts = ptsellpise(ellipse, 100)
             
-            framep = frame.copy()[rectp.ymin:rectp.ymax, rectp.xmin:rectp.xmax]
+            framep = frame.copy()[maskrectp.ymin:maskrectp.ymax, maskrectp.xmin:maskrectp.xmax]
             
             gray = self.preprocess(framep, None)
             gray = gaussian(gray, 3)
@@ -237,10 +257,10 @@ class Balloon(Experiment):
             bs.append(b)
             angles.append(angle)
 
-            if startrect.xmin != rectp.xmin:
-                cx -= (startrect.xmin - rectp.xmin)
-            if startrect.ymin != rectp.ymin:
-                cy -= (startrect.ymin-rectp.ymin)
+            if startrect.xmin != maskrectp.xmin:
+                cx -= (startrect.xmin - maskrectp.xmin)
+            if startrect.ymin != maskrectp.ymin:
+                cy -= (startrect.ymin-maskrectp.ymin)
                 
             ellipse = (cx, cy), (a, b), angle
             
@@ -250,21 +270,21 @@ class Balloon(Experiment):
             ellipse = (cx, cy), (a, b), angle
 
             (cx, cy), (a, b), angle = ellipse
-            if startrect.xmin != rectp.xmin:
-                cx += (startrect.xmin - rectp.xmin)
-            if startrect.ymin != rectp.ymin:
-                cy += (startrect.ymin-rectp.ymin)
+            if startrect.xmin != maskrectp.xmin:
+                cx += (startrect.xmin - maskrectp.xmin)
+            if startrect.ymin != maskrectp.ymin:
+                cy += (startrect.ymin-maskrectp.ymin)
                 
             ellipse = (cx, cy), (a, b), angle
 
-            rect = rectp
+            maskrect = maskrectp
             snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
-            snakecont[:, :, 0] += rect.xmin
-            snakecont[:, :, 1] += rect.ymin
+            snakecont[:, :, 0] += maskrect.xmin
+            snakecont[:, :, 1] += maskrect.ymin
             (cx, cy), (a, b), angle = ellipse
-            cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
-            cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
-                        endAngle=360, thickness=2)
+            # cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
+            # cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
+            #             endAngle=360, thickness=2)
             
             self.trackpts[0].append(snakecont.reshape(-1, 2).astype(np.float32))
 
