@@ -120,7 +120,7 @@ class TrackPoints:
                     tpoint.draw(self.canvas)
                     self.selectpoints.currpts.append([tpoint.cpt, i, self.fidx])
             else:
-                if tpoints[self.fidx] is None:
+                if (self.fidx >= len(tpoints)) or (tpoints[self.fidx] is None):
                     continue
                 tpoint = tpoints[self.fidx]
                 tpoint.draw(self.canvas)
