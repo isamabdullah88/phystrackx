@@ -35,7 +35,7 @@ class Save:
 
     @property
     def samplecount(self) -> int:
-        return self.datamanager.samplecount
+        return self.datamanager.maxcount
 
     @property
     def ocrcount(self) -> int:
@@ -75,12 +75,12 @@ class Save:
     def savedata(self, savetypes: list[str]) -> None:
         """Saves selected data to CSV based on save type options."""
         self.askfilepath()
+        print('Saving to:', self.filepath)
         if not self.filepath:
             return
 
         with open(self.filepath, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-
             if SaveType.HEADER.name in savetypes:
                 writer.writerow(self.prepheader(savetypes))
 
@@ -93,13 +93,17 @@ class Save:
 
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
+                        if i >= len(self.points[j]):
+                            row.extend(["", ""])
+                            continue
+
                         x, y = self.points[j][i, :]
                         row.extend([f"{x:.02f}", f"{y:.02f}"])
 
                 if SaveType.OCR.name in savetypes:
                     for o in self.ocr:
                         row.append(o[i])
-
+                
                 writer.writerow(row)
         
         messagebox.showinfo("Success", "Tracked data saved successfully.")
