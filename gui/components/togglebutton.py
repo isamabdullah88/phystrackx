@@ -10,6 +10,7 @@ from typing import Callable, Optional
 import tkinter as tk
 import customtkinter as ctk
 from PIL import Image
+from core import abspath
 
 
 class ToggleButton(ctk.CTkButton):
@@ -41,11 +42,11 @@ class ToggleButton(ctk.CTkButton):
         super().__init__(master, **kwargs)
 
         self.imgon = ctk.CTkImage(
-            dark_image=Image.open("assets/switch-on.png"),
+            dark_image=Image.open(abspath("assets/switch-on.png")),
             size=(50, 20)
         )
         self.imgoff = ctk.CTkImage(
-            dark_image=Image.open("assets/switch-off.png"),
+            dark_image=Image.open(abspath("assets/switch-off.png")),
             size=(50, 20)
         )
 

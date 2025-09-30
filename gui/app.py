@@ -48,6 +48,8 @@ class App:
         self.toolbar()
         self.root.protocol("WM_DELETE_WINDOW", self.onclose)
 
+        self.videopath = None
+
     def mkbutton(self, imgpath: str, command: callable) -> ctk.CTkButton:
         """
         Creates a button with an image and a command.

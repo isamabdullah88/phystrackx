@@ -4,7 +4,7 @@
 <a href="https://www.flaticon.com/free-icons/video" title="video icons">Video icons created by Freepik - Flaticon</a>
 
 <p align="center">
-  <img src="https://i.postimg.cc/d3NTMw6w/app.png" alt="PhysTrackX Demo" width="700"/>
+  <img src="https://i.postimg.cc/Pq5XTQkk/app.png" alt="PhysTrackX Demo" width="700"/>
 </p>
 
 ---
@@ -74,11 +74,9 @@ A Windows `.exe` binary version is available for download [here](https://github.
 
 ## ☕ Support This Project
 
-If PhysTrackX has helped you or your students learn physics better, consider supporting:
+If PhysTrackX has helped you or your students learn physics better, consider supporting. 
 
-### 👉 [Support me on Gumroad](https://isamabdullah.gumroad.com/l/phystrackx)
-
-or contribute to science outreach by donating to:
+Contribute to science outreach by donating to:
 
 ### 👉 [Khwarizmi Science Society](https://khwarizmi.org/support-us/)
 

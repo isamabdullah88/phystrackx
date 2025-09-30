@@ -12,6 +12,7 @@ class Line:
         self.tkline = tkline
         self.ptstart = ptstart
         self.ptend = ptend
+        self.tktxt = None
 
     def is_pt_online(self, point: Point, threshold: float = 10.0) -> bool:
         """
@@ -44,12 +45,38 @@ class Line:
         mid_y = (self.ptstart.y + self.ptend.y) / 2
         length = self.ptstart.distance(self.ptend)
 
-        canvas.create_text(
+        self.tktxt = canvas.create_text(
             mid_x, mid_y,
             text=f"{length:.1f}",
             fill=color,
             font=("Arial", 9, "italic")
         )
+
+    def hide(self, canvas: tk.Canvas):
+        """Hides text and lines"""
+        if self.tktxt:
+            canvas.itemconfigure(self.tktxt, state="hidden")
+
+        if self.tkline:
+            canvas.itemconfigure(self.tkline, state="hidden")
+
+    def unhide(self, canvas: tk.Canvas):
+        """Unhides text and lines"""
+        if self.tktxt:
+            canvas.itemconfigure(self.tktxt, state="normal")
+
+        if self.tkline:
+            canvas.itemconfigure(self.tkline, state="normal")
+
+    def clear(self, canvas: tk.Canvas):
+        """
+        Clears text.
+        """
+        if self.tktxt:
+            canvas.delete(self.tktxt)
+
+        if self.tkline:
+            canvas.delete(self.tkline)
 
     def __repr__(self):
         return f"Line({self.ptstart}, {self.ptend})"

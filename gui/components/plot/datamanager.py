@@ -53,11 +53,10 @@ class DataManager:
 
         self.datacount = len(tpoints)
         self.samplecount = len(tpoints[0]) if tpoints else 0
-        self.rows = tpoints[0][0].rows if tpoints[0] else 0
-        self.cols = tpoints[0][0].cols if tpoints[0] else 0
-
-        self.timestamps = np.linspace(0, self.samplecount / self.fps, self.samplecount)
         self.ocrcount = ocrdata.datacount
+        self.ocrsamplecount = ocrdata.samplecount
+        self.maxcount = max(self.datacount, self.ocrsamplecount)
+        self.timestamps = np.linspace(0, self.maxcount / self.fps, self.maxcount)
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [

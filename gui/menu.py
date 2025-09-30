@@ -5,13 +5,61 @@ GUI menu for selecting tracking type in PhysTrackX.
 Author: Isam Balghari
 """
 
-import customtkinter as ctk
-from PIL import Image
 from tkinter import Tk, Widget
-
 from .rigid.rigidapp import RigidApp
-from .nonrigid.nonrigid import NonRigid
-from core import abspath
+import webbrowser
+import customtkinter as ctk
+from PIL import Image, ImageSequence
+import pygame
+
+
+class AnimatedGIF(ctk.CTkLabel):
+    """Plays a GIF animation once with background music, 
+    and calls a callback at the end."""
+
+    def __init__(self, master, gif_path: str, music_path: str = None, on_end=None,
+                 *args, **kwargs):
+        """
+        Args:
+            master: Parent widget.
+            gif_path (str): Path to the GIF file.
+            music_path (str, optional): Path to the music file to play.
+            on_end (callable, optional): Function to call when animation ends.
+        """
+        # Load GIF frames
+        self.sequence = [
+            frame.copy() for frame in ImageSequence.Iterator(Image.open(gif_path))
+        ]
+        self.frames = [
+            ctk.CTkImage(light_image=img, size=img.size) for img in self.sequence
+        ]
+        self.idx = 0
+        self.on_end = on_end
+        self.music_path = music_path
+
+        # Init label with first frame
+        super().__init__(master, image=self.frames[0], text="", *args, **kwargs)
+
+        # Play music if given
+        if self.music_path:
+            pygame.mixer.init()
+            pygame.mixer.music.load(self.music_path)
+            pygame.mixer.music.play(-1)  # Loop indefinitely
+
+        # Start animation
+        self.after(64, self._play_once)
+
+    def _play_once(self):
+        if self.idx < len(self.frames):
+            self.configure(image=self.frames[self.idx])
+            self.idx += 1
+            self.after(64, self._play_once)
+        else:
+            # Stop music once animation ends
+            if self.music_path:
+                pygame.mixer.music.stop()
+            if self.on_end:
+                self.on_end()
 
 
 class MenuScreen:
@@ -32,30 +80,12 @@ class MenuScreen:
         # self._start_text_animation()
         self._create_icon_grid()
 
-    # ================== UI Construction Methods ================== #
-
-    # def _create_title_labels(self) -> None:
-    #     """Create and place the main title and subtitle labels."""
-    #     self.label = ctk.CTkLabel(
-    #         self.root, text="Welcome to PhysTrackX", font=("Helvetica", 24)
-    #     )
-    #     self.label.pack(pady=(20, 0))
-
-    #     subtlabel = ctk.CTkLabel(
-    #         self.root, text="A Project By Dr. Sabieh, Isam", font=("Helvetica", 18)
-    #     )
-    #     subtlabel.pack(pady=(10, 0))
-
-    def _create_icon_grid(self) -> None:
-        """Create a centered frame with buttons for selecting tracking type."""
-        center_frame = ctk.CTkFrame(self.root)
-        center_frame.place(relx=0.5, rely=0.5, anchor="center")
-
-        self._create_icon_button(
-            center_frame, "assets/rigid.png", self._rigid_mode, row=0, col=0
-        )
-        self._create_icon_button(
-            center_frame, "assets/nonrigid.png", self._nonrigid_mode, row=0, col=1
+        # === Background animation ===
+        self.animated_bg = AnimatedGIF(
+            master=self.main_frame,
+            gif_path=abspath("assets/logos/frontpage.gif"),
+            music_path=abspath("assets/logos/startup.mp3"),
+            on_end=self._show_start_button
         )
 
     def _create_icon_button(
@@ -103,10 +133,10 @@ class MenuScreen:
         h_size = int(float(img.size[1]) * w_percent)
         img = img.resize((base_width, h_size), Image.Resampling.LANCZOS)
 
-        photo = ctk.CTkImage(dark_image=img, size=(base_width, h_size))
-        image_label = ctk.CTkLabel(self.root, image=photo, text="")
-        image_label.image = photo  # Prevent garbage collection
-        image_label.pack(pady=(10, 0))
+    def _show_donate_button(self):
+        """Displays a donation button linking to donation section."""
+        def open_donation():
+            webbrowser.open("https://github.com/isamabdullah88/phystrackx?files=1#-support-this-project")
 
     # ================== Animation ================== #
 

@@ -23,6 +23,9 @@ class OCRData:
         self.samplecount: int = len(data[0]) if self.datacount > 0 and data[0] else 0
         self.clean()
 
+    def __len__(self) -> int:
+        return self.datacount
+
     def clean(self) -> None:
         """
         Cleans OCR data by removing all non-numeric characters except decimal points.

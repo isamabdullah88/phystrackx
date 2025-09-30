@@ -28,7 +28,7 @@ class Save:
         self.datamanager = datamanager
         self.filepath = None
 
-        self.checkbox = Checkbox(self.parent, SaveType, self.savedata)
+        self.checkbox = Checkbox(self.parent, SaveType, text="Choose Data", callback=self.savedata)
 
     @property
     def datacount(self) -> int:
@@ -36,7 +36,7 @@ class Save:
 
     @property
     def samplecount(self) -> int:
-        return self.datamanager.samplecount
+        return self.datamanager.maxcount
 
     @property
     def ocrcount(self) -> int:
@@ -76,12 +76,12 @@ class Save:
     def savedata(self, savetypes: list[str]) -> None:
         """Saves selected data to CSV based on save type options."""
         self.askfilepath()
+        print('Saving to:', self.filepath)
         if not self.filepath:
             return
 
         with open(self.filepath, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-
             if SaveType.HEADER.name in savetypes:
                 writer.writerow(self.prepheader(savetypes))
 
@@ -95,15 +95,17 @@ class Save:
                 import matplotlib.pyplot as plt
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
-                        datapt = self.points[j][i, :, :].reshape(self.datamanager.rows, self.datamanager.cols)
+                        if i >= len(self.points[j]):
+                            row.extend(["", ""])
+                            continue
 
-                        for k in range(self.datamanager.rows):
-                            row.extend([f"{datapt[k, 0]:.02f}", f"{datapt[k, 1]:.02f}"])
+                        x, y = self.points[j][i, :]
+                        row.extend([f"{x:.02f}", f"{y:.02f}"])
 
                 if SaveType.OCR.name in savetypes:
                     for o in self.ocr:
                         row.append(o[i])
-
+                
                 writer.writerow(row)
         
         messagebox.showinfo("Success", "Tracked data saved successfully.")

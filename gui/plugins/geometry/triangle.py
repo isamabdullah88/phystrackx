@@ -45,6 +45,7 @@ class Triangle:
         self.numpts = 0
         self.selected = False
         self.complete = False
+        self.drawangles = None
 
     def copy(self) -> "Triangle":
         """
@@ -159,17 +160,53 @@ class Triangle:
             line.label_length(self.canvas, color="#CCFFAE")
             
     def draw_angles(self) -> None:
-            drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
-            drawangles.draw(self.canvas, color="#27e586")
+            self.drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
+            self.drawangles.draw(self.canvas, color="#27e586")
+
+    def hide(self):
+        """Hides the triangle and its components"""
+        # Hides triangle lines and text
+        for line in self.lines:
+            line.hide(self.canvas)
+
+        # Hides arcs and text
+        if self.drawangles:
+            self.drawangles.hide(self.canvas)
+
+        # Hides points
+        for point in self.points:
+            self.canvas.itemconfigure(point.tkpt, state="hidden")
+        
+    def unhide(self):
+        """Unhides triangle and its components"""
+        # Unhides triangle lines and text
+        for line in self.lines:
+            line.unhide(self.canvas)
+
+        # Unhides arcs and text
+        if self.drawangles:
+            self.drawangles.unhide(self.canvas)
+
+        # Unhides points
+        for point in self.points:
+            self.canvas.itemconfigure(point.tkpt, state="normal")
             
     def delete(self) -> None:
         """
         Remove the triangle from the canvas and clear its data.
         """
+        # Delete triangle lines and text
         for line in self.lines:
-            self.canvas.delete(line.tkline)
+            # self.canvas.delete(line.tkline)
+            line.clear(self.canvas)
+
+        # Delete triangle points
         for point in self.points:
             self.canvas.delete(point.tkpt)
+
+        # Delete arcs and angles
+        if self.drawangles:
+            self.drawangles.clear(self.canvas)
             
         self.lines.clear()
         self.points.clear()
