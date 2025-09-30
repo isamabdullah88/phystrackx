@@ -67,8 +67,8 @@ class Video:
 
         self.rigid = Rigid(
             trimpath=self.trimpath,
-            vwidth=600,
-            vheight=500,
+            vwidth=self.vwidth,
+            vheight=self.vheight,
             tkqueue=self.processanim.queue
         )
 
