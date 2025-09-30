@@ -171,8 +171,6 @@ class BalloonApp(App):
         else:
             idx = self.trimseekbar.idx
 
-        print('idx: ', idx)
-        print('fcount: ', self.videoapp.fcount)
         self.videoapp.showframe(idx)
         self.trackpoints.drawpoints(idx)
 
