@@ -42,7 +42,7 @@ class BalloonApp(App):
         self._setup_main_toolbar()
         self._setup_sub_toolbar()
         self._init_plugins_and_tools()
-        self._init_video_components()
+        # self._init_video_components()
 
         self.save = None
         self.datamanager = None
@@ -90,54 +90,25 @@ class BalloonApp(App):
             self.updateframe,
             self.subtoolbar.toggle,
         )
-        self.crop = Crop(
-            self.videoview,
-            self.vwidth,
-            self.vheight,
-            self.updateframe,
-            self.subtoolbar.toggle,
-        )
-        self.geometry = Geometry(
-            self.videoview,
-            self.vwidth,
-            self.vheight,
-            self.btnlist,
-            self.btnlist["geometry"],
-        )
-        self.seekbar = TrimSeekBar(
-            self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe
-        )
-        self.ocrrects = Rect(
-            self.videoview,
-            self.vwidth,
-            self.vheight,
-            self.btnlist,
-            self.btnlist["ocr"],
-            toggle=self.subtoolbar.toggle,
-        )
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["geometry"])
+        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+        self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ocr"], toggle=self.subtoolbar.toggle)
         self.trackpoints = TrackPoints(self.videoview, self.vwidth, self.vheight, tether=False)
         self.processanim = ProcessAnimation(self.videoview, self.crop)
-        self.progressbar = ProgressBar(
-            self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight
-        )
-        self.scruler = ScaleRuler(
-            self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"]
-        )
+        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
         self.circle = Circle(self.videoview, self.vwidth, self.vheight)
 
-    def _init_video_components(self) -> None:
-        """Initialize the video player and processing backend."""
-        self.videoapp = Video(
-            self.videoview,
-            self.vwidth,
-            self.vheight,
-            Balloon,
-            self.crop,
-            self.seekbar,
-            self.filters,
-            self.processanim,
-        )
-        self.seekbar.settrim(trimvideo=self.trimvideo)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, Balloon, self.crop, self.filters, self.processanim)
+        self.trimseekbar.settrim(trimvideo=self.trimvideo)
+
+        self.save = None
+        self.plot = None
+        self.datamanager = None
+        self.viewsb = False
 
     # ================== Video Loading & Processing ================== #
 
@@ -157,32 +128,29 @@ class BalloonApp(App):
         """Trim the video based on user-defined start and end indices."""
         self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.crop)
 
-        def trim(spinner: Spinner) -> None:
+        def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
+            self.viewsb = True
+            # self.trimseekbar.unpack()
+            self.trimseekbar.clear()
             self.videoapp.loadvideo(self.videoapp.trimpath)
             self.loadcomponents()
-            self.root.after(0, spinner.destroy)
+            self.root.after(0, spinner.destroy())
 
         threading.Thread(target=trim, args=(self.spinner,)).start()
 
     def loadcomponents(self) -> None:
         """Load and update components after video is loaded or modified."""
-        Label(
-            self.videoview, text=f"Frame Count: {self.videoapp.fcount}"
-        ).place(x=10, y=80)
+        Label(self.videoview, text=f"Frame Count: {self.videoapp.fcount}").place(x=10, y=80)
 
-        if self.seekbar.disable:
-            self.seekbar = ViewSeekBar(
-                self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe
-            )
-            self.seekbar.set(self.videoapp.fcount)
-            self.seekbar.pack()
-        else:
-            self.seekbar.set(self.videoapp.fcount)
+        if self.viewsb:
+            # self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+            self.viewseekbar.set(self.videoapp.fcount)
+            self.viewseekbar.pack()
+        # else:
+        #     self.seekbar.set(self.videoapp.fcount)
 
-        self.trackpoints.addpoints(
-            self.videoapp.trackpts, self.crop.crpx, self.crop.crpy
-        )
+        self.trackpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
 
     # ================== UI Actions ================== #
@@ -192,12 +160,21 @@ class BalloonApp(App):
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
-        self.seekbar.pack()
+        
+        self.trimseekbar.set(self.videoapp.fcount)
+        self.trimseekbar.pack()
 
     def updateframe(self) -> None:
         """Update canvas to show current frame and overlays."""
-        self.videoapp.showframe(self.seekbar.idx)
-        self.trackpoints.drawpoints(self.seekbar.idx)
+        if self.viewsb:
+            idx = self.viewseekbar.idx
+        else:
+            idx = self.trimseekbar.idx
+
+        print('idx: ', idx)
+        print('fcount: ', self.videoapp.fcount)
+        self.videoapp.showframe(idx)
+        self.trackpoints.drawpoints(idx)
 
     def scale(self) -> None:
         """Display the scale ruler on canvas."""
@@ -250,9 +227,24 @@ class BalloonApp(App):
         self.clearcomponents()
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
+        # self.trects.clear()
         self.crop.clear()
-        self.seekbar.clear()
-        self.loadvideo(self.videopath)
+        # self.seekbar.clear()
+        # print('seekbar (before): ', self.seekbar)
+        # self.trimseekbar.unpack()
+        # self.viewseekbar.unpack()
+        self.trimseekbar.clear()
+        self.viewseekbar.clear()
+        self.viewsb = False
+        # self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
+        # print('seekbar (after): ', self.seekbar)
+        # self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
+        # self.videoapp.setseekbar(self.seekbar)
+        # self.seekbar.settrim(trimvideo=self.trimvideo)
+        # self.seekbar.set(self.videoapp.fcount)
+        
+        if self.videopath:
+            self.loadvideo(self.videopath)
 
     def plot(self) -> None:
         """Create plots from tracked data or OCR values."""
@@ -313,8 +305,7 @@ class BalloonApp(App):
 
     def strack(self) -> None:
         """Perform point tracking and update UI."""
-        if (self.videoapp.fcount < 10 or
-            (not self.circle.circles and not self.ocrrects.rects)):
+        if (self.videoapp.fcount < 10 or (not self.circle.circles and not self.ocrrects.rects)):
             messagebox.showerror(
                 "Error", "No task to track. Upload video and mark points first!"
             )
@@ -328,16 +319,14 @@ class BalloonApp(App):
         self.processanim.pack()
         self.progressbar.pack()
 
-        def on_complete() -> None:
+        def oncomplete() -> None:
             self.processanim.destroy()
             self.progressbar.destroy()
             self.loadcomponents()
 
         def track_bg() -> None:
-            self.videoapp.track(
-                self.circle.mask, self.ocrrects, self.progressbar.progress
-            )
-            self.root.after(0, on_complete)
+            self.videoapp.track(self.circle.mask, self.ocrrects, self.progressbar.progress)
+            self.root.after(0, oncomplete)
 
         threading.Thread(target=track_bg).start()
         self.progressbar.update()

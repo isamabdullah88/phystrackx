@@ -34,7 +34,6 @@ class Video:
         vheight: int,
         NonRigid,
         crop: Crop,
-        seekbar: TrimSeekBar,
         filters: Filters,
         processanim: ProcessAnimation
     ) -> None:
@@ -54,7 +53,6 @@ class Video:
         self.vwidth = vwidth
         self.vheight = vheight
         self.crop = crop
-        self.seekbar = seekbar
         self.filters = filters
         self.processanim = processanim
 
@@ -75,8 +73,8 @@ class Video:
 
         self.nonrigid = NonRigid(
             trimpath=self.trimpath,
-            vwidth=600,
-            vheight=500,
+            vwidth=self.vwidth,
+            vheight=self.vheight,
             tkqueue=self.processanim.queue
         )
 
