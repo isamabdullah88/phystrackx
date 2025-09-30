@@ -86,7 +86,7 @@ class Experiment:
         Create a lower-resolution proxy video and update internal reader.
         """
         os.makedirs("./temp", exist_ok=True)
-        self.videopath = proxyvideo(self.videopath, self.fwidth)
+        self.videopath = proxyvideo(self.videopath, self.vwidth)
         self._vidreader = VideoReader(self.videopath)
 
         self.fwidth = self._vidreader.width
