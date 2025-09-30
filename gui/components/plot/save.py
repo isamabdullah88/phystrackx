@@ -57,15 +57,17 @@ class Save:
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
         )
 
-    def prepheader(self, savetypes: list[str]) -> list[str]:
+    def prepheader(self, savetypes: list[str], numcoords: int) -> list[str]:
         """Prepares the CSV header based on selected save options."""
+        numcoords = max(1, numcoords)  # Ensure at least one coordinate set
         header = []
         if SaveType.TIME.name in savetypes:
             header.append("T(s)")
 
         if SaveType.XY.name in savetypes:
             for i in range(self.datacount):
-                header.extend([f"x{i+1}", f"y{i+1}"])
+                for j in range(numcoords):
+                    header.extend([f"x{i+1}_{j+1}", f"y{i+1}_{j+1}"])
 
         if SaveType.OCR.name in savetypes:
             for i in range(self.ocrcount):
@@ -83,7 +85,7 @@ class Save:
         with open(self.filepath, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             if SaveType.HEADER.name in savetypes:
-                writer.writerow(self.prepheader(savetypes))
+                writer.writerow(self.prepheader(savetypes, self.datamanager.rows))
 
             for i in range(self.samplecount):
                 row = []
@@ -92,19 +94,33 @@ class Save:
                     ts = self.datamanager.timestamps[i]
                     row.append(f"{ts:.06f}")
 
-                import matplotlib.pyplot as plt
                 if SaveType.XY.name in savetypes:
                     for j in range(self.datacount):
-                        if i >= len(self.points[j]):
-                            row.extend(["", ""])
-                            continue
+                        if i < self.points[j].shape[0]:
+                            datapt = self.points[j][i, :, :].reshape(self.datamanager.rows, self.datamanager.cols)
 
-                        x, y = self.points[j][i, :]
-                        row.extend([f"{x:.02f}", f"{y:.02f}"])
+                            for k in range(self.datamanager.rows):
+                                row.extend([f"{datapt[k, 0]:.02f}", f"{datapt[k, 1]:.02f}"])
+                        else:
+                            # Add one just to fill up x1,y1 with blank space
+                            for k in range(self.datamanager.rows+1):
+                                row.extend(["",""])
+                # if SaveType.XY.name in savetypes:
+                #     for j in range(self.datacount):
+                #         if i >= len(self.points[j]):
+                #             row.extend(["", ""])
+                #             continue
+
+                #         print('points[j]: ', self.points[j].shape)
+                #         x, y = self.points[j][i, :]
+                #         row.extend([f"{x:.02f}", f"{y:.02f}"])
 
                 if SaveType.OCR.name in savetypes:
                     for o in self.ocr:
-                        row.append(o[i])
+                        if i < len(o):
+                            row.append(o[i])
+                        else:
+                            row.append("")
                 
                 writer.writerow(row)
         
@@ -118,7 +134,7 @@ def main():
     import numpy as np
     import customtkinter as ctk
     from gui.components.axes import Axes
-    from gui.components.visuals import TrackPoint, ContPoint
+    from gui.components.visuals import TrackPoint
     from gui.components.plot.datamanager import DataManager
     from experiments.components.ocr import OCRData
     from gui.components.plot.save import Save
@@ -145,14 +161,13 @@ def main():
     t = np.linspace(0, 2 * np.pi, frame_count)
     x = 100 + 50 * np.cos(t)
     y = 100 + 50 * np.sin(t)
-    # tpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]
-    
-    tpoints = [
-        [TrackPoint(np.zeros((100,)), np.ones((100,))*5, 0, 0) for _ in range(10)]
-    ]
+    tpoints = [[TrackPoint(x[i], y[i], 0, 0) for i in range(frame_count)]]    
+    # tpoints = [[TrackPoint(np.zeros((100,)), np.ones((100,))*5, 0, 0) for _ in range(frame_count)]]
+    # tpoints = [[]]
 
     # --- Dummy OCR data ---
-    ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(frame_count)]]
+    # ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(frame_count)]]
+    ocr_text = [[]]
     ocrdata = OCRData(ocr_text)
 
     # --- DataManager ---
@@ -169,7 +184,7 @@ def main():
     )
     datamanager.transform()
 
-    print('processed points: ', datamanager.processed_points[0][0,:,:])
+    # print('processed points: ', datamanager.processed_points[0][0,:,:])
 
     # --- Save handler ---
     saver = Save(root, datamanager=datamanager)
