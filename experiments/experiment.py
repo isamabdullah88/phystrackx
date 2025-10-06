@@ -48,7 +48,7 @@ class Experiment:
             sys.stdout = open("logs/stdout.log", "a")
             sys.stderr = open("logs/stderr.log", "a")
 
-    def addvideo(self, videopath: str) -> None:
+    def addvideo(self, videopath: str, istrim=False) -> None:
         """
         Load the video and extract dimensions and frame count.
         """
@@ -58,7 +58,9 @@ class Experiment:
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
-        self.resize()
+
+        if not istrim:
+            self.resize()
 
     def resize(self) -> None:
         """

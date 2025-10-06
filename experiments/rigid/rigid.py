@@ -95,8 +95,6 @@ class Rigid(Experiment):
                     r"C:\Program Files\Tesseract-OCR\tesseract.exe"
                 )
 
-        self.resize()
-
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
 
