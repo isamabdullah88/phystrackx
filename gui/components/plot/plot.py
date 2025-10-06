@@ -38,6 +38,22 @@ class Plot:
     @property
     def timestamps(self):
         return self.datamanager.timestamps
+    
+    @property
+    def xmin(self):
+        return self.datamanager.xmin
+    
+    @property
+    def xmax(self):
+        return self.datamanager.xmax
+    
+    @property
+    def ymin(self):
+        return self.datamanager.ymin
+    
+    @property
+    def ymax(self):
+        return self.datamanager.ymax
 
     def showplots(self, selected_plots: list[str]) -> None:
         """Displays all selected plots."""
@@ -61,43 +77,53 @@ class Plot:
     def plotx(self):
         for tpts in self.points:
             plt.figure()
-            plt.title("X vs Time")
-            plt.xlabel("Time (s)")
-            plt.ylabel("X")
+            plt.title(r"$x$ vs $T$")
+            plt.xlabel(r"$T(s)$")
+            plt.ylabel(r"$x$")
+            plt.xlim((0, self.timestamps[-1]))
+            plt.ylim((self.xmin, self.xmax))
             plt.plot(self.timestamps, tpts[:, 0], '-m')
 
     def ploty(self):
         for tpts in self.points:
             plt.figure()
-            plt.title("Y vs Time")
-            plt.xlabel("Time (s)")
-            plt.ylabel("Y")
+            plt.title(r"$y$ vs $T$")
+            plt.xlabel(r"$T(s)$")
+            plt.ylabel(r"$y$")
+            plt.xlim((0, self.timestamps[-1]))
+            plt.ylim((self.ymin, self.ymax))
             plt.plot(self.timestamps, tpts[:, 1], '-m')
 
     def plotxy(self):
         for tpts in self.points:
             plt.figure()
-            plt.title("Y vs X")
-            plt.xlabel("X")
-            plt.ylabel("Y")
+            plt.title(r"$y$ vs $x$")
+            plt.xlabel(r"$x$")
+            plt.ylabel(r"$y$")
+            plt.xlim((self.xmin, self.xmax))
+            plt.ylim((self.ymin, self.ymax))
             plt.plot(tpts[:, 0], tpts[:, 1], '-c')
 
     def plotdx(self):
         for tpts in self.points:
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             plt.figure()
-            plt.title("dx/dt")
-            plt.xlabel("Time (s)")
-            plt.ylabel("dx/dt")
+            plt.title(r"$\frac{dx}{dt}$")
+            plt.xlabel(r"$T(s)$")
+            plt.ylabel(r"$\frac{dx}{dt}$")
+            plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
+            plt.ylim((self.xmin, self.xmax))
             plt.plot(self.timestamps, dx_dt, '-g')
 
     def plotdy(self):
         for tpts in self.points:
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             plt.figure()
-            plt.title("dy/dt")
+            plt.title(r"$\frac{dy}{dt}$")
             plt.xlabel("Time (s)")
-            plt.ylabel("dy/dt")
+            plt.ylabel(r"$\frac{dy}{dt}$")
+            plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
+            plt.ylim((self.ymin, self.ymax))
             plt.plot(self.timestamps, dy_dt, '-g')
 
     def plotd2x(self):
@@ -105,9 +131,11 @@ class Plot:
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             d2x_dt2 = np.gradient(dx_dt, self.timestamps)
             plt.figure()
-            plt.title("d²x/dt²")
-            plt.xlabel("Time (s)")
-            plt.ylabel("d²x/dt²")
+            plt.title(r"$\frac{d^2x}{dt^2}$")
+            plt.xlabel(r"$T(s)$")
+            plt.ylabel(r"$\frac{d^2x}{dt^2}$")
+            plt.xlim((0, self.timestamps[-1]))
+            plt.ylim((self.xmin, self.xmax))
             plt.plot(self.timestamps, d2x_dt2, '-b')
 
     def plotd2y(self):
@@ -115,9 +143,11 @@ class Plot:
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             d2y_dt2 = np.gradient(dy_dt, self.timestamps)
             plt.figure()
-            plt.title("d²y/dt²")
-            plt.xlabel("Time (s)")
-            plt.ylabel("d²y/dt²")
+            plt.title(r"$\frac{d^2y}{dt^2}$")
+            plt.xlabel(r"$T(s)$")
+            plt.ylabel(r"$\frac{d^2y}{dt^2}$")
+            plt.xlim((0, self.timestamps[-1]))
+            plt.ylim((self.ymin, self.ymax))
             plt.plot(self.timestamps, d2y_dt2, '-b')
 
 
@@ -151,9 +181,9 @@ def main():
     axes = Axes(root, canvas, vwidth=640, vheight=480, btnlist=btnlist, activebtn=axes_btn)
 
     # --- Generate dummy data ---
-    t = np.linspace(0, 2 * np.pi, 150)
-    x = 50 + 30 * np.cos(t)
-    y = 50 + 30 * np.sin(t)
+    t = np.linspace(0, 400)
+    x = 50 + 300 * np.cos(t)
+    y = 50 + 300 * np.sin(t)
     fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
 
     # --- Dummy OCR data ---
@@ -165,11 +195,11 @@ def main():
         tpoints=fpoints,
         ocrdata=ocrdata,
         axes=axes,
-        vwidth=640,
-        vheight=480,
-        fwidth=640,
-        fheight=480,
-        fps=30,
+        vwidth=400,
+        vheight=300,
+        fwidth=400,
+        fheight=300,
+        fps=1,
         scale=1.0
     )
 
