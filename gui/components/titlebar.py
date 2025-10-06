@@ -18,7 +18,7 @@ class TitleBar:
     Renders a gradient title bar with a logo and title text on a tkinter Canvas.
     """
 
-    def __init__(self, canvas: tk.Canvas, width: int, text: str, height: int = 70) -> None:
+    def __init__(self, canvas: tk.Canvas, width: int, text: str, height: int = 40) -> None:
         """
         Initialize and draw the title bar.
 
@@ -36,7 +36,7 @@ class TitleBar:
 
         # Logo image
         logo_path = abspath("./assets/logos/logo.png")
-        logo_img = Image.open(logo_path).resize((50, 50), Image.Resampling.LANCZOS)
+        logo_img = Image.open(logo_path).resize((20, 20), Image.Resampling.LANCZOS)
         self.logo = ImageTk.PhotoImage(logo_img)
 
         self.canvas.create_image(20, 10, image=self.logo, anchor="nw")

@@ -131,6 +131,7 @@ def main():
     from gui.components.axes import Axes
     from gui.components.plot.datamanager import DataManager
     from gui.components.plot.plot import Plot
+    from experiments.components.ocr import OCRData
 
     # --- Setup GUI ---
     ctk.set_appearance_mode("System")
@@ -155,9 +156,14 @@ def main():
     y = 50 + 30 * np.sin(t)
     fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
 
+    # --- Dummy OCR data ---
+    ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(len(x))]]
+    ocrdata = OCRData(ocr_text)
+
     # --- Create DataManager ---
     datamanager = DataManager(
         tpoints=fpoints,
+        ocrdata=ocrdata,
         axes=axes,
         vwidth=640,
         vheight=480,

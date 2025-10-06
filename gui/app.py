@@ -27,7 +27,7 @@ class App:
 
         # Window dimensions
         self.cwidth = 1280
-        self.cheight = 720
+        self.cheight = 800
         self.padx = floor(self.cwidth * 0.01)
         self.pady = floor(self.cheight * 0.01)
         self.root.geometry(f"{self.cwidth}x{self.cheight}")
