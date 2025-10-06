@@ -89,6 +89,8 @@ class ScaleRuler:
         real = simpledialog.askfloat("Scale", "Enter real-world length this ruler represents:")
         if real and pixels:
             self.scalef = real / pixels
+            print('scale -> ', self.scalef)
+            print("real, pixels -> ", real, pixels)
             self.draw()
 
     def onclick(self, event):
