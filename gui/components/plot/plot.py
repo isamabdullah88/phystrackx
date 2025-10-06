@@ -75,9 +75,10 @@ class Plot:
         plt.show(block=False)
 
     def plotx(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(r"$x$ vs $T$")
+            title = r"$x$ vs $T$"
+            plt.title(f"[Rect-{k+1}]: " + title)
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$x$")
             plt.xlim((0, self.timestamps[-1]))
@@ -85,9 +86,9 @@ class Plot:
             plt.plot(self.timestamps, tpts[:, 0], '-m')
 
     def ploty(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(r"$y$ vs $T$")
+            plt.title(f"[Rect-{k+1}]: " + r"$y$ vs $T$")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$y$")
             plt.xlim((0, self.timestamps[-1]))
@@ -95,9 +96,9 @@ class Plot:
             plt.plot(self.timestamps, tpts[:, 1], '-m')
 
     def plotxy(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(r"$y$ vs $x$")
+            plt.title(f"[Rect-{k+1}]: " + r"$y$ vs $x$")
             plt.xlabel(r"$x$")
             plt.ylabel(r"$y$")
             plt.xlim((self.xmin, self.xmax))
@@ -105,10 +106,10 @@ class Plot:
             plt.plot(tpts[:, 0], tpts[:, 1], '-c')
 
     def plotdx(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             plt.figure()
-            plt.title(r"$\frac{dx}{dt}$")
+            plt.title(f"[Rect-{k+1}]: " + r"$\frac{dx}{dt}$")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{dx}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
@@ -116,10 +117,10 @@ class Plot:
             plt.plot(self.timestamps, dx_dt, '-g')
 
     def plotdy(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             plt.figure()
-            plt.title(r"$\frac{dy}{dt}$")
+            plt.title(f"[Rect-{k+1}]: " + r"$\frac{dy}{dt}$")
             plt.xlabel("Time (s)")
             plt.ylabel(r"$\frac{dy}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
@@ -127,11 +128,11 @@ class Plot:
             plt.plot(self.timestamps, dy_dt, '-g')
 
     def plotd2x(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             d2x_dt2 = np.gradient(dx_dt, self.timestamps)
             plt.figure()
-            plt.title(r"$\frac{d^2x}{dt^2}$")
+            plt.title(f"[Rect-{k+1}]: " + r"$\frac{d^2x}{dt^2}$")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2x}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
@@ -139,11 +140,11 @@ class Plot:
             plt.plot(self.timestamps, d2x_dt2, '-b')
 
     def plotd2y(self):
-        for tpts in self.points:
+        for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             d2y_dt2 = np.gradient(dy_dt, self.timestamps)
             plt.figure()
-            plt.title(r"$\frac{d^2y}{dt^2}$")
+            plt.title(f"[Rect-{k+1}]: " + r"$\frac{d^2y}{dt^2}$")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2y}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
