@@ -23,7 +23,7 @@ def resource_path(relative_path: str) -> str:
 
 def proxyvideo(
     videopath: str,
-    width: int = 640,
+    width: int = 1000,
     height: int = -2,
     writepath: Optional[str] = None,
     overwrite: bool = False
@@ -60,10 +60,10 @@ def proxyvideo(
 
     resolution = f"{width}:{height}"
     
-    ffmpeg_bin = resource_path("ffmpeg/ffmpeg.exe")
+    ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
 
     command = [
-        ffmpeg_bin,
+        'ffmpeg',
         "-y" if overwrite else "-n",
         "-i", videopath,
         "-vf", f"scale={resolution}",
@@ -81,4 +81,5 @@ def proxyvideo(
         return writepath
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg failed: {e}")
+        print(' '.join(command))
         return None

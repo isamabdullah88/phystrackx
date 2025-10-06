@@ -68,7 +68,7 @@ class Video:
         self.rigid = Rigid(
             trimpath=self.trimpath,
             vwidth=self.vwidth,
-            vheight=self.vheight,
+            vheight=self.vheight-50,
             tkqueue=self.processanim.queue
         )
 
@@ -115,7 +115,7 @@ class Video:
         """Current video frame height."""
         return self.rigid.fheight
 
-    def loadvideo(self, videopath: str) -> None:
+    def loadvideo(self, videopath: str, istrim=False) -> None:
         """
         Load a video from file or fallback to trimmed path.
 
@@ -123,19 +123,19 @@ class Video:
             videopath (str): Path to video file.
         """
         self.rigid.release()
-        if not filexists(videopath):
-            self.logger.warning("Loading trim video")
+
+        if istrim:
+            self.logger.info("Loading trim video")
             if not filexists(self.trimpath):
                 self.logger.error("Trim video not found!")
                 return
-            self.rigid.addvideo(self.trimpath)
+            self.rigid.addvideo(self.trimpath, istrim)
             self.logger.info("Video added from: %s", self.trimpath)
         else:
             self.rigid.addvideo(videopath)
             self.logger.info("Video added from: %s", videopath)
         
         self.crop.set(self.fwidth, self.fheight)
-        # self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
 
     def resizef(self, frame: any, fwidth: int, fheight: int) -> any:
         """

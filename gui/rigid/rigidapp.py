@@ -95,7 +95,7 @@ class RigidApp(App):
             self.viewsb = True
             # self.trimseekbar.unpack()
             self.trimseekbar.clear()
-            self.videoapp.loadvideo(self.videoapp.trimpath)
+            self.videoapp.loadvideo(self.videoapp.trimpath, True)
             self.loadcomponents()
             self.root.after(0, spinner.destroy())
 
@@ -218,19 +218,10 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
-        # self.seekbar.clear()
-        # print('seekbar (before): ', self.seekbar)
-        # self.trimseekbar.unpack()
-        # self.viewseekbar.unpack()
+        
         self.trimseekbar.clear()
         self.viewseekbar.clear()
         self.viewsb = False
-        # self.seekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-        # print('seekbar (after): ', self.seekbar)
-        # self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.seekbar, self.filters, self.processanim)
-        # self.videoapp.setseekbar(self.seekbar)
-        # self.seekbar.settrim(trimvideo=self.trimvideo)
-        # self.seekbar.set(self.videoapp.fcount)
         
         if self.videopath:
             self.loadvideo(self.videopath)
@@ -242,7 +233,7 @@ class RigidApp(App):
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
-
+        print('fps: ', self.videoapp.fps)
         if self.datamanager is not None:
             self.plot = Plot(self.videoview, self.datamanager)
         else:

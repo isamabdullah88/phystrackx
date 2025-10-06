@@ -48,7 +48,7 @@ class Experiment:
             sys.stdout = open("logs/stdout.log", "a")
             sys.stderr = open("logs/stderr.log", "a")
 
-    def addvideo(self, videopath: str) -> None:
+    def addvideo(self, videopath: str, istrim=False) -> None:
         """
         Load the video and extract dimensions and frame count.
         """
@@ -58,35 +58,31 @@ class Experiment:
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
-        self.resize()
+
+        if not istrim:
+            self.resize()
 
     def resize(self) -> None:
         """
         Resize dimensions to fit inside the viewer while maintaining aspect ratio.
         """
-        proxy_needed = False
+        ratio = self.fwidth / self.fheight
+        self.fheight = self.vheight
+        self.fwidth = floor(self.fheight * ratio)
+        
+        # Width and height must be even for ffmpeg
+        self.fwidth = floor(self.fwidth/2)*2
+        self.fheight = floor(self.fheight/2)*2
 
-        if self.fwidth > self.vwidth:
-            ratio = self.fheight / self.fwidth
-            self.fwidth = self.vwidth
-            self.fheight = floor(self.fwidth * ratio)
-            proxy_needed = True
-
-        if self.fheight > self.vheight:
-            ratio = self.fwidth / self.fheight
-            self.fheight = self.vheight
-            self.fwidth = floor(self.fheight * ratio)
-            proxy_needed = True
-
-        if proxy_needed:
-            self._proxymize()
+        # Generate proxy video
+        self._proxymize()
 
     def _proxymize(self) -> None:
         """
         Create a lower-resolution proxy video and update internal reader.
         """
         os.makedirs("./temp", exist_ok=True)
-        self.videopath = proxyvideo(self.videopath, self.fwidth)
+        self.videopath = proxyvideo(self.videopath, width=self.fwidth, height=self.fheight)
         self._vidreader = VideoReader(self.videopath)
 
         self.fwidth = self._vidreader.width

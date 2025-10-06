@@ -58,17 +58,15 @@ def trimvideo(
     start_time = startidx / fps
     duration = (endidx - startidx) / fps
 
-    ffmpeg_bin = resource_path("ffmpeg/ffmpeg.exe")
+    ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
     command = [
-        ffmpeg_bin,
+        ffmpeg,
         "-y" if overwrite else "-n",
         "-i", videopath,
         "-ss", str(start_time),
-        "-t", str(duration),
-        "-c:v", "libx264",
-        "-crf", "23",
-        "-preset", "fast",
-        "-an",  # disable audio
+        "-to", str(duration+start_time),
+        "-c",
+        "copy",
         writepath
     ]
 
