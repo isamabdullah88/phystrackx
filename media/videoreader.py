@@ -38,7 +38,7 @@ class VideoReader:
         self.fps: int = floor(self._reader.get(cv2.CAP_PROP_FPS))
 
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info("VideoReader initialized.")
+        self.logger.info(f"VideoReader initialized at: {videopath}.")
 
     def read(self, index: Optional[int] = None) -> Optional[any]:
         """
