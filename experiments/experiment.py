@@ -64,29 +64,33 @@ class Experiment:
         """
         Resize dimensions to fit inside the viewer while maintaining aspect ratio.
         """
-        proxy_needed = False
+        # proxy_needed = False
 
-        if self.fwidth > self.vwidth:
-            ratio = self.fheight / self.fwidth
-            self.fwidth = self.vwidth
-            self.fheight = floor(self.fwidth * ratio)
-            proxy_needed = True
+        # if self.fwidth > self.vwidth:
+        # ratio = self.fheight / self.fwidth
+        # self.fwidth = self.vwidth
+        # self.fheight = floor(self.fwidth * ratio)
+            # proxy_needed = True
 
-        if self.fheight > self.vheight:
-            ratio = self.fwidth / self.fheight
-            self.fheight = self.vheight
-            self.fwidth = floor(self.fheight * ratio)
-            proxy_needed = True
+        # if self.fheight > self.vheight:
+        
+        ratio = self.fwidth / self.fheight
+        self.fheight = self.vheight
+        self.fwidth = floor(self.fheight * ratio)
+        # proxy_needed = True
+        # Width and height must be even for ffmpeg
+        self.fwidth = floor(self.fwidth/2)*2
+        self.fheight = floor(self.fheight/2)*2
 
-        if proxy_needed:
-            self._proxymize()
+        # if proxy_needed:
+        self._proxymize()
 
     def _proxymize(self) -> None:
         """
         Create a lower-resolution proxy video and update internal reader.
         """
         os.makedirs("./temp", exist_ok=True)
-        self.videopath = proxyvideo(self.videopath, self.fwidth)
+        self.videopath = proxyvideo(self.videopath, width=self.fwidth, height=self.fheight)
         self._vidreader = VideoReader(self.videopath)
 
         self.fwidth = self._vidreader.width
