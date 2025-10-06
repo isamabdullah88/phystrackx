@@ -13,7 +13,7 @@ class ScaleRuler:
         self.height = 30
         self.p1 = [floor(vwidth/2)-floor(self.width), floor(vheight/2)]
         self.p2 = [floor(vwidth/2)+floor(self.width), floor(vheight/2)]
-        self.scalef = None
+        self.scalef = 1
         self.dragging = None
         
         self.btnlist = btnlist
@@ -132,7 +132,7 @@ class ScaleRuler:
         
     def clear(self):
         self.canvas.delete("ruler")
-        self.scalef = None
+        self.scalef = 1
 
 if __name__ == "__main__":
         

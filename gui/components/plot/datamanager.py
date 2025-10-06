@@ -54,8 +54,12 @@ class DataManager:
         self.samplecount = len(tpoints[0]) if tpoints else 0
         self.ocrcount = ocrdata.datacount
         self.ocrsamplecount = ocrdata.samplecount
-        self.maxcount = max(self.datacount, self.ocrsamplecount)
+        self.maxcount = max(self.samplecount, self.ocrsamplecount)
         self.timestamps = np.linspace(0, self.maxcount / self.fps, self.maxcount)
+
+        # Compute extents
+        self.xmin, self.ymin = self.transformxy(0.0, 0.0)
+        self.xmax, self.ymax = self.transformxy(self.vwidth*scale, self.vheight*scale)
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [
