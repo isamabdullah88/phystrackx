@@ -166,7 +166,7 @@ class Balloon(Experiment):
 
 
 
-    def track(self, mask, ocrrects, filters, crop, progress):
+    def track(self, masks, ocrrects, filters, crop, progress):
         """Tracks boundary of balloon like objects and optionally text area.
 
         Args:
@@ -202,11 +202,6 @@ class Balloon(Experiment):
         # frame = cv2.resize(frame, (self.fwidth, self.fheight))
         # frame = filters.appfilter(crop.appcrop(frame))
 
-        mask = cv2.resize(mask, (self.fwidth, self.fheight))
-        
-        maskrect = self.mask2rect(mask)
-        mask = mask[maskrect.ymin:maskrect.ymax, maskrect.xmin:maskrect.xmax]
-        ellipse = self.prepmask(mask)
 
         # initpts = ptsellpise(ellipse)
 
@@ -226,75 +221,86 @@ class Balloon(Experiment):
         smoothenb = Smoothen(tol=50, winlen=5)
 
         fcount = self._vidreader.fcount
-        startrect = maskrect
-        self.trackpts = [[]]
+        self.trackpts = [[] for _ in masks]
         self.texts = [[] for _ in ocrrects]
-        for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
-            frame = self._vidreader.read()
-            frame = cv2.resize(frame, (self.fwidth, self.fheight))
-            frame = filters.appfilter(crop.appcrop(frame))
-
-            maskrectp, ellipse = self.offellipse(ellipse, maskrect, 100)
-            initpts = ptsellpise(ellipse, 100)
+        for k, mask in enumerate(masks):
+            mask = cv2.resize(mask, (self.fwidth, self.fheight))
             
-            framep = frame.copy()[maskrectp.ymin:maskrectp.ymax, maskrectp.xmin:maskrectp.xmax]
-            
-            gray = self.preprocess(framep, None)
-            gray = gaussian(gray, 3)
+            maskrect = self.mask2rect(mask)
+            startrect = maskrect
+            mask = mask[maskrect.ymin:maskrect.ymax, maskrect.xmin:maskrect.xmax]
+            ellipse = self.prepmask(mask)
 
-            initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
-                                    gamma=gamma, w_edge=w_edge, w_line=w_line)
-            
+            self._vidreader.seek(0)
 
-            (cx, cy), (a, b), angle = ellipse
-            # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
-            ellipse = cv2.fitEllipse(initpts.copy()[:,[1,0]].reshape(-1, 1, 2).astype(np.float32))
+            for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
 
-            (cx, cy), (a, b), angle = ellipse
 
-            asp.append(a)
-            bs.append(b)
-            angles.append(angle)
+                frame = self._vidreader.read()
+                frame = cv2.resize(frame, (self.fwidth, self.fheight))
+                frame = filters.appfilter(crop.appcrop(frame))
 
-            if startrect.xmin != maskrectp.xmin:
-                cx -= (startrect.xmin - maskrectp.xmin)
-            if startrect.ymin != maskrectp.ymin:
-                cy -= (startrect.ymin-maskrectp.ymin)
+                maskrectp, ellipse = self.offellipse(ellipse, maskrect, 100)
+                initpts = ptsellpise(ellipse, 100)
                 
-            ellipse = (cx, cy), (a, b), angle
-            
-            a = smoothena.smoothen(a)
-            b = smoothenb.smoothen(b)
-            
-            ellipse = (cx, cy), (a, b), angle
-
-            (cx, cy), (a, b), angle = ellipse
-            if startrect.xmin != maskrectp.xmin:
-                cx += (startrect.xmin - maskrectp.xmin)
-            if startrect.ymin != maskrectp.ymin:
-                cy += (startrect.ymin-maskrectp.ymin)
+                framep = frame.copy()[maskrectp.ymin:maskrectp.ymax, maskrectp.xmin:maskrectp.xmax]
                 
-            ellipse = (cx, cy), (a, b), angle
+                gray = self.preprocess(framep, None)
+                gray = gaussian(gray, 3)
 
-            maskrect = maskrectp
-            snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
-            snakecont[:, :, 0] += maskrect.xmin
-            snakecont[:, :, 1] += maskrect.ymin
-            (cx, cy), (a, b), angle = ellipse
-            # cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
-            # cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
-            #             endAngle=360, thickness=2)
-            
-            self.trackpts[0].append(snakecont.reshape(-1, 2).astype(np.float32))
+                initpts = active_contour(gray, initpts, max_num_iter=maxiters, alpha=alpha, beta=beta,
+                                        gamma=gamma, w_edge=w_edge, w_line=w_line)
+                
 
-            for j, rect in enumerate(ocrrects):
-                pixrect = rect.norm2pix(crwidth, crheight)
-                text = self.ocr(frame, pixrect, pytesseract)
-                self.texts[j].append(text)
+                (cx, cy), (a, b), angle = ellipse
+                # snakecontp = initpts.copy().astype(np.float32).reshape(-1, 1, 2)
+                ellipse = cv2.fitEllipse(initpts.copy()[:,[1,0]].reshape(-1, 1, 2).astype(np.float32))
 
-            if progress is not None:
-                progress.set((i / (fcount - 1)) * 100)
+                (cx, cy), (a, b), angle = ellipse
+
+                asp.append(a)
+                bs.append(b)
+                angles.append(angle)
+
+                if startrect.xmin != maskrectp.xmin:
+                    cx -= (startrect.xmin - maskrectp.xmin)
+                if startrect.ymin != maskrectp.ymin:
+                    cy -= (startrect.ymin-maskrectp.ymin)
+                    
+                ellipse = (cx, cy), (a, b), angle
+                
+                a = smoothena.smoothen(a)
+                b = smoothenb.smoothen(b)
+                
+                ellipse = (cx, cy), (a, b), angle
+
+                (cx, cy), (a, b), angle = ellipse
+                if startrect.xmin != maskrectp.xmin:
+                    cx += (startrect.xmin - maskrectp.xmin)
+                if startrect.ymin != maskrectp.ymin:
+                    cy += (startrect.ymin-maskrectp.ymin)
+                    
+                ellipse = (cx, cy), (a, b), angle
+
+                maskrect = maskrectp
+                snakecont = initpts.copy()[:,[1,0]].astype(np.int32).reshape(-1, 1, 2)
+                snakecont[:, :, 0] += maskrect.xmin
+                snakecont[:, :, 1] += maskrect.ymin
+                (cx, cy), (a, b), angle = ellipse
+                # cv2.polylines(frame, [snakecont], isClosed=True, color=(0, 255, 0), thickness=1)
+                # cv2.ellipse(frame, center=(floor(cx+rect.xmin), floor(cy+rect.ymin)), axes=(floor(b/2), floor(a/2)), angle=angle, color=(0,0,255), startAngle=0,
+                #             endAngle=360, thickness=2)
+                
+                self.trackpts[k].append(snakecont.reshape(-1, 2).astype(np.float32))
+
+                for j, rect in enumerate(ocrrects):
+                    pixrect = rect.norm2pix(crwidth, crheight)
+                    text = self.ocr(frame, pixrect, pytesseract)
+                    self.texts[j].append(text)
+
+                if progress is not None:
+                    progress.set((i / (fcount - 1)) * 100)
 
         self.texts = OCRData(self.texts)
 

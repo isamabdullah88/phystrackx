@@ -69,7 +69,7 @@ class Circle:
         def ondown(event):            
             self._rcoords = (event.x, event.y)
             
-            self._tkcircle = self.canvas.create_oval(event.x, event.y, event.x, event.y, width=3)
+            self._tkcircle = self.canvas.create_oval(event.x, event.y, event.x, event.y, width=3, outline="red")
             
         def incircle(event):
             sx, sy = self._rcoords

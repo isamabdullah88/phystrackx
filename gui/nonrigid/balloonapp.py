@@ -323,7 +323,7 @@ class BalloonApp(App):
             self.loadcomponents()
 
         def track_bg() -> None:
-            self.videoapp.track(self.circle.mask, self.ocrrects, self.progressbar.progress)
+            self.videoapp.track(self.circle.masks, self.ocrrects, self.progressbar.progress)
             self.root.after(0, oncomplete)
 
         threading.Thread(target=track_bg).start()
