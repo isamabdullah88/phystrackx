@@ -224,6 +224,20 @@ class Balloon(Experiment):
         self.trackpts = [[] for _ in masks]
         self.texts = [[] for _ in ocrrects]
 
+        # Detect OCR first
+        for i in tqdm(range(fcount-1), desc="Balloon (OCR)", total=fcount):
+            frame = self._vidreader.seek(0)
+            frame = cv2.resize(frame, (self.fwidth, self.fheight))
+            frame = filters.appfilter(crop.appcrop(frame))
+
+            for j, rect in enumerate(ocrrects):
+                pixrect = rect.norm2pix(crwidth, crheight)
+                text = self.ocr(frame, pixrect, pytesseract)
+                self.texts[j].append(text)
+                
+        self.texts = OCRData(self.texts)
+
+        # Track indicated ellipses
         for k, mask in enumerate(masks):
             mask = cv2.resize(mask, (self.fwidth, self.fheight))
             
@@ -235,7 +249,6 @@ class Balloon(Experiment):
             self._vidreader.seek(0)
 
             for i in tqdm(range(fcount-1), desc="Balloon", total=fcount):
-
 
                 frame = self._vidreader.read()
                 frame = cv2.resize(frame, (self.fwidth, self.fheight))
