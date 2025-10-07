@@ -36,14 +36,6 @@ class Balloon(Experiment):
         clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4,4))
         gray = clahe.apply(gray)
         
-        # edges = cv2.Canny(gray, 100, 150)
-        # Apply mask to the edges
-        # if mask is not None:
-        #     edges = cv2.bitwise_and(edges, edges, mask=mask)
-        # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        # contour = max(contours, key=cv2.contourArea) if contours else None
-        # if len(contours) > 0:
-        #     cv2.drawContours(gray, contours, -1, (255, 255, 255), 5)
         return gray
     
     def prepmask(self, mask):
@@ -115,36 +107,6 @@ class Balloon(Experiment):
         return PixelRect(x, y, w, h)
 
 
-    # def ocr(self, rect, startidx=0, endidx=0):
-    #     import pytesseract
-    #     # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-    #     self._vidreader.seek(startidx)
-        
-    #     if endidx == 0:
-    #         fcount = self._vidreader.fcount - startidx
-    #     else:
-    #         fcount = endidx - startidx
-
-    #     x, y, w, h = rect.totuple()
-    #     # print('rect: ', rect.totuple())
-    #     # print('fw, fh: ', (self.fwidth, self.fheight))
-            
-    #     for i in range(fcount):
-
-    #         frame = self._vidreader.read()
-    #         frame = frame[y:y+h, x:x+w]
-    #         # Convert to grayscale
-    #         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    #         # Optional: thresholding to improve contrast
-    #         # plt.imshow(gray)
-    #         # _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
-            
-    #         custom_config = r'--oem 3 --psm 6 outputbase digits'
-    #         numbers = pytesseract.image_to_string(gray, config=custom_config)
-    #         # print("Number:", numbers)
-    #         self.texts.append(numbers)
     def ocr(self, frame: np.ndarray, rect: 'PixelRect', pytesseract) -> str:
         """
         Extract text using OCR from the selected rectangular region.
@@ -187,23 +149,9 @@ class Balloon(Experiment):
                 )
 
         self.resize()
-
-        # Tracking
-        # fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        # # self.resize()
-        # self._videowriter = cv2.VideoWriter(self._trackpath, fourcc, self._vidreader.fps,
-        #                                     (self.fwidth, self.fheight))
-
+        
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
-
-        # self._vidreader.seek(0)
-        # frame = self._vidreader.read()
-        # frame = cv2.resize(frame, (self.fwidth, self.fheight))
-        # frame = filters.appfilter(crop.appcrop(frame))
-
-
-        # initpts = ptsellpise(ellipse)
 
         alpha = 0.01
         beta = 1
@@ -234,7 +182,7 @@ class Balloon(Experiment):
                 pixrect = rect.norm2pix(crwidth, crheight)
                 text = self.ocr(frame, pixrect, pytesseract)
                 self.texts[j].append(text)
-                
+
         self.texts = OCRData(self.texts)
 
         # Track indicated ellipses
