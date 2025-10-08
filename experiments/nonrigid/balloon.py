@@ -160,13 +160,10 @@ class Balloon(Experiment):
         w_line = 0
         maxiters = 1000
 
-        asp = []
-        bs = []
-        angles = []
+        # asp = []
+        # bs = []
+        # angles = []
         
-        # Filters for trajectory smoothing
-        smoothena = Smoothen(tol=50, winlen=5)
-        smoothenb = Smoothen(tol=50, winlen=5)
 
         fcount = self._vidreader.fcount
         self.trackpts = [[] for _ in masks]
@@ -174,7 +171,7 @@ class Balloon(Experiment):
 
         # Detect OCR first
         for i in tqdm(range(fcount-1), desc="Balloon (OCR)", total=fcount):
-            frame = self._vidreader.seek(0)
+            frame = self._vidreader.read()
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             frame = filters.appfilter(crop.appcrop(frame))
 
@@ -186,8 +183,13 @@ class Balloon(Experiment):
         self.texts = OCRData(self.texts)
 
         # Track indicated ellipses
-        for k, mask in enumerate(masks):
-            mask = cv2.resize(mask, (self.fwidth, self.fheight))
+        for k, maskk in enumerate(masks):
+
+            # Filters for trajectory smoothing
+            # smoothena = Smoothen(tol=50, winlen=5)
+            # smoothenb = Smoothen(tol=50, winlen=5)
+
+            mask = cv2.resize(maskk, (self.fwidth, self.fheight))
             
             maskrect = self.mask2rect(mask)
             startrect = maskrect
@@ -220,9 +222,9 @@ class Balloon(Experiment):
 
                 (cx, cy), (a, b), angle = ellipse
 
-                asp.append(a)
-                bs.append(b)
-                angles.append(angle)
+                # asp.append(a)
+                # bs.append(b)
+                # angles.append(angle)
 
                 if startrect.xmin != maskrectp.xmin:
                     cx -= (startrect.xmin - maskrectp.xmin)
@@ -231,8 +233,8 @@ class Balloon(Experiment):
                     
                 ellipse = (cx, cy), (a, b), angle
                 
-                a = smoothena.smoothen(a)
-                b = smoothenb.smoothen(b)
+                # a = smoothena.smoothen(a)
+                # b = smoothenb.smoothen(b)
                 
                 ellipse = (cx, cy), (a, b), angle
 
@@ -255,15 +257,13 @@ class Balloon(Experiment):
                 
                 self.trackpts[k].append(snakecont.reshape(-1, 2).astype(np.float32))
 
-                for j, rect in enumerate(ocrrects):
-                    pixrect = rect.norm2pix(crwidth, crheight)
-                    text = self.ocr(frame, pixrect, pytesseract)
-                    self.texts[j].append(text)
+                # for j, rect in enumerate(ocrrects):
+                #     pixrect = rect.norm2pix(crwidth, crheight)
+                #     text = self.ocr(frame, pixrect, pytesseract)
+                #     self.texts[j].append(text)
 
                 if progress is not None:
                     progress.set((i / (fcount - 1)) * 100)
-
-        self.texts = OCRData(self.texts)
 
 
 
