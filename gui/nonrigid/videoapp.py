@@ -60,10 +60,10 @@ class Video:
         self.tkimg = None
 
         now = datetime.now()
-        fnow = now.strftime("%Y-%m-%d_%H:%M:%S")
+        fnow = now.strftime("%Y-%m-%d_%H-%M-%S")
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
-        self.trimpath = os.path.join(tempdir, "Trim-NonRigid_" + fnow + ".MP4")
+        self.trimpath = os.path.join(tempdir, "Trim-NonRigid_" + fnow + ".mp4")
 
         # self.nonrigid = Rigid(
         #     trimpath=self.trimpath,
