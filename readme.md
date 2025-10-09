@@ -67,7 +67,7 @@ python phystrackx.py
 
 ### 💾 Windows Executable
 
-A Windows `.exe` binary version is available for download [here](https://github.com/isamabdullah88/phys-trackx/releases). No Python installation required.
+Windows `.exe` binary versions are available for download [here](https://github.com/isamabdullah88/phystrackx/releases). No Python installation required.
 
 ---
 
