@@ -62,11 +62,9 @@ def trimvideo(
     command = [
         ffmpeg,
         "-y" if overwrite else "-n",
-        "-i", videopath,
         "-ss", str(start_time),
+        "-i", videopath,
         "-to", str(duration+start_time),
-        "-c",
-        "copy",
         writepath
     ]
 

@@ -104,14 +104,14 @@ class TPoints:
         self.fidx = fidx
         self.selectpoints.fidx = fidx
 
-        if len(self.tpts) < 1 or not self.selectpoints.toggled:
+        if (len(self.tpts) < 1) or not self.selectpoints.toggled:
             return
 
         self.undrawpoints()
         self.selectpoints.currpts.clear()
 
         for i, tpts in enumerate(self.tpts):
-            for idx in range(max(self.fidx - self.trsize, 0), self.fidx + 1):
+            for idx in range(max(self.fidx - self.trsize, 0), min(self.fidx + 1, len(tpts))):
                 if tpts[idx] is None:
                     continue
                 tpt = tpts[idx]
