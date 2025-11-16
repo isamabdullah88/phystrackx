@@ -28,8 +28,7 @@ class TrimSeekBar:
         width: int,
         height: int,
         fcount: int = 100,
-        callback: Optional[Callable] = None,
-        wnscale: float = 1.0
+        callback: Optional[Callable] = None
     ) -> None:
         """
         Initialize the TrimSeekBar.
@@ -41,19 +40,25 @@ class TrimSeekBar:
             fcount (int): Total number of frames.
             callback (Optional[Callable]): Callback on bar movement.
         """
-        self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
-        self.wnscale = wnscale
-        print('wnscale: ', self.wnscale)
-
-        self.btnsize: int = ceil(50 * wnscale)
-        self.mintrim: int = 50 * wnscale
+        self.btnsize: int = 50
+        self.mintrim: int = 50
         self.fcount: int = fcount
         self.idx: int = 0
-        self.padx: int = 10 * wnscale
-        self.width: int = width * wnscale - self.btnsize - 100 * wnscale
-        self.height: int = height * wnscale
+        self.padx: int = 0.01*width
+        self.width: int = width - self.btnsize - 3*self.padx
+        self.height: int = height
         self.xstart: int = self.padx
         self.xend: int = self.width - self.padx
+        print('width: ', width)
+        print('self-width: ', self.width)
+        
+        self.seekbarframe = tk.Frame(frame)
+        # self.seekbarframe.pack(tk.LEFT, expand=True, fill=tk.X)
+        self.btnframe = tk.Frame(frame)
+        # self.btnframe.pack(tk.LEFT, expand=True, fill=tk.X)
+        self.canvas = tk.Canvas(self.seekbarframe, width=self.width, height=self.height, bg="#4d535c")
+        # self.wnscale = wnscale
+        # print('wnscale: ', self.wnscale)
         
         self.callback: Optional[Callable] = callback
 
@@ -104,7 +109,9 @@ class TrimSeekBar:
         if self.varseek:
             self.varseek.clear()
         
-        self.canvas.pack_forget()
+        # self.seekbarframe.destroy()
+        # self.btnframe.destroy()
+        # self.canvas.pack_forget()
 
     def pack(self) -> None:
         """
@@ -112,7 +119,9 @@ class TrimSeekBar:
         """
         self.clear()
         self.setparams()
-        self.canvas.pack(side=ctk.LEFT, expand=True, fill=ctk.BOTH)
+        self.seekbarframe.pack(side="left", fill="x", expand=True)
+        self.btnframe.pack(side="right", fill="x", expand=True)
+        self.canvas.pack()
 
         self.fixedseek = Seek(
             self.canvas,
@@ -160,11 +169,11 @@ class TrimSeekBar:
         self.canvas.bind("<B1-Motion>", self.ondrag)
 
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
-        self.applybtn.place(
-            x=self.xend,
-            y=self.height / 2 - self.btnsize / 2 - 5
-        )
-        # self.applybtn.pack(side="right", padx=10, pady=10)
+        # self.applybtn.place(
+        #     x=self.xend,
+        #     y=self.height / 2 - self.btnsize / 2 - 5
+        # )
+        self.applybtn.pack(side="right")
 
     def unpack(self):
         self.fixedseek.unpack()
@@ -239,7 +248,9 @@ class TrimSeekBar:
         """
         Apply trimming logic and reload video.
         """
-        self.applybtn.place_forget()
+        self.seekbarframe.pack_forget()
+        self.btnframe.pack_forget()
+        # self.applybtn.pack_forget()
         # self.disable = True
         # print("disable:", self.disable)
 
@@ -279,8 +290,10 @@ class TrimSeekBar:
         
         # frame = tk.Frame(self.canvas, width=btnsize, height=btnsize)
         # frame.pack(fill="both", expand=True)
+        self.btncanvas = tk.Canvas(self.btnframe, width=btnsize, height=btnsize)
+        self.btncanvas.pack()
         button = ctk.CTkButton(
-            self.canvas,
+            self.btncanvas,
             text="",
             width=btnsize,
             height=btnsize,
