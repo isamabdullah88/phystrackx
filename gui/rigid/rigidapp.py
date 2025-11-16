@@ -60,7 +60,7 @@ class RigidApp(App):
         wnscale = 0.999
         scale = self.root.winfo_fpixels("1i")
         print('scale: ', scale)
-        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe, wnscale=wnscale)
+        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
