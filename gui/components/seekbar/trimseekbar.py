@@ -28,7 +28,8 @@ class TrimSeekBar:
         width: int,
         height: int,
         fcount: int = 100,
-        callback: Optional[Callable] = None
+        callback: Optional[Callable] = None,
+        wnscale: float = 1.0
     ) -> None:
         """
         Initialize the TrimSeekBar.
@@ -41,17 +42,19 @@ class TrimSeekBar:
             callback (Optional[Callable]): Callback on bar movement.
         """
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
-        # self.canvas.pack()
+        self.wnscale = wnscale
+        print('wnscale: ', self.wnscale)
 
-        self.btnsize: int = 50
-        self.mintrim: int = 50
+        self.btnsize: int = ceil(50 * wnscale)
+        self.mintrim: int = 50 * wnscale
         self.fcount: int = fcount
         self.idx: int = 0
-        self.xstart: int = 0
-        self.xend: int = 100
-        self.padx: int = 10
-        self.width: int = width - self.btnsize - 40
-        self.height: int = height
+        self.padx: int = 10 * wnscale
+        self.width: int = width * wnscale - self.btnsize - 100 * wnscale
+        self.height: int = height * wnscale
+        self.xstart: int = self.padx
+        self.xend: int = self.width - self.padx
+        
         self.callback: Optional[Callable] = callback
 
         self.fixedseek: Optional[Seek] = None
@@ -80,7 +83,7 @@ class TrimSeekBar:
         """
         self.idx = ceil(0.01 * self.fcount)
         self.xstart = self.padx
-        self.xend = self.width - self.padx
+        # self.xend = self.width - self.padx
 
         if self.leftbar:
             self.leftbar.setcount(self.fcount)
@@ -109,7 +112,7 @@ class TrimSeekBar:
         """
         self.clear()
         self.setparams()
-        self.canvas.pack()
+        self.canvas.pack(side=ctk.LEFT, expand=True, fill=ctk.BOTH)
 
         self.fixedseek = Seek(
             self.canvas,
@@ -158,9 +161,10 @@ class TrimSeekBar:
 
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
         self.applybtn.place(
-            x=self.width + 10,
+            x=self.xend,
             y=self.height / 2 - self.btnsize / 2 - 5
         )
+        # self.applybtn.pack(side="right", padx=10, pady=10)
 
     def unpack(self):
         self.fixedseek.unpack()
@@ -272,6 +276,9 @@ class TrimSeekBar:
             dark_image=img,
             size=(btnsize, btnsize)
         )
+        
+        # frame = tk.Frame(self.canvas, width=btnsize, height=btnsize)
+        # frame.pack(fill="both", expand=True)
         button = ctk.CTkButton(
             self.canvas,
             text="",
