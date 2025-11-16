@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter as tk
 from PIL import Image
 from core import abspath
 from core import PixelRect
@@ -20,6 +21,9 @@ class Rect:
         
         self.toggle = toggle
         self.btnsize = 30
+        
+        # self.btnframe = tk.Frame(canvas)
+        # self.btnframe.pack(side=tk.RIGHT)
         self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
@@ -51,8 +55,10 @@ class Rect:
             self._ctkrects.pop()
             if self._ctkrects:
                 self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+                # self.button.pack(side="left")
             else:
-                self.button.place_forget()
+                # self.button.place_forget()
+                self.button.pack_forget()
                 
     def clearrects(self):
         """Deletes all drawn rectangles"""
@@ -109,8 +115,10 @@ class Rect:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.unbind("<ButtonRelease-1>")
             
-            self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-            self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+            # self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+            # self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+            self.applybtn.pack(side=tk.BOTTOM, anchor=tk.E, padx=10, pady=10)
+            self.button.pack(anchor=tk.N, pady=10)
             
 
         self.canvas.bind("<Button-1>", ondown)
@@ -122,8 +130,8 @@ class Rect:
         for tkrect in self._ctkrects:
             self.canvas.itemconfig(tkrect, outline="green", width=2)
         
-        self.button.place_forget()
-        self.applybtn.place_forget()
+        self.button.pack_forget()
+        self.applybtn.pack_forget()
         
         self.applied = True
         
