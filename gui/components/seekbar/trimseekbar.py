@@ -40,6 +40,8 @@ class TrimSeekBar:
             fcount (int): Total number of frames.
             callback (Optional[Callable]): Callback on bar movement.
         """
+        self.frame = frame
+        
         self.btnsize: int = 50
         self.mintrim: int = 50
         self.fcount: int = fcount
@@ -49,16 +51,9 @@ class TrimSeekBar:
         self.height: int = height
         self.xstart: int = self.padx
         self.xend: int = self.width - self.padx
-        print('width: ', width)
-        print('self-width: ', self.width)
         
-        self.seekbarframe = tk.Frame(frame)
-        # self.seekbarframe.pack(tk.LEFT, expand=True, fill=tk.X)
-        self.btnframe = tk.Frame(frame)
-        # self.btnframe.pack(tk.LEFT, expand=True, fill=tk.X)
-        self.canvas = tk.Canvas(self.seekbarframe, width=self.width, height=self.height, bg="#4d535c")
-        # self.wnscale = wnscale
-        # print('wnscale: ', self.wnscale)
+        self.seekframe = None
+        self.btnframe = None
         
         self.callback: Optional[Callable] = callback
 
@@ -88,7 +83,6 @@ class TrimSeekBar:
         """
         self.idx = ceil(0.01 * self.fcount)
         self.xstart = self.padx
-        # self.xend = self.width - self.padx
 
         if self.leftbar:
             self.leftbar.setcount(self.fcount)
@@ -97,7 +91,7 @@ class TrimSeekBar:
 
     def clear(self) -> None:
         """
-        Clear all canvas elements related to trimming.
+        Clear all seekcanvas elements related to trimming.
         """
         if self.leftbar:
             self.leftbar.clear()
@@ -109,22 +103,28 @@ class TrimSeekBar:
         if self.varseek:
             self.varseek.clear()
         
-        # self.seekbarframe.destroy()
-        # self.btnframe.destroy()
-        # self.canvas.pack_forget()
+        if self.seekframe is not None:
+            self.seekframe.destroy()
+        
+        if self.btnframe is not None:
+            self.btnframe.destroy()
 
     def pack(self) -> None:
         """
-        Render seek regions and bars on the canvas.
+        Render seek regions and bars on the seekcanvas.
         """
         self.clear()
         self.setparams()
-        self.seekbarframe.pack(side="left", fill="x", expand=True)
+        
+        self.seekframe = tk.Frame(self.frame)
+        self.btnframe = tk.Frame(self.frame)
+        self.seekcanvas = tk.Canvas(self.seekframe, width=self.width, height=self.height, bg="#4d535c")
+        self.seekframe.pack(side="left", fill="x", expand=True)
         self.btnframe.pack(side="right", fill="x", expand=True)
-        self.canvas.pack()
+        self.seekcanvas.pack()
 
         self.fixedseek = Seek(
-            self.canvas,
+            self.seekcanvas,
             self.xstart,
             self.xend,
             self.height / 2,
@@ -133,7 +133,7 @@ class TrimSeekBar:
         self.fixedseek.pack()
 
         self.varseek = Seek(
-            self.canvas,
+            self.seekcanvas,
             self.xstart + self.padx,
             self.xend - self.padx,
             self.height / 2,
@@ -142,7 +142,7 @@ class TrimSeekBar:
         self.varseek.pack()
 
         self.leftbar = Bar(
-            self.canvas,
+            self.seekcanvas,
             self.xstart + self.padx,
             self.xstart,
             self.xend,
@@ -153,7 +153,7 @@ class TrimSeekBar:
         self.leftbar.pack()
 
         self.rightbar = Bar(
-            self.canvas,
+            self.seekcanvas,
             self.xend - self.padx,
             self.xstart,
             self.xend,
@@ -163,16 +163,12 @@ class TrimSeekBar:
         )
         self.rightbar.pack()
 
-        self.canvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
+        self.seekcanvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
 
-        self.canvas.bind("<Button-1>", self.onclick)
-        self.canvas.bind("<B1-Motion>", self.ondrag)
+        self.seekcanvas.bind("<Button-1>", self.onclick)
+        self.seekcanvas.bind("<B1-Motion>", self.ondrag)
 
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
-        # self.applybtn.place(
-        #     x=self.xend,
-        #     y=self.height / 2 - self.btnsize / 2 - 5
-        # )
         self.applybtn.pack(side="right")
 
     def unpack(self):
@@ -200,7 +196,6 @@ class TrimSeekBar:
             loadvideo (Callable): Function to reload video.
         """
         self.trimvideo = trimvideo
-        # self.loadvideo = loadvideo
 
     def onclick(self, event: tk.Event) -> None:
         """
@@ -230,7 +225,6 @@ class TrimSeekBar:
         if not self.leftbar or not self.rightbar or not self.fixedseek or not self.varseek:
             return
 
-        # self.fixedseek.draw(self.leftbar.xstart, self.leftbar.xend)
         self.varseek.draw(self.leftbar.x, self.rightbar.x)
 
         lfunc = lambda x, xlim: min(x, xlim - self.mintrim)
@@ -248,18 +242,12 @@ class TrimSeekBar:
         """
         Apply trimming logic and reload video.
         """
-        self.seekbarframe.pack_forget()
+        self.seekframe.pack_forget()
         self.btnframe.pack_forget()
-        # self.applybtn.pack_forget()
-        # self.disable = True
-        # print("disable:", self.disable)
 
         if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
-
-        # self.clear()
-        # self.canvas.destroy()
 
     def mkbutton(
         self,
@@ -268,7 +256,7 @@ class TrimSeekBar:
         btnsize: int = 30
     ) -> ctk.CTkButton:
         """
-        Create a CTk image button on the canvas.
+        Create a CTk image button on the seekcanvas.
 
         Args:
             imgpath (str): Path to image asset.
@@ -288,8 +276,6 @@ class TrimSeekBar:
             size=(btnsize, btnsize)
         )
         
-        # frame = tk.Frame(self.canvas, width=btnsize, height=btnsize)
-        # frame.pack(fill="both", expand=True)
         self.btncanvas = tk.Canvas(self.btnframe, width=btnsize, height=btnsize)
         self.btncanvas.pack()
         button = ctk.CTkButton(

@@ -98,7 +98,7 @@ class RigidApp(App):
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
             self.viewsb = True
-            # self.trimseekbar.unpack()
+            
             self.trimseekbar.clear()
             self.videoapp.loadvideo(self.videoapp.trimpath, True)
             self.loadcomponents()

@@ -74,12 +74,6 @@ class MenuScreen:
     def __init__(self):
         self.root = ctk.CTk()
         
-        # try:
-        #     import ctypes
-        #     ctypes.windll.shcore.SetProcessDpiAwareness(1)
-        # except Exception:
-        #     ctypes.windll.user32.SetProcessDPIAware()
-        
         self.width = 1280
         self.height = 720
         self.root.geometry(f"{self.width}x{self.height}")
@@ -87,13 +81,7 @@ class MenuScreen:
         
         self.width = self.root.winfo_width()
         self.height = self.root.winfo_height()
-        print('width: ', self.width)
-        print('height: ', self.height)
-        # self.root = root
-        # self.root.title("PhysTrack Front Page")
-        # self.root.geometry("1280x720")
-        # self.root.geometry(f"{self.width}x{self.height}")
-
+        
         # === Frame for layout ===
         self.main_frame = ctk.CTkFrame(self.root)
         self.main_frame.pack(fill="both", expand=True)
