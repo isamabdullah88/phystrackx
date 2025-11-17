@@ -55,6 +55,11 @@ class RigidApp(App):
         self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
 
+        wnscale = self.root.tk.call("tk", "scaling")
+        print('wnscale: ', wnscale)
+        wnscale = 0.999
+        scale = self.root.winfo_fpixels("1i")
+        print('scale: ', scale)
         self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
         self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
@@ -93,7 +98,7 @@ class RigidApp(App):
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
             self.viewsb = True
-            # self.trimseekbar.unpack()
+            
             self.trimseekbar.clear()
             self.videoapp.loadvideo(self.videoapp.trimpath, True)
             self.loadcomponents()

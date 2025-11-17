@@ -9,6 +9,8 @@ __pycache__/
 *.mp4
 *.MP4
 
+ffmpeg
+
 # Distribution / packaging
 .Python
 build/

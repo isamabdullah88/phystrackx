@@ -15,18 +15,13 @@ class GUI:
     """Main GUI launcher for PhysTrackX."""
 
     def __init__(self) -> None:
-        self.width = 1280
-        self.height = 720  # Corrected typo 'hegiht'
-
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
 
     def start(self) -> None:
         """Initializes and starts the main GUI loop."""
-        root = ctk.CTk()
-        root.geometry(f"{self.width}x{self.height}")
-        MenuScreen(root)
-        root.mainloop()
+        self.menu = MenuScreen()
+        self.menu.root.mainloop()
 
 
 def main() -> None:
