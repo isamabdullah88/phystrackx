@@ -47,8 +47,7 @@ class Geometry:
     def pack(self):
         """Initialize buttons and canvas bindings."""
         self.btnframe = ctk.CTkFrame(self.canvas, width=60, fg_color="teal")
-        # self.btnframe.pack(side=tk.RIGHT, padx=10)
-        # self.btncanvas = tk.Canvas(self.btnframe)
+        
         self.anglebtn = mkbutton(self.btnframe, "assets/plugins/angle.png", self.compute_angle, 40)
         self.distancebtn = mkbutton(self.btnframe, "assets/plugins/distance.png", self.compute_dist, 40)
         self.delbtn = mkbutton(self.btnframe, "assets/bin.png", self.deltriangle, 40)
@@ -107,14 +106,6 @@ class Geometry:
             if triangle.is_pt_ontriangle(point):
                 return True, triangle
         return False, None
-
-    # def clear_sltlines(self):
-    #     """Deselect and reset selected lines."""
-    #     for line in self.sltlines:
-    #         line.selected = False
-    #         self.canvas.itemconfigure(line.tkline, width=3, fill=self.unsltcolor)
-    #     self.sltlines.clear()
-    #     self.selected = False
 
     def compute_angle(self):
         """Compute and display angles for selected triangles."""
