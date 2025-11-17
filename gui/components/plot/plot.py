@@ -77,8 +77,7 @@ class Plot:
     def plotx(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            title = r"$x$ vs $T$"
-            plt.title(f"[Rect-{k+1}]: " + title)
+            plt.title(f"{k+1}-🚗" + r"$x$ vs $T$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$x$")
             plt.xlim((0, self.timestamps[-1]))
@@ -88,7 +87,7 @@ class Plot:
     def ploty(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$y$ vs $T$")
+            plt.title(f"{k+1}-🚗" + r"$y$ vs $T$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$y$")
             plt.xlim((0, self.timestamps[-1]))
@@ -98,7 +97,7 @@ class Plot:
     def plotxy(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$y$ vs $x$")
+            plt.title(f"{k+1}-🚗" + r"$y$ vs $x$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$x$")
             plt.ylabel(r"$y$")
             plt.xlim((self.xmin, self.xmax))
@@ -109,22 +108,26 @@ class Plot:
         for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$\frac{dx}{dt}$")
+            plt.title(f"{k+1}-🚗" + r"$\frac{dx}{dt}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{dx}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
-            plt.ylim((self.xmin, self.xmax))
+            xmin = min(self.xmin, np.min(dx_dt))
+            xmax = max(self.xmax, np.max(dx_dt))
+            plt.ylim((xmin, xmax))
             plt.plot(self.timestamps, dx_dt, '-g')
 
     def plotdy(self):
         for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$\frac{dy}{dt}$")
+            plt.title(f"{k+1}-🚗" + r"$\frac{dy}{dt}$", fontname= "Segoe UI Emoji")
             plt.xlabel("Time (s)")
             plt.ylabel(r"$\frac{dy}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
-            plt.ylim((self.ymin, self.ymax))
+            ymin = min(self.ymin, np.min(dy_dt))
+            ymax = max(self.ymax, np.max(dy_dt))
+            plt.ylim((ymin, ymax))
             plt.plot(self.timestamps, dy_dt, '-g')
 
     def plotd2x(self):
@@ -132,11 +135,13 @@ class Plot:
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             d2x_dt2 = np.gradient(dx_dt, self.timestamps)
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$\frac{d^2x}{dt^2}$")
+            plt.title(f"{k+1}-🚗" + r"$\frac{d^2x}{dt^2}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2x}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((self.xmin, self.xmax))
+            xmin = min(self.xmin, np.min(d2x_dt2))
+            xmax = max(self.xmax, np.max(d2x_dt2))
+            plt.ylim((xmin, xmax))
             plt.plot(self.timestamps, d2x_dt2, '-b')
 
     def plotd2y(self):
@@ -144,11 +149,13 @@ class Plot:
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             d2y_dt2 = np.gradient(dy_dt, self.timestamps)
             plt.figure()
-            plt.title(f"[Rect-{k+1}]: " + r"$\frac{d^2y}{dt^2}$")
+            plt.title(f"{k+1}-🚗" + r"$\frac{d^2y}{dt^2}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2y}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((self.ymin, self.ymax))
+            ymin = min(self.ymin, np.min(d2y_dt2))
+            ymax = max(self.ymax, np.max(d2y_dt2))
+            plt.ylim((ymin, ymax))
             plt.plot(self.timestamps, d2y_dt2, '-b')
 
 
