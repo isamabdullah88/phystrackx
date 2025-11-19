@@ -49,8 +49,8 @@ This software was created by **Isam Balghari** under the mentorship of **Dr. Muh
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/isamabdullah88/phys-trackx.git
-cd phys-trackx
+git clone https://github.com/isamabdullah88/phystrackx.git
+cd phystrackx
 ```
 
 ### 2. Install Requirements
