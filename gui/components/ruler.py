@@ -49,7 +49,7 @@ class ScaleRuler:
 
     def ondclick(self, event):
         self.askscale()
-        self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+        self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
         
     def onapply(self):
         self.applybtn.destroy()

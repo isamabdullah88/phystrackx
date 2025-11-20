@@ -126,7 +126,7 @@ class Axes:
         self.canvas.create_window(self.vwidth - 180, self.vheight - 20,
                                   window=self.slider, tags="slider")
 
-        self.applybtn.place(x=self.vwidth - 110, y=self.vheight - 100)
+        self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""

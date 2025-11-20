@@ -96,8 +96,7 @@ class Crop:
             self.canvas.unbind("<ButtonRelease-1>")
             
             self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-            
-            self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
+            self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
             
             self.crpx = floor(self.vwidth/2 - self.crpwidth/2)
             self.crpy = floor(self.vheight/2 - self.crpheight/2)
