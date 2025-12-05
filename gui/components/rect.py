@@ -61,6 +61,8 @@ class Rect:
         """Deletes all drawn rectangles"""
         for rect in self._ctkrects:
             self.canvas.delete(rect)
+        
+        self._ctkrects.clear()
 
         
     def clear(self):
@@ -70,9 +72,8 @@ class Rect:
         del self.labels
             
         self.cleartkrects()
-        
-        del self._ctkrects
-        del self.pixelrects, self.rects
+        self.pixelrects.clear()
+        self.rects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
         """Draws rectangle with simple lines"""
