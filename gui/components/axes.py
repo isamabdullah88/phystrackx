@@ -30,7 +30,7 @@ class Axes:
 
     def clear(self):
         """Clear all canvas drawings related to sliders and axes."""
-        self.canvas.itemconfigure("slider", state="hidden")
+        self.theta.set(0)
         self.slider.pack_forget()
         self.canvas.delete("axes")
 
