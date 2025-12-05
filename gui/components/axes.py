@@ -30,7 +30,8 @@ class Axes:
 
     def clear(self):
         """Clear all canvas drawings related to sliders and axes."""
-        self.canvas.delete("slider")
+        self.canvas.itemconfigure("slider", state="hidden")
+        self.slider.pack_forget()
         self.canvas.delete("axes")
 
     def markaxes(self):
@@ -130,8 +131,8 @@ class Axes:
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""
-        self.slider.destroy()
-        self.applybtn.destroy()
+        self.canvas.itemconfigure("slider", state="hidden")
+        self.applybtn.pack_forget()
 
         for btn in self.btnlist.values():
             btn.configure(state="normal")
