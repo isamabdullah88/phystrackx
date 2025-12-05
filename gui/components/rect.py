@@ -68,9 +68,8 @@ class Rect:
     def clear(self):
         for label in self.labels:
             label.destroy()
-
-        del self.labels
-            
+        self.labels.clear()
+    
         self.cleartkrects()
         self.pixelrects.clear()
         self.rects.clear()
