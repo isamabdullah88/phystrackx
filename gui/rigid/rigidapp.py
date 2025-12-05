@@ -51,31 +51,35 @@ class RigidApp(App):
         self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
         ToolTip(self.pluginsbtn, "Plugins")
 
-        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
-        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe, self.subtoolbar.toggle)
-        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['geometry'])
+        self.filters = Filters(self.scrollframe, self.videoview, self.vwidth, self.vheight,
+                               self.updateframe, self.subtoolbar.toggle)
+        self.crop = Crop(self.videoview, self.vwidth, self.vheight, self.updateframe,
+                         self.subtoolbar.toggle)
+        self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist,
+                                 self.btnlist['geometry'])
 
-        wnscale = self.root.tk.call("tk", "scaling")
-        print('wnscale: ', wnscale)
-        wnscale = 0.999
-        scale = self.root.winfo_fpixels("1i")
-        print('scale: ', scale)
-        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-        self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
-        self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'])
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
+        self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh,
+                                       callback=self.updateframe)
+        self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh,
+                                       callback=self.updateframe)
+        self.trects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist,
+                           self.btnlist['rectanglebd'])
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.btnlist,
+                             self.btnlist['rectanglebd'], toggle=self.subtoolbar.toggle)
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
-        self.pdata = None
 
         self.processanim = ProcessAnimation(self.videoview, self.crop)
-        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist, self.btnlist["ruler"])
+        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth,
+                                       vheight=self.vheight)
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.btnlist,
+                                  self.btnlist["ruler"])
 
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.filters, self.processanim)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.filters,
+                              self.processanim)
         self.trimseekbar.settrim(trimvideo=self.trimvideo)
 
         self.save = None
-        self.plot = None
+        self.plotobj = None
         self.datamanager = None
         self.viewsb = False
 
@@ -111,11 +115,8 @@ class RigidApp(App):
         Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
 
         if self.viewsb:
-            # self.seekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh, callback=self.updateframe)
             self.viewseekbar.set(self.videoapp.fcount)
             self.viewseekbar.pack()
-        # else:
-        #     self.seekbar.set(self.videoapp.fcount)
 
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
@@ -151,7 +152,8 @@ class RigidApp(App):
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
-        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx,
+                             self.crop.crpy)
 
     def appfilter(self):
         """Activates video filter UI for user input."""
@@ -177,7 +179,8 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
-        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx,
+                               self.crop.crpy)
         self.subtoolbar.toggle()
 
     def dogeometry(self):
@@ -188,7 +191,8 @@ class RigidApp(App):
 
     def strack(self):
         """Performs point tracking across video frames and visualizes result."""
-        if (self.videoapp.fcount < 10) or ((len(self.trects.rects) == 0) and (len(self.ocrrects.rects) == 0)):
+        if (self.videoapp.fcount < 10) or ((len(self.trects.rects) == 0) and 
+            (len(self.ocrrects.rects) == 0)):
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
 
@@ -234,13 +238,14 @@ class RigidApp(App):
     def plot(self):
         """Creates plots from tracked data or OCR values."""
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
-            messagebox.showerror("Error", "No tracked and text data available. Please start tracking first.")
+            messagebox.showerror("Error", "No tracked and text data available. " \
+            "Please start tracking first.")
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         print('fps: ', self.videoapp.fps)
         if self.datamanager is not None:
-            self.plot = Plot(self.videoview, self.datamanager)
+            self.plotobj = Plot(self.videoview, self.datamanager)
         else:
             self.datamanager = DataManager(
                 self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
@@ -248,12 +253,13 @@ class RigidApp(App):
                 self.videoapp.fps, self.scruler.scalef
             )
             self.datamanager.transform()
-            self.plot = Plot(self.videoview, self.datamanager)
+            self.plotobj = Plot(self.videoview, self.datamanager)
 
     def savedata(self):
         """Saves data from tracking or OCR to file (CSV or other format)."""
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
-            messagebox.showerror("Error", "No tracked and text data and available. Please start tracking first.")
+            messagebox.showerror("Error", "No tracked and text data and available. " \
+            "Please start tracking first.")
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
