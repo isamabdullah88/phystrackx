@@ -198,8 +198,8 @@ class RigidApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Tracking")
         self.axes.clear()
-        self.trects.clearrects()
-        self.ocrrects.clearrects()
+        self.trects.cleartkrects()
+        self.ocrrects.cleartkrects()
 
         self.processanim.pack()
         self.progressbar.pack()
