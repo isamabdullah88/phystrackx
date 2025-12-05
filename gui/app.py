@@ -10,7 +10,7 @@ Author: Isam Balghari
 """
 
 from math import floor
-from tkinter import filedialog
+from tkinter import filedialog, font
 import customtkinter as ctk
 from PIL import Image
 
@@ -23,7 +23,9 @@ from .components.tooltip import ToolTip
 class App:
     def __init__(self, root):
         self.root = root
-        # self.root.title("PhysTrackX")
+        
+        defaultfont = font.nametofont("TkDefaultFont")
+        defaultfont.configure(family="Arial", size=14)
 
         # # Window dimensions
         self.cwidth = self.root.winfo_width()
