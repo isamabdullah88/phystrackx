@@ -87,7 +87,7 @@ class Axes:
         x0, y0 = self.vwidth, 0
         x1, y1 = 0, self.vheight
 
-        theta_rad = np.deg2rad(self.theta.get())
+        theta_rad = -np.deg2rad(self.theta.get())
 
         xp0, yp0 = self.rotatez(x0, y0, theta_rad)
         xp1, yp1 = self.rotatez(x1, y1, theta_rad)
@@ -115,23 +115,22 @@ class Axes:
         self.canvas.unbind("<Motion>")
         self.canvas.unbind("<Button-1>")
 
+        self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
+
         self.slider = ttk.Scale(
-            self.root,
-            from_=-180,
-            to=0,
+            self.canvas,
+            from_=0,
+            to=180,
             orient="horizontal",
             variable=self.theta,
             command=self.rotate
         )
-
-        self.canvas.create_window(self.vwidth - 180, self.vheight - 20,
-                                  window=self.slider, tags="slider")
-
-        self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
+        self.slider.pack(side="right", padx=10, pady=10, anchor="se")
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""
-        self.canvas.itemconfigure("slider", state="hidden")
+        # self.canvas.itemconfigure("slider", state="hidden")
+        self.slider.pack_forget()
         self.applybtn.pack_forget()
 
         for btn in self.btnlist.values():
