@@ -227,6 +227,7 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
+        self.tpoints.clear()
         
         self.trimseekbar.clear()
         self.viewseekbar.clear()
