@@ -82,11 +82,7 @@ class TPoints:
             for pt in tpt:
                 self.tpts[i].append(FPoint(pt[0], pt[1], fx, fy))
 
-        self.togglebtn.place(
-            x=self.vwidth - 80,
-            y=self.btnsize + 60,
-            anchor="nw"
-        )
+        self.togglebtn.pack(side=ctk.TOP, anchor=ctk.E, padx=10, pady=10)
 
     def undrawpoints(self) -> None:
         """Undraw all points from canvas."""
@@ -144,13 +140,10 @@ class TPoints:
         self.selectpoints.select(self.canvas, self.tpts, tidx, fidx)
 
         if self.selectpoints.selected:
-            self.delbtn.place(
-                x=self.vwidth / 2 - self.btnsize / 2,
-                y=self.vheight - self.btnsize - 20,
-                anchor="nw"
-            )
+            self.delbtn.pack(anchor=ctk.N, pady=10)
         else:
-            self.delbtn.place_forget()
+            # self.delbtn.place_forget()
+            self.delbtn.pack_forget()
 
     def toggleon(self) -> None:
         """Toggle on: show currently active trail of points."""
@@ -159,7 +152,7 @@ class TPoints:
     def toggleoff(self) -> None:
         """Toggle off: hide current trail of points and hide delete button."""
         self.selectpoints.toggleoff(self.canvas, self.tpts)
-        self.delbtn.place_forget()
+        self.delbtn.pack_forget()
 
     def removept(self) -> None:
         """Remove selected point trail from canvas and internal list."""
@@ -170,16 +163,18 @@ class TPoints:
             pt.undraw(self.canvas)
 
         self.tpts.pop(tidx)
-        self.delbtn.place_forget()
+        self.delbtn.pack_forget()
 
         if len(self.tpts) == 0:
-            self.togglebtn.place_forget()
+            # self.togglebtn.place_forget()
+            self.togglebtn.pack_forget()
 
     def clear(self) -> None:
         """Remove all points from canvas and clear all data."""
         self.canvas.delete("points")
         self.tpts.clear()
-        self.delbtn.place_forget()
+        self.delbtn.pack_forget()
+        self.togglebtn.pack_forget()
 
 
 # === Demo App ===

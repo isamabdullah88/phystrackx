@@ -22,7 +22,7 @@ class Rect:
         self.toggle = toggle
         self.btnsize = 30
 
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.binbtn = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         self.applied = False
@@ -52,10 +52,9 @@ class Rect:
             self.rects.pop()
             self._ctkrects.pop()
             if self._ctkrects:
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-
+                self.binbtn.pack(anchor=tk.N, pady=50)
             else:
-                self.button.pack_forget()
+                self.binbtn.pack_forget()
                 
     def cleartkrects(self):
         """Deletes all drawn rectangles"""
@@ -114,7 +113,7 @@ class Rect:
             self.canvas.unbind("<ButtonRelease-1>")
             
             self.applybtn.pack(side=tk.BOTTOM, anchor=tk.E, padx=10, pady=10)
-            self.button.pack(anchor=tk.N, pady=10)
+            self.binbtn.pack(anchor=tk.N, pady=10)
             
 
         self.canvas.bind("<Button-1>", ondown)
@@ -126,7 +125,7 @@ class Rect:
         for tkrect in self._ctkrects:
             self.canvas.itemconfig(tkrect, outline="green", width=2)
         
-        self.button.pack_forget()
+        self.binbtn.pack_forget()
         self.applybtn.pack_forget()
         
         self.applied = True
