@@ -219,6 +219,8 @@ class RigidApp(App):
         self.axes.clear()
         self.tpoints.clear()
         self.scruler.clear()
+        self.datamanager.clear()
+        self.datamanager = None
 
     def reset(self):
         """Resets the video view and related tracking/overlay data."""
@@ -227,7 +229,6 @@ class RigidApp(App):
         self.ocrrects.clear()
         self.trects.clear()
         self.crop.clear()
-        self.tpoints.clear()
         
         self.trimseekbar.clear()
         self.viewseekbar.clear()
@@ -248,11 +249,9 @@ class RigidApp(App):
         if self.datamanager is not None:
             self.plotobj = Plot(self.videoview, self.datamanager)
         else:
-            self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
-                self.vwidth, self.vheight, self.fwidth, self.fheight,
-                self.videoapp.fps, self.scruler.scalef
-            )
+            self.datamanager = DataManager(self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                                           self.vwidth, self.vheight, self.fwidth, self.fheight,
+                                           self.videoapp.fps, self.scruler.scalef)
             self.datamanager.transform()
             self.plotobj = Plot(self.videoview, self.datamanager)
 
