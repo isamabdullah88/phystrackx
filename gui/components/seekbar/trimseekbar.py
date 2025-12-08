@@ -22,14 +22,8 @@ class TrimSeekBar:
     Seekbar widget with two draggable bars to allow video trimming.
     """
 
-    def __init__(
-        self,
-        frame: tk.Frame,
-        width: int,
-        height: int,
-        fcount: int = 100,
-        callback: Optional[Callable] = None
-    ) -> None:
+    def __init__(self, frame: tk.Frame, width: int, height: int, fcount: int = 100,
+                 callback: Optional[Callable] = None) -> None:
         """
         Initialize the TrimSeekBar.
 
@@ -42,15 +36,15 @@ class TrimSeekBar:
         """
         self.frame = frame
         
-        self.btnsize: int = 50
+        self.btnsize: int = int(0.1*width)
         self.mintrim: int = 50
         self.fcount: int = fcount
         self.idx: int = 0
         self.padx: int = 0.01*width
-        self.width: int = width - self.btnsize - 3*self.padx
+        self.width: int = width
         self.height: int = height
         self.xstart: int = self.padx
-        self.xend: int = self.width - self.padx
+        self.xend: int = self.width - self.btnsize - 2*self.padx
         
         self.seekframe = None
         self.btnframe = None
@@ -118,49 +112,28 @@ class TrimSeekBar:
         
         self.seekframe = tk.Frame(self.frame)
         self.btnframe = tk.Frame(self.frame)
-        self.seekcanvas = tk.Canvas(self.seekframe, width=self.width, height=self.height, bg="#4d535c")
-        self.seekframe.pack(side="left", fill="x", expand=True)
-        self.btnframe.pack(side="right", fill="x", expand=True)
-        self.seekcanvas.pack()
+        self.seekcanvas = tk.Canvas(self.seekframe, width=self.width-self.btnsize-self.padx, height=self.height, bg="#4d535c")
+        self.btncanvas = tk.Canvas(self.btnframe, width=self.btnsize, height=self.height, bg="#4d535c")
+        self.btnframe.pack(side="right", fill=tk.X)
+        self.seekframe.pack(side="right", fill=tk.X)
+        self.btncanvas.pack_propagate(False)
+        self.btncanvas.pack(side=tk.BOTTOM, anchor=tk.SE)
+        self.seekcanvas.pack(fill=tk.X)
 
-        self.fixedseek = Seek(
-            self.seekcanvas,
-            self.xstart,
-            self.xend,
-            self.height / 2,
-            color="#9c97d6"
-        )
+        self.fixedseek = Seek(self.seekcanvas, self.xstart, self.xend, self.height / 2,
+                              color="#9c97d6")
         self.fixedseek.pack()
 
-        self.varseek = Seek(
-            self.seekcanvas,
-            self.xstart + self.padx,
-            self.xend - self.padx,
-            self.height / 2,
-            color="#42f2c9"
-        )
+        self.varseek = Seek(self.seekcanvas, self.xstart + self.padx, self.xend - self.padx,
+                            self.height / 2, color="#42f2c9")
         self.varseek.pack()
 
-        self.leftbar = Bar(
-            self.seekcanvas,
-            self.xstart + self.padx,
-            self.xstart,
-            self.xend,
-            self.height / 2,
-            self.fcount,
-            callback=self.callback
-        )
+        self.leftbar = Bar(self.seekcanvas, self.xstart + self.padx, self.xstart, self.xend,
+                           self.height / 2, self.fcount, callback=self.callback)
         self.leftbar.pack()
 
-        self.rightbar = Bar(
-            self.seekcanvas,
-            self.xend - self.padx,
-            self.xstart,
-            self.xend,
-            self.height / 2,
-            self.fcount,
-            callback=self.callback
-        )
+        self.rightbar = Bar(self.seekcanvas, self.xend - self.padx, self.xstart, self.xend,
+                            self.height / 2, self.fcount, callback=self.callback)
         self.rightbar.pack()
 
         self.seekcanvas.tag_raise(self.varseek.tkrect, self.fixedseek.tkrect)
@@ -168,8 +141,9 @@ class TrimSeekBar:
         self.seekcanvas.bind("<Button-1>", self.onclick)
         self.seekcanvas.bind("<B1-Motion>", self.ondrag)
 
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=self.btnsize)
-        self.applybtn.pack(side="right")
+        self.applybtn = self.mkbutton("assets/apply.png", self.onapply,
+                                      btnsize=self.height - 2*int(self.padx))
+        self.applybtn.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def unpack(self):
         self.fixedseek.unpack()
@@ -249,12 +223,7 @@ class TrimSeekBar:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
 
-    def mkbutton(
-        self,
-        imgpath: str,
-        command: Callable,
-        btnsize: int = 30
-    ) -> ctk.CTkButton:
+    def mkbutton(self, imgpath: str, command: Callable, btnsize: int = 30) -> ctk.CTkButton:
         """
         Create a CTk image button on the seekcanvas.
 
@@ -266,26 +235,17 @@ class TrimSeekBar:
         Returns:
             ctk.CTkButton: The created button widget.
         """
-        img = Image.open(abspath(imgpath)).resize(
-            (btnsize, btnsize),
-            Image.Resampling.LANCZOS
-        )
-        ctkimg = ctk.CTkImage(
-            light_image=img,
-            dark_image=img,
-            size=(btnsize, btnsize)
-        )
+        img = Image.open(abspath(imgpath))
+        w, h = img.size
+        ratio = w / h
+        height = btnsize
+        width = int(ratio * height)
         
-        self.btncanvas = tk.Canvas(self.btnframe, width=btnsize, height=btnsize)
-        self.btncanvas.pack()
-        button = ctk.CTkButton(
-            self.btncanvas,
-            text="",
-            width=btnsize,
-            height=btnsize,
-            image=ctkimg,
-            command=command
-        )
+        img = img.resize((width, height), Image.Resampling.LANCZOS)
+        ctkimg = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
+        
+        button = ctk.CTkButton(self.btncanvas, text="", width=btnsize, height=btnsize, 
+                               image=ctkimg, command=command)
         button.image = ctkimg  # prevent garbage collection
         return button
 
@@ -300,12 +260,12 @@ class App(tk.Tk):
         self.geometry("800x500")
         self.title("Video Editor Cut Range")
 
-        self.frame = tk.Frame(self, width=700, height=300)
+        self.frame = tk.Frame(self)
         self.frame.pack(fill="both", expand=True)
 
         self.seekbar = TrimSeekBar(
             self.frame,
-            width=700,
+            width=800,
             height=100,
             fcount=100,
             callback=self.callback
