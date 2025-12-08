@@ -117,14 +117,8 @@ class Axes:
 
         self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
 
-        self.slider = ttk.Scale(
-            self.canvas,
-            from_=0,
-            to=180,
-            orient="horizontal",
-            variable=self.theta,
-            command=self.rotate
-        )
+        self.slider = ttk.Scale(self.canvas, from_=0, to=180, orient="horizontal",
+                                variable=self.theta, command=self.rotate)
         self.slider.pack(side="right", padx=10, pady=10, anchor="se")
 
     def onapply(self):
