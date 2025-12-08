@@ -1,8 +1,8 @@
 """
 trimseekbar.py
 
-This module defines the TrimSeekBar class for video trimming using two draggable bars
-and dynamic seek regions.
+This module defines the TrimSeekBar class for video trimming using two draggable bars and dynamic
+seek regions.
 
 Author: Isam Balghari
 """
@@ -112,8 +112,11 @@ class TrimSeekBar:
         
         self.seekframe = tk.Frame(self.frame)
         self.btnframe = tk.Frame(self.frame)
-        self.seekcanvas = tk.Canvas(self.seekframe, width=self.width-self.btnsize-self.padx, height=self.height, bg="#4d535c")
-        self.btncanvas = tk.Canvas(self.btnframe, width=self.btnsize, height=self.height, bg="#4d535c")
+        self.seekcanvas = tk.Canvas(self.seekframe, width=self.width-self.btnsize-self.padx,
+                                    height=self.height, bg="#4d535c")
+        self.btncanvas = tk.Canvas(self.btnframe, width=self.btnsize, height=self.height,
+                                   bg="#4d535c")
+        
         self.btnframe.pack(side="right", fill=tk.X)
         self.seekframe.pack(side="right", fill=tk.X)
         self.btncanvas.pack_propagate(False)
@@ -263,13 +266,8 @@ class App(tk.Tk):
         self.frame = tk.Frame(self)
         self.frame.pack(fill="both", expand=True)
 
-        self.seekbar = TrimSeekBar(
-            self.frame,
-            width=800,
-            height=100,
-            fcount=100,
-            callback=self.callback
-        )
+        self.seekbar = TrimSeekBar(self.frame, width=800, height=100, fcount=100,
+                                   callback=self.callback)
         self.seekbar.pack()
         self.seekbar.settrim(self.trimvideo)
 

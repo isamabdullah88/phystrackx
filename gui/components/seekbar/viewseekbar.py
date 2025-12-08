@@ -1,8 +1,8 @@
 """
 viewseekbar.py
 
-This module implements the ViewSeekBar class, which displays a fixed seek region and a
-draggable bar to view the current frame position within a video.
+This module implements the ViewSeekBar class, which displays a fixed seek region and a draggable
+bar to view the current frame position within a video.
 
 Author: Isam Balghari
 """
@@ -19,14 +19,8 @@ class ViewSeekBar:
     represent video playback position.
     """
 
-    def __init__(
-        self,
-        frame: tk.Frame,
-        width: int,
-        height: int,
-        fcount: int = 100,
-        callback: Optional[Callable] = None
-    ) -> None:
+    def __init__(self, frame: tk.Frame, width: int, height: int, fcount: int = 100,
+                 callback: Optional[Callable] = None) -> None:
         """
         Initialize the ViewSeekBar widget.
 
@@ -83,24 +77,11 @@ class ViewSeekBar:
         self.setparams()
         self.canvas.pack()
 
-        self.seek = Seek(
-            self.canvas,
-            self.xstart,
-            self.xend,
-            self.height / 2,
-            color="#9c97d6"
-        )
+        self.seek = Seek(self.canvas, self.xstart, self.xend, self.height / 2, color="#9c97d6")
         self.seek.pack()
 
-        self.bar = Bar(
-            self.canvas,
-            self.xstart,
-            self.xstart,
-            self.xend,
-            self.height / 2,
-            self.fcount,
-            callback=self.callback
-        )
+        self.bar = Bar(self.canvas, self.xstart, self.xstart, self.xend, self.height / 2, 
+                       self.fcount,  callback=self.callback)
         self.bar.pack()
 
         self.canvas.bind("<Button-1>", self.onclick)
@@ -162,13 +143,8 @@ class App(tk.Tk):
         self.frame = tk.Frame(self, width=700, height=300)
         self.frame.pack(fill="both", expand=True)
 
-        self.viewseekbar = ViewSeekBar(
-            self.frame,
-            width=700,
-            height=100,
-            fcount=100,
-            callback=self.callback
-        )
+        self.viewseekbar = ViewSeekBar(self.frame, width=700, height=100, fcount=100, 
+                                       callback=self.callback)
         self.viewseekbar.pack()
 
     def callback(self) -> None:
