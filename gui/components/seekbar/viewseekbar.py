@@ -58,7 +58,7 @@ class ViewSeekBar:
         Calculate and update internal layout parameters.
         """
         self.xstart: int = self.padx
-        self.xend: int = self.width - self.padx
+        self.xend: int = self.width - 2*self.padx
 
         if self.bar:
             self.bar.setcount(self.fcount)
