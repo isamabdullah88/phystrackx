@@ -36,11 +36,7 @@ class Seek:
     def unpack(self):
         self.canvas.itemconfigure(self.tkrect, state="hidden")
 
-    def draw(
-        self, 
-        xstart: float,
-        xend: float
-    ) -> None:
+    def draw(self, xstart: float, xend: float) -> None:
         """Draws the seek."""
         if self.tkrect is not None:
             self.canvas.coords(self.tkrect, xstart, self.y - self.hhalf, xend, self.y + self.hhalf)
