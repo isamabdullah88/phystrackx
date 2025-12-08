@@ -16,19 +16,10 @@ class Bar:
     A draggable vertical bar on a canvas representing a position in a frame timeline.
     """
 
-    def __init__(
-        self,
-        canvas: tk.Canvas,
-        x: float,
-        xstart: float,
-        xend: float,
-        y: float,
-        fcount: int,
-        color: str = "#de459b",
-        callback: Optional[Callable[[], None]] = None,
-        width: int = 6,
-        height: int = 50
-    ) -> None:
+    def __init__(self, canvas: tk.Canvas, x: float, xstart: float, xend: float, y: float,
+                 fcount: int, color: str = "#de459b", 
+                 callback: Optional[Callable[[], None]] = None, width: int = 6, 
+                 height: int = 50) -> None:
         """
         Initialize the draggable bar.
 
@@ -78,12 +69,9 @@ class Bar:
         """
         Draw the bar on the canvas.
         """
-        self.tkrect = self.canvas.create_rectangle(
-            self.x - self.whalf, self.y - self.hhalf,
-            self.x + self.whalf, self.y + self.hhalf,
-            fill=self.color,
-            outline=""
-        )
+        self.tkrect = self.canvas.create_rectangle(self.x - self.whalf, self.y - self.hhalf,
+                                                   self.x + self.whalf, self.y + self.hhalf,
+                                                   fill=self.color, outline="")
         self.canvas.tag_raise(self.tkrect)
 
     def unpack(self):
@@ -97,6 +85,8 @@ class Bar:
             self.canvas.delete(self.tkrect)
             self.tkrect = None
 
+        self.idx = 0
+
     def onclick(self, event: tk.Event) -> None:
         """
         Handle mouse click on the canvas.
@@ -106,12 +96,8 @@ class Bar:
         """
         self.clicked = self._contains(event.x)
 
-    def ondrag(
-        self,
-        event: tk.Event,
-        adjust_fn: Callable[[float, float], float],
-        xlim: float
-    ) -> None:
+    def ondrag(self, event: tk.Event, adjust_fn: Callable[[float, float], float],
+               xlim: float) -> None:
         """
         Handle drag interaction and redraw bar.
 
