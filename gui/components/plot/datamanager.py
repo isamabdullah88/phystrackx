@@ -96,3 +96,11 @@ class DataManager:
             y *= self.scale
 
         return x, y
+    
+    def clear(self) -> None:
+        """
+        Clears all stored tracking and OCR data.
+        """
+        self.tpoints.clear()
+        self.ocrdata.clear()
+        self.processed_points.clear()
