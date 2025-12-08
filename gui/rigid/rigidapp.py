@@ -83,7 +83,7 @@ class RigidApp(App):
         self.datamanager = None
         self.viewsb = False
 
-    def loadvideo(self, videopath: str, clear=True):
+    def loadvideo(self, videopath: str):
         """Loads the video into the viewer and initializes related components."""
         self.title = TitleBar(self.videoview, self.vwidth, "Video View")
         self.spinner = Spinner(self.videoview, self.videoapp.imgview)

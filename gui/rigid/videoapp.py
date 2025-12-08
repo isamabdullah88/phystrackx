@@ -6,22 +6,21 @@ Defines the Video class which handles video display, frame manipulations, and tr
 Author: Isam Balghari
 """
 
-from typing import Optional
+from typing import Optional, List
 import os
 import logging
 import cv2
 from PIL import Image, ImageTk
+import numpy as np
+from numpy.typing import NDArray
 
 from customtkinter import CTkCanvas, IntVar
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
 from gui.components.processanim import ProcessAnimation
-from gui.components.spinner import Spinner
-from gui.components.seekbar import TrimSeekBar
 from gui.components.rect import Rect
 from core import filexists
-from experiments.components.ocr import OCRData
 
 
 class Video:
@@ -29,15 +28,8 @@ class Video:
     Video handler for loading, displaying, trimming, and tracking frames on a canvas.
     """
 
-    def __init__(
-        self,
-        canvas: CTkCanvas,
-        vwidth: int,
-        vheight: int,
-        crop: Crop,
-        filters: Filters,
-        processanim: ProcessAnimation
-    ) -> None:
+    def __init__(self, canvas: CTkCanvas, vwidth: int, vheight: int, crop: Crop, filters: Filters,
+                 processanim: ProcessAnimation) -> None:
         """
         Initialize the Video app.
 
@@ -63,22 +55,16 @@ class Video:
 
         tempdir = "temp"
         os.makedirs(tempdir, exist_ok=True)
-        self.trimpath = os.path.join(tempdir, "track-rigid.mp4")
+        self.trimpath = os.path.join(tempdir, "Track_Rigid.mp4")
 
-        self.rigid = Rigid(
-            trimpath=self.trimpath,
-            vwidth=self.vwidth,
-            vheight=self.vheight-50,
-            tkqueue=self.processanim.queue
-        )
+        self.rigid = Rigid(trimpath=self.trimpath, vwidth=self.vwidth, vheight=self.vheight-50,
+                           tkqueue=self.processanim.queue)
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Video App initialized")
         self.trimvideo = self.rigid.trim
         
-        self.imgview = self.canvas.create_image(
-            self.crop.fx, self.crop.fy, anchor="nw"
-        )
+        self.imgview = self.canvas.create_image(self.crop.fx, self.crop.fy, anchor="nw")
 
     @property
     def fcount(self) -> int:
@@ -86,19 +72,19 @@ class Video:
         return self.rigid.fcount
 
     @property
-    def trackpts(self) -> list:
+    def trackpts(self) -> List[List[NDArray[np.float32]]]:
         """Tracking points recorded from video."""
         return self.rigid.trackpts
     
     @property
-    def ocrdata(self) -> list:
+    def ocrdata(self) -> List[List[str]]:
         """OCR data extracted from video"""
         return self.rigid.texts
 
-    @property
-    def texts(self) -> list:
-        """Text overlays on tracked frames."""
-        return self.rigid.texts
+    # @property
+    # def texts(self) -> List[List[str]]:
+    #     """Text overlays on tracked frames."""
+    #     return self.rigid.texts
 
     @property
     def fps(self) -> int:
@@ -115,7 +101,7 @@ class Video:
         """Current video frame height."""
         return self.rigid.fheight
 
-    def loadvideo(self, videopath: str, istrim=False) -> None:
+    def loadvideo(self, videopath: str, istrim:bool=False) -> None:
         """
         Load a video from file or fallback to trimmed path.
 
@@ -137,19 +123,19 @@ class Video:
         
         self.crop.set(self.fwidth, self.fheight)
 
-    def resizef(self, frame: any, fwidth: int, fheight: int) -> any:
-        """
-        Resize frame to current video dimensions.
+    # def resizef(self, frame: NDArray[np.uint8], fwidth: int, fheight: int) -> NDArray[np.uint8]:
+    #     """
+    #     Resize frame to current video dimensions.
 
-        Args:
-            frame (np.ndarray): Original frame.
-            fwidth (int): Target width.
-            fheight (int): Target height.
+    #     Args:
+    #         frame (np.ndarray): Original frame.
+    #         fwidth (int): Target width.
+    #         fheight (int): Target height.
 
-        Returns:
-            np.ndarray: Resized frame.
-        """
-        return cv2.resize(frame, (fwidth, fheight))
+    #     Returns:
+    #         np.ndarray: Resized frame.
+    #     """
+    #     return cv2.resize(frame, (fwidth, fheight))
 
     def showframe(self, idx: int) -> None:
         """
@@ -177,13 +163,7 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        self.rigid.track(
-            trect.rects,
-            ocr.rects,
-            self.filters,
-            self.crop,
-            progress
-        )
+        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, progress)
 
     def clear(self) -> None:
         """
