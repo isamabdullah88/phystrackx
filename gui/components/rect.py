@@ -14,17 +14,15 @@ class Rect:
         self._rcoords = None
         self._ctkbox = None
         self.rects = []
-        self.canvasrects = []
+        self.pixelrects = []
         self._ctkrects = []
         
         self.labels = []
         
         self.toggle = toggle
         self.btnsize = 30
-        
-        # self.btnframe = tk.Frame(canvas)
-        # self.btnframe.pack(side=tk.RIGHT)
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+
+        self.binbtn = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
         self.applied = False
@@ -54,27 +52,26 @@ class Rect:
             self.rects.pop()
             self._ctkrects.pop()
             if self._ctkrects:
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-                # self.button.pack(side="left")
+                self.binbtn.pack(anchor=tk.N, pady=50)
             else:
-                # self.button.place_forget()
-                self.button.pack_forget()
+                self.binbtn.pack_forget()
                 
-    def clearrects(self):
+    def cleartkrects(self):
         """Deletes all drawn rectangles"""
         for rect in self._ctkrects:
             self.canvas.delete(rect)
+        
         self._ctkrects.clear()
+
         
     def clear(self):
         for label in self.labels:
-            label.clear()
-            
+            label.destroy()
         self.labels.clear()
-            
-        self.clearrects()
+    
+        self.cleartkrects()
+        self.pixelrects.clear()
         self.rects.clear()
-        self.canvasrects.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
         """Draws rectangle with simple lines"""
@@ -106,7 +103,7 @@ class Rect:
             self._ctkrects.append(self._ctkbox)
             self.canvas.itemconfig(self._ctkbox, outline="magenta")
 
-            self.canvasrects.append(PixelRect(sx, sy, ex-sx, ey-sy))
+            self.pixelrects.append(PixelRect(sx, sy, ex-sx, ey-sy))
 
             rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)            
             self.rects.append(rect.pix2norm(fwidth, fheight))
@@ -115,10 +112,8 @@ class Rect:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.unbind("<ButtonRelease-1>")
             
-            # self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
-            # self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
             self.applybtn.pack(side=tk.BOTTOM, anchor=tk.E, padx=10, pady=10)
-            self.button.pack(anchor=tk.N, pady=10)
+            self.binbtn.pack(anchor=tk.N, pady=10)
             
 
         self.canvas.bind("<Button-1>", ondown)
@@ -130,15 +125,12 @@ class Rect:
         for tkrect in self._ctkrects:
             self.canvas.itemconfig(tkrect, outline="green", width=2)
         
-        self.button.pack_forget()
+        self.binbtn.pack_forget()
         self.applybtn.pack_forget()
         
         self.applied = True
-        
-        # if self.toggle:
-        #     self.toggle()
             
-        for i,rect in enumerate(self.canvasrects):
+        for i,rect in enumerate(self.pixelrects):
             x, y, w, h = rect.totuple()
             text = f"Rect-{i+1}: x={x:.0f}, y={y:.0f}, width={w:.0f}, height={h:.0f}"
             label = Label(self.canvas, text=text)

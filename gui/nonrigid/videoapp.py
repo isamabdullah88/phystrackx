@@ -1,13 +1,11 @@
-from customtkinter import CTkCanvas, IntVar
+from customtkinter import CTkCanvas
 from experiments import Marangoni
 from gui.plugins import Crop, Filters
 from gui.components.seekbar import TrimSeekBar
 from gui.components.spinner import Spinner
-from gui.components.rect import Rect
 
 import os
 import cv2
-from PIL import Image, ImageTk
 
 
 class Video:
@@ -59,17 +57,17 @@ class Video:
         
         
         
-    def resizef(self, frame, fwidth, fheight):
-        """Resizes frame according to current fwidth and fheight"""
-        frame = cv2.resize(frame, (fwidth, fheight))
-        return frame
+    # def resizef(self, frame, fwidth, fheight):
+    #     """Resizes frame according to current fwidth and fheight"""
+    #     frame = cv2.resize(frame, (fwidth, fheight))
+    #     return frame
         
         
     def showframe(self):
         """Updates and shows the frame to video view"""
         
         frame = self.rigid.frame(index=self.seekbar.idx)
-        frame = self.resizef(frame, self.fwidth, self.fheight)
+        frame = cv2.resize(frame, (self.fwidth, self.fheight)
         
         # Apply filter
         frame = self.filters.appfilter(frame)

@@ -20,6 +20,7 @@ class Axes:
         self.vwidth = vwidth
         self.vheight = vheight
         self.theta = ctk.DoubleVar(value=0)
+        self.slider = None
 
         self.ox = 0
         self.oy = self.vheight
@@ -30,8 +31,11 @@ class Axes:
 
     def clear(self):
         """Clear all canvas drawings related to sliders and axes."""
-        self.canvas.delete("slider")
+        self.theta.set(0)
         self.canvas.delete("axes")
+
+        if self.slider is not None:
+            self.slider.pack_forget()
 
     def markaxes(self):
         """Enable interactive marking of axes with mouse events."""
@@ -86,7 +90,7 @@ class Axes:
         x0, y0 = self.vwidth, 0
         x1, y1 = 0, self.vheight
 
-        theta_rad = np.deg2rad(self.theta.get())
+        theta_rad = -np.deg2rad(self.theta.get())
 
         xp0, yp0 = self.rotatez(x0, y0, theta_rad)
         xp1, yp1 = self.rotatez(x1, y1, theta_rad)
@@ -114,24 +118,17 @@ class Axes:
         self.canvas.unbind("<Motion>")
         self.canvas.unbind("<Button-1>")
 
-        self.slider = ttk.Scale(
-            self.root,
-            from_=-180,
-            to=0,
-            orient="horizontal",
-            variable=self.theta,
-            command=self.rotate
-        )
-
-        self.canvas.create_window(self.vwidth - 180, self.vheight - 20,
-                                  window=self.slider, tags="slider")
-
         self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
+
+        self.slider = ttk.Scale(self.canvas, from_=0, to=180, orient="horizontal",
+                                variable=self.theta, command=self.rotate)
+        self.slider.pack(side="right", padx=10, pady=10, anchor="se")
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""
-        self.slider.destroy()
-        self.applybtn.destroy()
+        # self.canvas.itemconfigure("slider", state="hidden")
+        self.slider.pack_forget()
+        self.applybtn.pack_forget()
 
         for btn in self.btnlist.values():
             btn.configure(state="normal")

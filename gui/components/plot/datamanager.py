@@ -13,18 +13,8 @@ from experiments.components.ocr import OCRData
 
 
 class DataManager:
-    def __init__(
-        self,
-        tpoints: list[list[FPoint]],
-        ocrdata: OCRData,
-        axes: Axes,
-        vwidth: int,
-        vheight: int,
-        fwidth: int,
-        fheight: int,
-        fps: int,
-        scale: float
-    ) -> None:
+    def __init__(self, tpoints: list[list[FPoint]], ocrdata: OCRData, axes: Axes, vwidth: int,
+                 vheight: int, fwidth: int, fheight: int, fps: int, scale: float) -> None:
         """
         Initializes the data manager with tracking points and transformation settings.
 
@@ -58,8 +48,8 @@ class DataManager:
         self.timestamps = np.linspace(0, self.maxcount / self.fps, self.maxcount)
 
         # Compute extents
-        self.xmin, self.ymin = self.transformxy(0.0, 0.0)
-        self.xmax, self.ymax = self.transformxy(self.vwidth*scale, self.vheight*scale)
+        self.xmin, self.ymin = 0, 0
+        self.xmax, self.ymax = self.fwidth, self.fheight
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [
@@ -75,6 +65,31 @@ class DataManager:
                 self.processed_points[i][j, :] = np.array(
                     self.transformxy(pt.x, pt.y)
                 )
+
+        # Update extents based on transformed points
+        xmins, ymins = [self.xmin], [self.ymin]
+        xmaxs, ymaxs = [self.xmax], [self.ymax]
+        for objpts in self.processed_points:
+            mins = np.min(np.array(objpts), axis=0)
+            maxs = np.max(np.array(objpts), axis=0)
+
+            xmins.append(mins[0])
+            ymins.append(mins[1])
+            
+            xmaxs.append(maxs[0])
+            ymaxs.append(maxs[1])
+            
+        self.xmin = min(xmins)
+        self.ymin = min(ymins)
+        self.xmax = max(xmaxs)
+        self.ymax = max(ymaxs)
+
+        xdiff = self.xmax - self.xmin
+        ydiff = self.ymax - self.ymin
+        self.xmin -= 0.1 * xdiff
+        self.xmax += 0.1 * xdiff
+        self.ymin -= 0.1 * ydiff
+        self.ymax += 0.1 * ydiff
 
     def transformxy(self, x: float, y: float) -> tuple[float, float]:
         """
@@ -106,3 +121,11 @@ class DataManager:
             y *= self.scale
 
         return x, y
+    
+    def clear(self) -> None:
+        """
+        Clears all stored tracking and OCR data.
+        """
+        self.tpoints.clear()
+        self.ocrdata.clear()
+        self.processed_points.clear()

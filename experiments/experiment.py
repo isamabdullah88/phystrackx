@@ -13,6 +13,7 @@ from math import floor
 from itertools import groupby
 
 import cv2
+from cv2.typing import MatLike
 import numpy as np
 
 from media.videoreader import VideoReader
@@ -29,8 +30,8 @@ class Experiment:
         self._setup_logging()
 
         self._vidreader: VideoReader | None = None
-        self.fwidth: int | None = None
-        self.fheight: int | None = None
+        self.fwidth: int = 0
+        self.fheight: int = 0
         self.fps: int = 0
         self.fcount: int = 0
 
@@ -100,7 +101,7 @@ class Experiment:
         """
         trimvideo(self.videopath, self.trimpath, startidx, endidx, self.fps)
 
-    def frame(self, index: int | None = None) -> np.ndarray:
+    def frame(self, index: int | None = None) -> MatLike:
         """
         Retrieve a specific frame from the video.
 
@@ -131,11 +132,8 @@ class Experiment:
         if not self._vidreader:
             raise RuntimeError("VideoReader not initialized.")
 
-        bg_subtractor = cv2.createBackgroundSubtractorMOG2(
-            history=500,
-            varThreshold=16,
-            detectShadows=True
-        )
+        bg_subtractor = cv2.createBackgroundSubtractorMOG2(history=500, varThreshold=16,
+                                                           detectShadows=True)
 
         motion_scores = []
         for _ in range(self.fcount):

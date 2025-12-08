@@ -7,15 +7,8 @@ class Seek:
     Draws and manages a seek line — a horizontal bar used to visualize progress or range selection.
     """
 
-    def __init__(
-        self,
-        canvas: tk.Canvas,
-        xstart: float,
-        xend: float,
-        y: float,
-        color: str = "#e2bcc5",
-        height: int = 8
-    ) -> None:
+    def __init__(self, canvas: tk.Canvas, xstart: float, xend: float, y: float,
+                 color: str = "#e2bcc5", height: int = 8) -> None:
         """
         Initialize the Seek bar.
 
@@ -37,31 +30,16 @@ class Seek:
 
     def pack(self) -> None:
         """Packs the seek."""
-        self.tkrect = self.canvas.create_rectangle(
-            self.xstart,
-            self.y - self.hhalf,
-            self.xend,
-            self.y + self.hhalf,
-            fill=self.color
-        )
+        self.tkrect = self.canvas.create_rectangle(self.xstart, self.y - self.hhalf, self.xend,
+                                                   self.y + self.hhalf, fill=self.color)
 
     def unpack(self):
         self.canvas.itemconfigure(self.tkrect, state="hidden")
 
-    def draw(
-        self, 
-        xstart: float,
-        xend: float
-    ) -> None:
+    def draw(self, xstart: float, xend: float) -> None:
         """Draws the seek."""
         if self.tkrect is not None:
-            self.canvas.coords(
-                self.tkrect,
-                xstart,
-                self.y - self.hhalf,
-                xend,
-                self.y + self.hhalf
-            )
+            self.canvas.coords(self.tkrect, xstart, self.y - self.hhalf, xend, self.y + self.hhalf)
 
     def clear(self) -> None:
         """Remove all parts of the seek bar from the canvas."""

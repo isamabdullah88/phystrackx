@@ -1,8 +1,9 @@
 import customtkinter as ctk
-from tkinter import simpledialog
+# from tkinter import simpledialog
 from math import floor
 from PIL import Image
 from core import abspath
+from .dialogbox import DialogBox
 
 class ScaleRuler:
     def __init__(self, canvas, vwidth, vheight, btnlist, activebtn):
@@ -90,9 +91,12 @@ class ScaleRuler:
 
     def askscale(self):
         pixels = abs(self.p2[0] - self.p1[0])
-        real = simpledialog.askfloat("Scale", "Enter real-world length this ruler represents:")
-        if real and pixels:
-            self.scalef = real / pixels
+        # dialogbox = simpledialog.askfloat("Scale", "Enter real-world length this ruler represents:")
+        dialogbox = DialogBox(self.canvas, title="Scale", message="Enter real-world length this" \
+        " ruler represents:", expected_type=float)
+        
+        if dialogbox.result and pixels:
+            self.scalef = dialogbox.result / pixels
             self.draw()
 
     def onclick(self, event):

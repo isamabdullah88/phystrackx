@@ -8,7 +8,6 @@ Author: Isam Balghari
 
 import matplotlib.pyplot as plt
 import numpy as np
-import customtkinter as ctk
 
 from gui.components.checkbox import Checkbox
 from .plottype import PlotType
@@ -77,7 +76,7 @@ class Plot:
     def plotx(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$x$ vs $T$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$x$ vs $T$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$x$")
             plt.xlim((0, self.timestamps[-1]))
@@ -87,7 +86,7 @@ class Plot:
     def ploty(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$y$ vs $T$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$y$ vs $T$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$y$")
             plt.xlim((0, self.timestamps[-1]))
@@ -97,7 +96,7 @@ class Plot:
     def plotxy(self):
         for k, tpts in enumerate(self.points):
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$y$ vs $x$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$y$ vs $x$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$x$")
             plt.ylabel(r"$y$")
             plt.xlim((self.xmin, self.xmax))
@@ -108,7 +107,7 @@ class Plot:
         for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$\frac{dx}{dt}$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$\frac{dx}{dt}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{dx}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
@@ -121,7 +120,7 @@ class Plot:
         for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$\frac{dy}{dt}$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$\frac{dy}{dt}$", fontname= "Segoe UI Emoji")
             plt.xlabel("Time (s)")
             plt.ylabel(r"$\frac{dy}{dt}$")
             plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
@@ -135,7 +134,7 @@ class Plot:
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             d2x_dt2 = np.gradient(dx_dt, self.timestamps)
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$\frac{d^2x}{dt^2}$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$\frac{d^2x}{dt^2}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2x}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
@@ -149,7 +148,7 @@ class Plot:
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             d2y_dt2 = np.gradient(dy_dt, self.timestamps)
             plt.figure()
-            plt.title(f"{k+1}-🚗" + r"$\frac{d^2y}{dt^2}$", fontname= "Segoe UI Emoji")
+            plt.title(f"[O-{k+1}] " + r"$\frac{d^2y}{dt^2}$", fontname= "Segoe UI Emoji")
             plt.xlabel(r"$T(s)$")
             plt.ylabel(r"$\frac{d^2y}{dt^2}$")
             plt.xlim((0, self.timestamps[-1]))
@@ -174,10 +173,10 @@ def main():
     # --- Setup GUI ---
     ctk.set_appearance_mode("System")
     root = ctk.CTk()
-    root.geometry("800x600")
+    root.geometry("900x800")
     root.title("Plot and Axes Test")
 
-    canvas = ctk.CTkCanvas(root, width=640, height=480, bg="white")
+    canvas = ctk.CTkCanvas(root, width=600, height=500, bg="white")
     canvas.pack(pady=10)
 
     btn_frame = ctk.CTkFrame(root)
@@ -186,30 +185,24 @@ def main():
     axes_btn.pack()
 
     btnlist = {"axes": axes_btn}
-    axes = Axes(root, canvas, vwidth=640, vheight=480, btnlist=btnlist, activebtn=axes_btn)
+    axes = Axes(root, canvas, vwidth=600, vheight=500, btnlist=btnlist, activebtn=axes_btn)
 
     # --- Generate dummy data ---
-    t = np.linspace(0, 400)
-    x = 50 + 300 * np.cos(t)
-    y = 50 + 300 * np.sin(t)
-    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
+    t = np.linspace(0, 2*np.pi, 360)
+    x = 100 + 200 + 200 * np.cos(t)
+    y = 200 + 200 * np.sin(t)
+
+    fpoints = [[FPoint(x[i], y[i], 0, 0) for i in range(len(x))], 
+               [FPoint(x[i], y[i], 0, 0) for i in range(len(x))]]
 
     # --- Dummy OCR data ---
-    ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(len(x))]]
+    ocr_text = [["OCR={:.2f}s".format(i / 24) for i in range(len(x))],
+                ["OCR={:.2f}s".format(i / 24) for i in range(len(x))]]
     ocrdata = OCRData(ocr_text)
 
     # --- Create DataManager ---
-    datamanager = DataManager(
-        tpoints=fpoints,
-        ocrdata=ocrdata,
-        axes=axes,
-        vwidth=400,
-        vheight=300,
-        fwidth=400,
-        fheight=300,
-        fps=1,
-        scale=1.0
-    )
+    datamanager = DataManager(tpoints=fpoints, ocrdata=ocrdata, axes=axes, vwidth=600, vheight=500,
+                              fwidth=600, fheight=500, fps=1, scale=1.0)
 
     # --- Setup Axes and Plot after marking ---
     def on_axes_applied():

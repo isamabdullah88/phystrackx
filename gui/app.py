@@ -10,7 +10,7 @@ Author: Isam Balghari
 """
 
 from math import floor
-from tkinter import filedialog
+from tkinter import filedialog, font
 import customtkinter as ctk
 from PIL import Image
 
@@ -23,7 +23,9 @@ from .components.tooltip import ToolTip
 class App:
     def __init__(self, root):
         self.root = root
-        # self.root.title("PhysTrackX")
+        
+        defaultfont = font.nametofont("TkDefaultFont")
+        defaultfont.configure(family="Arial", size=14)
 
         # # Window dimensions
         self.cwidth = self.root.winfo_width()
@@ -69,9 +71,9 @@ class App:
 
     def toolbar(self) -> None:
         """Constructs toolbar and video area layout."""
-        self.scrollframe = ctk.CTkScrollableFrame(self.root, width=self.twidth-2.7*self.padx, height=self.theight,
+        self.scrollframe = ctk.CTkScrollableFrame(self.root, width=self.twidth-self.padx, height=self.theight,
                                                   bg_color="#899fbd", fg_color="#5bdada")
-        self.scrollframe.pack(padx=0, pady=0, side=ctk.LEFT, fill=ctk.X)
+        self.scrollframe.pack(padx=0, pady=0, side=ctk.LEFT)
         self.root.update_idletasks()
         print('scroll frame width: ', self.scrollframe.winfo_width())
 
@@ -96,11 +98,12 @@ class App:
         self.vidframe = ctk.CTkFrame(self.root, width=self.vwidth, height=self.theight,
                                      bg_color="#899fbd", fg_color="#5bdada")
         # self.vidframe.pack_propagate(False)
-        self.vidframe.pack(side=ctk.LEFT, expand=True, fill="both")
+        self.vidframe.pack(side=ctk.LEFT, expand=True, fill="both", padx=0)
 
         self.videoview = ctk.CTkCanvas(self.vidframe, width=self.vwidth, height=self.vheight, bg="#4d535c")
         # self.videoview.pack_propagate(False)
-        self.videoview.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH)
+        # self.videoview.pack(side=ctk.TOP, expand=True, fill=ctk.BOTH, padx=0)
+        self.videoview.pack(fill=ctk.BOTH, expand=True)
 
         # Title and Axes setup
         self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
