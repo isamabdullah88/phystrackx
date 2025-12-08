@@ -123,19 +123,6 @@ class Video:
         
         self.crop.set(self.fwidth, self.fheight)
 
-    # def resizef(self, frame: NDArray[np.uint8], fwidth: int, fheight: int) -> NDArray[np.uint8]:
-    #     """
-    #     Resize frame to current video dimensions.
-
-    #     Args:
-    #         frame (np.ndarray): Original frame.
-    #         fwidth (int): Target width.
-    #         fheight (int): Target height.
-
-    #     Returns:
-    #         np.ndarray: Resized frame.
-    #     """
-    #     return cv2.resize(frame, (fwidth, fheight))
 
     def showframe(self, idx: int) -> None:
         """
