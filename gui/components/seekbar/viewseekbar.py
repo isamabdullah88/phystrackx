@@ -32,7 +32,6 @@ class ViewSeekBar:
             callback (Optional[Callable]): Function called when bar is moved.
         """
         self.canvas = tk.Canvas(frame, width=width, height=height, bg="#4d535c")
-        # self.canvas.pack()
 
         self.fcount: int = fcount
         self.padx: int = 10
@@ -61,6 +60,8 @@ class ViewSeekBar:
         """
         Clear the seek bar from the canvas.
         """
+        self.idx = 0
+
         if self.seek:
             self.seek.clear()
 
