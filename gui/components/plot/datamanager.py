@@ -48,8 +48,8 @@ class DataManager:
         self.timestamps = np.linspace(0, self.maxcount / self.fps, self.maxcount)
 
         # Compute extents
-        self.xmin, self.ymin = self.transformxy(0.0, 0.0)
-        self.xmax, self.ymax = self.transformxy(self.vwidth*scale, self.vheight*scale)
+        self.xmin, self.ymin = 0, 0
+        self.xmax, self.ymax = self.fwidth, self.fheight
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [
@@ -65,6 +65,20 @@ class DataManager:
                 self.processed_points[i][j, :] = np.array(
                     self.transformxy(pt.x, pt.y)
                 )
+
+        xmins, ymins = [np.min(np.array(pt).reshape(-1, 2), axis=0) for pt in self.processed_points]
+        self.xmin = min(xmins + [self.xmin])
+        self.ymin = min(ymins + [self.ymin])
+        xmaxs, ymaxs = [np.max(np.array(pt).reshape(-1, 2), axis=0) for pt in self.processed_points]
+        self.xmax = max(xmaxs + [self.xmax])
+        self.ymax = max(ymaxs + [self.ymax])
+
+        xdiff = self.xmax - self.xmin
+        ydiff = self.ymax - self.ymin
+        self.xmin -= 0.1 * xdiff
+        self.xmax += 0.1 * xdiff
+        self.ymin -= 0.1 * ydiff
+        self.ymax += 0.1 * ydiff
 
     def transformxy(self, x: float, y: float) -> tuple[float, float]:
         """
