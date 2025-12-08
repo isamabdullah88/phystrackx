@@ -66,12 +66,23 @@ class DataManager:
                     self.transformxy(pt.x, pt.y)
                 )
 
-        xmins, ymins = [np.min(np.array(pt).reshape(-1, 2), axis=0) for pt in self.processed_points]
-        self.xmin = min(xmins + [self.xmin])
-        self.ymin = min(ymins + [self.ymin])
-        xmaxs, ymaxs = [np.max(np.array(pt).reshape(-1, 2), axis=0) for pt in self.processed_points]
-        self.xmax = max(xmaxs + [self.xmax])
-        self.ymax = max(ymaxs + [self.ymax])
+        # Update extents based on transformed points
+        xmins, ymins = [self.xmin], [self.ymin]
+        xmaxs, ymaxs = [self.xmax], [self.ymax]
+        for objpts in self.processed_points:
+            mins = np.min(np.array(objpts), axis=0)
+            maxs = np.max(np.array(objpts), axis=0)
+
+            xmins.append(mins[0])
+            ymins.append(mins[1])
+            
+            xmaxs.append(maxs[0])
+            ymaxs.append(maxs[1])
+            
+        self.xmin = min(xmins)
+        self.ymin = min(ymins)
+        self.xmax = max(xmaxs)
+        self.ymax = max(ymaxs)
 
         xdiff = self.xmax - self.xmin
         ydiff = self.ymax - self.ymin
