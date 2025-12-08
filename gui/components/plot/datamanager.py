@@ -13,18 +13,8 @@ from experiments.components.ocr import OCRData
 
 
 class DataManager:
-    def __init__(
-        self,
-        tpoints: list[list[FPoint]],
-        ocrdata: OCRData,
-        axes: Axes,
-        vwidth: int,
-        vheight: int,
-        fwidth: int,
-        fheight: int,
-        fps: int,
-        scale: float
-    ) -> None:
+    def __init__(self, tpoints: list[list[FPoint]], ocrdata: OCRData, axes: Axes, vwidth: int,
+                 vheight: int, fwidth: int, fheight: int, fps: int, scale: float) -> None:
         """
         Initializes the data manager with tracking points and transformation settings.
 
