@@ -6,10 +6,12 @@ Implements rigid body tracking using optical flow and optional OCR from video fr
 Author: Isam Balghari
 """
 
-from typing import Optional
+from typing import Optional, List
 from queue import Queue
 import cv2
 import numpy as np
+from numpy.typing import NDArray
+
 from tqdm import tqdm
 from customtkinter import IntVar
 from experiments.experiment import Experiment
@@ -24,13 +26,7 @@ class Rigid(Experiment):
     and optionally performs OCR within user-defined regions.
     """
 
-    def __init__(
-        self,
-        trimpath: str,
-        vwidth: int,
-        vheight: int,
-        tkqueue: Queue = None
-    ) -> None:
+    def __init__(self, trimpath: str, vwidth: int, vheight: int, tkqueue: Queue = None) -> None:
         """
         Initialize the rigid tracker.
 
@@ -42,15 +38,10 @@ class Rigid(Experiment):
         """
         super().__init__(trimpath, vwidth, vheight)
         self.tkqueue = tkqueue
-        self.trackpts: list[list[int]] = []
-        self.texts: list[list[str]] = []
+        self.trackpts: List[List[NDArray[np.float32]]] = []
+        self.texts: List[List[str]] = []
 
-    def ocr(
-        self,
-        frame: np.ndarray,
-        rect: 'PixelRect',
-        pytesseract
-    ) -> str:
+    def ocr(self, frame: cv2.Mat, rect: 'PixelRect', pytesseract) -> str:
         """
         Extract text using OCR from the selected rectangular region.
 
@@ -69,14 +60,8 @@ class Rigid(Experiment):
         cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         return text
 
-    def track(
-        self,
-        rects: list[NormalizedRect],
-        ocrrects: list[NormalizedRect],
-        filters: Filters,
-        crop: Crop,
-        progress: Optional[IntVar] = None
-    ) -> None:
+    def track(self, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
+              crop: Crop, progress: Optional[IntVar] = None) -> None:
         """
         Perform optical flow tracking and optional OCR detection.
 
