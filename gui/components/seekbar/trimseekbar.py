@@ -145,7 +145,7 @@ class TrimSeekBar:
         self.seekcanvas.bind("<B1-Motion>", self.ondrag)
 
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply,
-                                      btnsize=self.height - 2*int(self.padx))
+                                      btnsize=self.height - int(2.5*self.padx))
         self.applybtn.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def unpack(self):
