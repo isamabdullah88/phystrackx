@@ -245,7 +245,7 @@ class RigidApp(App):
             return
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
-        print('fps: ', self.videoapp.fps)
+
         if self.datamanager is not None:
             self.plotobj = Plot(self.videoview, self.datamanager)
         else:
