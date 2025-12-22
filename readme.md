@@ -92,4 +92,4 @@ This project is licensed under the MIT License. See `LICENSE` for details.
 Have suggestions, ideas, or want to collaborate?
 
 - GitHub: [github.com/isamabdullah88](https://github.com/isamabdullah88)
-- Email: isambalghari[at]gmail.com
+- Email: isamabdullah88[at]gmail.com
