@@ -10,6 +10,7 @@ from math import floor
 from typing import Optional
 import logging
 import cv2
+import numpy as np
 
 
 class VideoReader:
@@ -60,7 +61,8 @@ class VideoReader:
 
         if not ret:
             self.logger.warning(f"Failed to read frame at index {self._idx}.")
-            return None
+            self.logger.warning("Sending blank frame!")
+            return np.zeros((self.height, self.width, 3), np.uint8)
 
         return frame
 

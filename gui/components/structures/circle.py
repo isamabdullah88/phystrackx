@@ -19,7 +19,7 @@ class Circle:
         self.canvascircles = []
         self._tkcircles = []
         
-        self.mask = None
+        self.masks = []
 
         self.toggle = toggle
         self.btnsize = 30
@@ -43,6 +43,7 @@ class Circle:
             self.canvas.delete(self._tkcircles[-1])
             self.circles.pop()
             self._tkcircles.pop()
+            self.masks.pop()
             if self._tkcircles:
                 self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             else:
@@ -68,7 +69,7 @@ class Circle:
         def ondown(event):            
             self._rcoords = (event.x, event.y)
             
-            self._tkcircle = self.canvas.create_oval(event.x, event.y, event.x, event.y, width=3)
+            self._tkcircle = self.canvas.create_oval(event.x, event.y, event.x, event.y, width=3, outline="red")
             
         def incircle(event):
             sx, sy = self._rcoords
@@ -101,7 +102,7 @@ class Circle:
             cv2.ellipse(mask, center, axes, angle=0, startAngle=0, endAngle=360,
                         color=255, thickness=-1)
             
-            self.mask = mask
+            self.masks.append(mask)
             
             self.canvas.unbind("<Button-1>")
             self.canvas.unbind("<B1-Motion>")
