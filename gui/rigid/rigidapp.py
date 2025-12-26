@@ -112,7 +112,7 @@ class RigidApp(App):
 
     def loadcomponents(self):
         """Loads and updates components after video is loaded or modified."""
-        Label(self.videoview, text="Frame Count: " + str(self.videoapp.fcount)).place(x=10, y=80)
+        Label(self.videoview, text=f"Frame Count: {self.videoapp.fcount:4d}").place(x=10, y=80)
 
         if self.viewsb:
             self.viewseekbar.set(self.videoapp.fcount)
@@ -219,7 +219,7 @@ class RigidApp(App):
         self.axes.clear()
         self.tpoints.clear()
         self.scruler.clear()
-        self.datamanager.clear()
+        self.datamanager.clear() if self.datamanager is not None else None
         self.datamanager = None
 
     def reset(self):

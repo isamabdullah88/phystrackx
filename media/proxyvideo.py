@@ -21,13 +21,8 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(os.path.abspath("."), relative_path)
 
 
-def proxyvideo(
-    videopath: str,
-    width: int = 1000,
-    height: int = -2,
-    writepath: Optional[str] = None,
-    overwrite: bool = False
-) -> Optional[str]:
+def proxyvideo(videopath: str, width: int = 1000, height: int = -2, 
+               writepath: Optional[str] = None, overwrite: bool = False) -> Optional[str]:
     """
     Create a low-resolution proxy video using ffmpeg.
 
@@ -62,17 +57,9 @@ def proxyvideo(
     
     ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
 
-    command = [
-        ffmpeg,
-        "-y" if overwrite else "-n",
-        "-i", videopath,
-        "-vf", f"scale={resolution}",
-        "-c:v", "libx264",
-        "-preset", "fast",
-        "-crf", "28",
-        "-an",  # remove audio
-        writepath
-    ]
+    command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", 
+               f"scale={resolution}", "-c:v", "libx264", "-preset", "fast", "-crf", "28", "-an",
+               writepath]
 
     logger.info(f"Creating proxy video: {writepath}")
     try:

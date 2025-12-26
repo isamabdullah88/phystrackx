@@ -20,14 +20,8 @@ def resource_path(relative_path: str) -> str:
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-def trimvideo(
-    videopath: str,
-    writepath: str,
-    startidx: int,
-    endidx: int,
-    fps: Optional[float] = None,
-    overwrite: bool = True
-) -> bool:
+def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int, 
+              fps: Optional[float] = None, overwrite: bool = True) -> bool:
     """
     Trim a video between startidx and endidx using ffmpeg.
 
@@ -43,7 +37,7 @@ def trimvideo(
         True if trimming succeeded, False otherwise.
     """
     logger = logging.getLogger(__name__)
-
+    
     if not os.path.exists(videopath):
         logger.error(f"Input video does not exist: {videopath}")
         return False
@@ -54,19 +48,12 @@ def trimvideo(
 
     if fps is None:
         fps = 30.0  # Default if not given
-
-    start_time = startidx / fps
-    duration = (endidx - startidx) / fps
+        
+    video_filter = f"trim=start_frame={startidx}:end_frame={endidx+1},setpts=PTS-STARTPTS"
 
     ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
-    command = [
-        ffmpeg,
-        "-y" if overwrite else "-n",
-        "-ss", str(start_time),
-        "-i", videopath,
-        "-to", str(duration+start_time),
-        writepath
-    ]
+    command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", video_filter,
+               writepath]
 
     logger.info(f"Trimming video: {videopath} → {writepath}")
     logger.debug(f"Command: {' '.join(command)}")

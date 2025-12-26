@@ -10,7 +10,7 @@ class Label(ctk.CTkFrame):
         self.colorbox.pack(side="left", padx=(0, 8))
 
         # Text label
-        self.label = ctk.CTkLabel(self, text=text, font=("Segoe UI", 16))
+        self.label = ctk.CTkLabel(self, width=150, text=text, font=("Segoe UI", 16))
         self.label.pack(side="left")
 
     def set_text(self, text):
