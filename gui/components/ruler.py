@@ -63,6 +63,8 @@ class ScaleRuler:
         for k,btn in self.btnlist.items():
             btn.configure(state="normal")
 
+        self.clear()
+
     def draw(self):
         self.canvas.delete("ruler")
         x1, y = self.p1
