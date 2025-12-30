@@ -4,8 +4,8 @@
 a = Analysis(
     ['phystrackx.py'],
     pathex=[],
-    binaries=[('libraries/ffmpeg.exe', 'ffmpeg')],
-    datas=[('./assets', 'assets'), ('libraries/Tesseract-OCR', 'Tesseract-OCR')],
+    binaries=[('ffmpeg/ffmpeg.exe', 'ffmpeg')],
+    datas=[('./assets', 'assets'), ('./Tesseract-OCR', 'Tesseract-OCR')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

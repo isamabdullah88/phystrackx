@@ -9,7 +9,8 @@ __pycache__/
 *.mp4
 *.MP4
 
-libraries
+ffmpeg/
+Tesseract-OCR/
 
 # Distribution / packaging
 .Python
