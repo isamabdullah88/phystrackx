@@ -77,7 +77,7 @@ class Rigid(Experiment):
             import platform
             if platform.system() == "Windows":
                 pytesseract.pytesseract.tesseract_cmd = (
-                    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+                    r"libraries\Tesseract-OCR\tesseract.exe"
                 )
 
         crwidth = crop.crprect.width if crop.crprect else self.fwidth

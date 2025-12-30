@@ -55,7 +55,7 @@ def proxyvideo(videopath: str, width: int = 1000, height: int = -2,
 
     resolution = f"{width}:{height}"
     
-    ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
+    ffmpeg = resource_path("libraries/ffmpeg.exe")
 
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", 
                f"scale={resolution}", "-c:v", "libx264", "-preset", "fast", "-crf", "28", "-an",

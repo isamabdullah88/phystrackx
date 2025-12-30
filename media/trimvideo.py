@@ -51,7 +51,7 @@ def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int,
         
     video_filter = f"trim=start_frame={startidx}:end_frame={endidx+1},setpts=PTS-STARTPTS"
 
-    ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
+    ffmpeg = resource_path("libraries/ffmpeg.exe")
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", video_filter,
                writepath]
 
