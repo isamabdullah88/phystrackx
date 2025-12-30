@@ -9,7 +9,7 @@ __pycache__/
 *.mp4
 *.MP4
 
-ffmpeg
+libraries
 
 # Distribution / packaging
 .Python
