@@ -26,7 +26,7 @@ class Crop:
         
         self.btnsize = 30
         self.applybtn = self.mkbutton("assets/apply.png", self.apply, 80)
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.binbtn = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
         
     def set(self, fwidth, fheight):
         self.fwidth = fwidth
@@ -57,7 +57,7 @@ class Crop:
         """Deletes the last drawn rectangle"""
         if self._ctkbox is not None:
             self.canvas.delete(self._ctkbox)
-            self.button.place_forget()
+            self.binbtn.pack_forget()
         
     def clear(self):
         self.crprect = None
@@ -94,8 +94,8 @@ class Crop:
             self.canvas.unbind("<Button-1>")
             self.canvas.unbind("<B1-Motion>")
             self.canvas.unbind("<ButtonRelease-1>")
-            
-            self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+
+            self.binbtn.pack(anchor=ctk.N, pady=50)
             self.applybtn.pack(side="right", padx=10, pady=10, anchor="se")
             
             self.crpx = floor(self.vwidth/2 - self.crpwidth/2)
@@ -111,8 +111,8 @@ class Crop:
     def apply(self):
         self.clearrect()
         self.updateframe()
-        self.button.place_forget()
-        self.applybtn.place_forget()
+        self.binbtn.pack_forget()
+        self.applybtn.pack_forget()
         self.toggle()
         
         
