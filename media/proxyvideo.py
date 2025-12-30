@@ -7,19 +7,11 @@ Author: Isam Balghari
 """
 
 import os
-import sys
 import subprocess
 from typing import Optional
 import logging
 
-def resource_path(relative_path: str) -> str:
-    """
-    Get absolute path to resource, works for dev and for PyInstaller bundle.
-    """
-    if hasattr(sys, "_MEIPASS"):  # PyInstaller temp directory
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
-
+from core import abspath
 
 def proxyvideo(videopath: str, width: int = 1000, height: int = -2, 
                writepath: Optional[str] = None, overwrite: bool = False) -> Optional[str]:
@@ -55,7 +47,7 @@ def proxyvideo(videopath: str, width: int = 1000, height: int = -2,
 
     resolution = f"{width}:{height}"
     
-    ffmpeg = resource_path("libraries/ffmpeg.exe")
+    ffmpeg = abspath("ffmpeg/ffmpeg.exe")
 
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", 
                f"scale={resolution}", "-c:v", "libx264", "-preset", "fast", "-crf", "28", "-an",
