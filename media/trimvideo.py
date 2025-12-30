@@ -7,18 +7,11 @@ Author: Isam Balghari
 """
 
 import os
-import sys
 import subprocess
 from typing import Optional
 import logging
 
-def resource_path(relative_path: str) -> str:
-    """
-    Get absolute path to resource, works for dev and for PyInstaller bundle.
-    """
-    if hasattr(sys, "_MEIPASS"):  # PyInstaller temp directory
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
+from core import abspath
 
 def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int, 
               fps: Optional[float] = None, overwrite: bool = True) -> bool:
@@ -51,7 +44,7 @@ def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int,
         
     video_filter = f"trim=start_frame={startidx}:end_frame={endidx+1},setpts=PTS-STARTPTS"
 
-    ffmpeg = resource_path("ffmpeg/ffmpeg.exe")
+    ffmpeg = abspath("ffmpeg/ffmpeg.exe")
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", video_filter,
                writepath]
 

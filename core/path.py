@@ -20,8 +20,9 @@ def abspath(rpath: str) -> str:
     Returns:
         Absolute path based on execution context.
     """
-    base_path = getattr(sys, "_MEIPASS", os.path.abspath("."))
-    return os.path.join(base_path, rpath)
+    if hasattr(sys, "_MEIPASS"):  # PyInstaller temp directory
+        return os.path.join(sys._MEIPASS, rpath)
+    return os.path.join(os.path.abspath("."), rpath)
 
 
 def filexists(filepath: str) -> bool:
