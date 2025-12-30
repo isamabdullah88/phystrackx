@@ -11,12 +11,13 @@ from queue import Queue
 import cv2
 import numpy as np
 from numpy.typing import NDArray
+import logging
 
 from tqdm import tqdm
 from customtkinter import IntVar
 from experiments.experiment import Experiment
 from experiments.components import OCRData
-from core import NormalizedRect
+from core import NormalizedRect, abspath
 from gui.plugins import Crop, Filters
 
 
@@ -40,6 +41,9 @@ class Rigid(Experiment):
         self.tkqueue = tkqueue
         self.trackpts: List[List[NDArray[np.float32]]] = []
         self.texts: List[List[str]] = []
+        
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("Rigid(Exp) initialized")
 
     def ocr(self, frame: cv2.Mat, rect: 'PixelRect', pytesseract) -> str:
         """
@@ -76,9 +80,10 @@ class Rigid(Experiment):
             import pytesseract
             import platform
             if platform.system() == "Windows":
-                pytesseract.pytesseract.tesseract_cmd = (
-                    r"libraries\Tesseract-OCR\tesseract.exe"
-                )
+                tesseract_path = abspath("Tesseract-OCR/tesseract.exe")
+                pytesseract.pytesseract.tesseract_cmd = tesseract_path
+                self.logger.info("Tesseract OCR initialized for Windows at path: %s", tesseract_path)
+            
 
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
