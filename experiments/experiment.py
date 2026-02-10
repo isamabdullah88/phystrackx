@@ -173,16 +173,17 @@ class Experiment:
         self.active_duration = list(range(start, end))
         self.fcount = len(self.active_duration)
 
-    def pts2pt(self, pts: np.ndarray) -> tuple[int, int]:
+    def pts2pt(self, pts: np.ndarray, ptoff: tuple[int, int]) -> tuple[int, int]:
         """
         Convert a collection of (x, y) points to a single mean point.
 
         Args:
             pts (np.ndarray): Array of shape (N, 2) or (N, 1, 2).
+            ptoff (tuple[int, int]): Offset to apply to the mean point.
 
         Returns:
             tuple[int, int]: Mean (x, y) as integer coordinates.
         """
         pts = pts.reshape(-1, 2)
         x, y = np.mean(pts, axis=0)
-        return floor(x), floor(y)
+        return floor(x) + floor(ptoff[0]), floor(y) + floor(ptoff[1])
