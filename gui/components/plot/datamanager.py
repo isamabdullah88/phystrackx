@@ -41,7 +41,7 @@ class DataManager:
         self.scale = scale
 
         self.datacount = len(tpoints)
-        self.samplecount = len(tpoints[0]) if tpoints else 0
+        self.samplecount = len([tpt for tpt in tpoints[0] if tpt.valid]) if tpoints else 0
         self.ocrcount = ocrdata.datacount
         self.ocrsamplecount = ocrdata.samplecount
         self.maxcount = max(self.samplecount, self.ocrsamplecount)
@@ -60,11 +60,15 @@ class DataManager:
         """
         Applies coordinate transformation to all tracked points.
         """
-        for i, obj_points in enumerate(self.tpoints):
-            for j, pt in enumerate(obj_points):
+        for i, framepts in enumerate(self.tpoints):
+            j = 0
+            for pt in framepts:
+                if not pt.valid:
+                    continue
                 self.processed_points[i][j, :] = np.array(
                     self.transformxy(pt.x, pt.y)
                 )
+                j += 1
 
         # Update extents based on transformed points
         # xmins, ymins = [self.xmin], [self.ymin]
