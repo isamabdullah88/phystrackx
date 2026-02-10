@@ -20,7 +20,9 @@ from experiments.components import OCRData
 from core import NormalizedRect, abspath
 from gui.plugins import Crop, Filters
 
-
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Rigid Class --------------------------------------------------
 class Rigid(Experiment):
     """
     Tracks rigid objects using Lucas-Kanade optical flow,
@@ -68,7 +70,7 @@ class Rigid(Experiment):
 
 
     # ---------------------------------------------------------------------------------------------
-    def track(self, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
+    def track(self, frameidx: int, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
               crop: Crop, progress: Optional[IntVar] = None) -> None:
         """
         Perform optical flow tracking and optional OCR detection.
@@ -92,15 +94,17 @@ class Rigid(Experiment):
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
 
-        self._vidreader.seek(0)
+        self._vidreader.seek(frameidx)
+        fcount = self._vidreader.fcount
+
         frame = self._vidreader.read()
         frame = cv2.resize(frame, (self.fwidth, self.fheight))
         frame = filters.appfilter(crop.appcrop(frame))
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         ptsoff = []
-        self.trackpts = [[] for _ in rects]
-        self.texts = [[] for _ in ocrrects]
+        self.trackpts = [[[] for _ in range(fcount)] for _ in rects]
+        self.texts = [[[] for _ in range(fcount)] for _ in ocrrects]
         ptstrack = []
 
         # Initial good features to track
@@ -122,7 +126,6 @@ class Rigid(Experiment):
                 ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
 
         fprev = fgray.copy()
-        fcount = self._vidreader.fcount
 
         lk_params = dict(
             winSize=(15, 15),
@@ -130,8 +133,14 @@ class Rigid(Experiment):
             criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
         )
 
+        self._vidreader.seek(0)
         for i in tqdm(range(fcount - 1)):
             frame = self._vidreader.read()
+
+            # Skip if frame is before frameidx
+            if i < frameidx:
+                continue
+
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             frame = filters.appfilter(crop.appcrop(frame))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -146,12 +155,12 @@ class Rigid(Experiment):
                 else:
                     ptstrack[j] = p0
                 x, y = self.pts2pt(ptstrack[j], ptsoff[j])
-                self.trackpts[j].append([x, y])
+                self.trackpts[j][i] = [x, y]
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
                 text = self.ocr(frame, pixrect, pytesseract)
-                self.texts[j].append(text)
+                self.texts[j][i] = text
 
             fprev = fgray.copy()
 
@@ -159,7 +168,7 @@ class Rigid(Experiment):
             if self.tkqueue and not self.tkqueue.full():
                 tkframe = frame.copy()
                 for pts in self.trackpts:
-                    for k in range(max(0, i - 30), i):
+                    for k in range(max(frameidx, i - 30), i):
                         x, y = pts[k]
                         tkframe = cv2.circle(tkframe, (x, y), 5, (0, 0, 255), 1)
                 self.tkqueue.put(tkframe)
@@ -168,11 +177,16 @@ class Rigid(Experiment):
                 progress.set((i / (fcount - 1)) * 100)
 
         # Final formatting
-        for i in range(len(self.trackpts)):
-            self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
+        # for i in range(len(self.trackpts)):
+        #     if self.trackpts[i]:
+        #         self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
             
         self.texts = OCRData(self.texts)
     # ---------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Rigid Class --------------------------------------------------
+
 
 # -------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
