@@ -45,6 +45,7 @@ class Rigid(Experiment):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Rigid(Exp) initialized")
 
+    # ---------------------------------------------------------------------------------------------
     def ocr(self, frame: cv2.Mat, rect: 'PixelRect', pytesseract) -> str:
         """
         Extract text using OCR from the selected rectangular region.
@@ -63,7 +64,10 @@ class Rigid(Experiment):
         text = pytesseract.image_to_string(gray, config=config)
         cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         return text
+    # ---------------------------------------------------------------------------------------------
 
+
+    # ---------------------------------------------------------------------------------------------
     def track(self, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
               crop: Crop, progress: Optional[IntVar] = None) -> None:
         """
@@ -94,6 +98,7 @@ class Rigid(Experiment):
         frame = filters.appfilter(crop.appcrop(frame))
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+        ptsoff = []
         self.trackpts = [[] for _ in rects]
         self.texts = [[] for _ in ocrrects]
         ptstrack = []
@@ -103,12 +108,16 @@ class Rigid(Experiment):
             pixrect = rect.norm2pix(crwidth, crheight)
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
+
             p0 = cv2.goodFeaturesToTrack(
                 fgray, maxCorners=100, qualityLevel=0.4,
                 minDistance=5, blockSize=5, mask=mask
             )
             if p0 is not None:
                 ptstrack.append(p0.astype(np.float32).reshape(-1, 1, 2))
+                pt0 = self.pts2pt(p0, [0, 0])
+                rcent = pixrect.tocenter()
+                ptsoff.append([int(rcent[0] - pt0[0]), int(rcent[1] - pt0[1])])
             else:
                 ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
 
@@ -136,7 +145,7 @@ class Rigid(Experiment):
                     ptstrack[j] = p1p if p1p.size > 0 else p0
                 else:
                     ptstrack[j] = p0
-                x, y = self.pts2pt(ptstrack[j])
+                x, y = self.pts2pt(ptstrack[j], ptsoff[j])
                 self.trackpts[j].append([x, y])
 
             for j, rect in enumerate(ocrrects):
@@ -146,7 +155,7 @@ class Rigid(Experiment):
 
             fprev = fgray.copy()
 
-            # Optional live GUI update
+            # GUI frame update
             if self.tkqueue and not self.tkqueue.full():
                 tkframe = frame.copy()
                 for pts in self.trackpts:
@@ -163,8 +172,9 @@ class Rigid(Experiment):
             self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
             
         self.texts = OCRData(self.texts)
+    # ---------------------------------------------------------------------------------------------
 
-
+# -------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     from core import PixelRect
     rigid = Rigid("track-sfriction.mp4", 900, 600)
