@@ -41,15 +41,15 @@ class DataManager:
         self.scale = scale
 
         self.datacount = len(tpoints)
-        self.samplecount = len(tpoints[0]) if tpoints else 0
+        self.samplecount = len([tpt for tpt in tpoints[0] if tpt.valid]) if tpoints else 0
         self.ocrcount = ocrdata.datacount
         self.ocrsamplecount = ocrdata.samplecount
         self.maxcount = max(self.samplecount, self.ocrsamplecount)
         self.timestamps = np.linspace(0, self.maxcount / self.fps, self.maxcount)
 
         # Compute extents
-        self.xmin, self.ymin = 0, 0
-        self.xmax, self.ymax = self.fwidth, self.fheight
+        # self.xmin, self.ymin = 0, 0
+        # self.xmax, self.ymax = self.fwidth, self.fheight
 
         # Pre-allocated container for transformed coordinates
         self.processed_points = [
@@ -60,36 +60,40 @@ class DataManager:
         """
         Applies coordinate transformation to all tracked points.
         """
-        for i, obj_points in enumerate(self.tpoints):
-            for j, pt in enumerate(obj_points):
+        for i, framepts in enumerate(self.tpoints):
+            j = 0
+            for pt in framepts:
+                if not pt.valid:
+                    continue
                 self.processed_points[i][j, :] = np.array(
                     self.transformxy(pt.x, pt.y)
                 )
+                j += 1
 
         # Update extents based on transformed points
-        xmins, ymins = [self.xmin], [self.ymin]
-        xmaxs, ymaxs = [self.xmax], [self.ymax]
-        for objpts in self.processed_points:
-            mins = np.min(np.array(objpts), axis=0)
-            maxs = np.max(np.array(objpts), axis=0)
+        # xmins, ymins = [self.xmin], [self.ymin]
+        # xmaxs, ymaxs = [self.xmax], [self.ymax]
+        # for objpts in self.processed_points:
+        #     mins = np.min(np.array(objpts), axis=0)
+        #     maxs = np.max(np.array(objpts), axis=0)
 
-            xmins.append(mins[0])
-            ymins.append(mins[1])
+        #     xmins.append(mins[0])
+        #     ymins.append(mins[1])
             
-            xmaxs.append(maxs[0])
-            ymaxs.append(maxs[1])
+        #     xmaxs.append(maxs[0])
+        #     ymaxs.append(maxs[1])
             
-        self.xmin = min(xmins)
-        self.ymin = min(ymins)
-        self.xmax = max(xmaxs)
-        self.ymax = max(ymaxs)
+        # self.xmin = min(xmins)
+        # self.ymin = min(ymins)
+        # self.xmax = max(xmaxs)
+        # self.ymax = max(ymaxs)
 
-        xdiff = self.xmax - self.xmin
-        ydiff = self.ymax - self.ymin
-        self.xmin -= 0.1 * xdiff
-        self.xmax += 0.1 * xdiff
-        self.ymin -= 0.1 * ydiff
-        self.ymax += 0.1 * ydiff
+        # xdiff = self.xmax - self.xmin
+        # ydiff = self.ymax - self.ymin
+        # self.xmin -= 0.1 * xdiff
+        # self.xmax += 0.1 * xdiff
+        # self.ymin -= 0.1 * ydiff
+        # self.ymax += 0.1 * ydiff
 
     def transformxy(self, x: float, y: float) -> tuple[float, float]:
         """

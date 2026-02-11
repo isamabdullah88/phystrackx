@@ -22,7 +22,7 @@ class PixelRect:
         return (self.xmin, self.ymin, self.width, self.height)
     
     
-    def topt(self):
+    def tocenter(self):
         """Converts to center point"""
         x = floor((self.xmin+self.xmax)/2)
         y = floor((self.ymin+self.ymax)/2)
@@ -54,7 +54,7 @@ class NormalizedRect:
         """Converts to tuple"""
         return (self.xmin, self.ymin, self.width, self.height)
     
-    def topt(self):
+    def tocenter(self):
         """Converts to center point"""
         x = (self.xmin+self.xmax)/2
         y = (self.ymin+self.ymax)/2

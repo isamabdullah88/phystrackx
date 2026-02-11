@@ -59,6 +59,7 @@ class Video:
 
         self.rigid = Rigid(trimpath=self.trimpath, vwidth=self.vwidth, vheight=self.vheight-50,
                            tkqueue=self.processanim.queue)
+        self.frameidx = 0
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Video App initialized")
@@ -131,7 +132,8 @@ class Video:
         Args:
             idx (int): Index of the frame to display.
         """
-        frame = self.rigid.frame(index=idx)
+        self.frameidx = idx
+        frame = self.rigid.frame(index=self.frameidx)
         frame = self.filters.appfilter(frame)
         self.frame = self.crop.appcrop(frame)
 
@@ -150,7 +152,8 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        self.rigid.track(trect.rects, ocr.rects, self.filters, self.crop, progress)
+        # self.rigid.setseek(self.frameidx)
+        self.rigid.track(self.frameidx, trect.rects, ocr.rects, self.filters, self.crop, progress)
 
     def clear(self) -> None:
         """

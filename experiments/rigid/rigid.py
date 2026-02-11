@@ -20,7 +20,9 @@ from experiments.components import OCRData
 from core import NormalizedRect, abspath
 from gui.plugins import Crop, Filters
 
-
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Rigid Class --------------------------------------------------
 class Rigid(Experiment):
     """
     Tracks rigid objects using Lucas-Kanade optical flow,
@@ -45,6 +47,7 @@ class Rigid(Experiment):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Rigid(Exp) initialized")
 
+    # ---------------------------------------------------------------------------------------------
     def ocr(self, frame: cv2.Mat, rect: 'PixelRect', pytesseract) -> str:
         """
         Extract text using OCR from the selected rectangular region.
@@ -63,8 +66,11 @@ class Rigid(Experiment):
         text = pytesseract.image_to_string(gray, config=config)
         cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         return text
+    # ---------------------------------------------------------------------------------------------
 
-    def track(self, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
+
+    # ---------------------------------------------------------------------------------------------
+    def track(self, frameidx: int, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
               crop: Crop, progress: Optional[IntVar] = None) -> None:
         """
         Perform optical flow tracking and optional OCR detection.
@@ -88,14 +94,17 @@ class Rigid(Experiment):
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
 
-        self._vidreader.seek(0)
+        self._vidreader.seek(frameidx)
+        fcount = self._vidreader.fcount
+
         frame = self._vidreader.read()
         frame = cv2.resize(frame, (self.fwidth, self.fheight))
         frame = filters.appfilter(crop.appcrop(frame))
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        self.trackpts = [[] for _ in rects]
-        self.texts = [[] for _ in ocrrects]
+        ptsoff = []
+        self.trackpts = [[[] for _ in range(fcount)] for _ in rects]
+        self.texts = [[[] for _ in range(fcount)] for _ in ocrrects]
         ptstrack = []
 
         # Initial good features to track
@@ -103,17 +112,20 @@ class Rigid(Experiment):
             pixrect = rect.norm2pix(crwidth, crheight)
             mask = np.zeros_like(fgray, dtype=np.uint8)
             mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
+
             p0 = cv2.goodFeaturesToTrack(
                 fgray, maxCorners=100, qualityLevel=0.4,
                 minDistance=5, blockSize=5, mask=mask
             )
             if p0 is not None:
                 ptstrack.append(p0.astype(np.float32).reshape(-1, 1, 2))
+                pt0 = self.pts2pt(p0, [0, 0])
+                rcent = pixrect.tocenter()
+                ptsoff.append([int(rcent[0] - pt0[0]), int(rcent[1] - pt0[1])])
             else:
                 ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
 
         fprev = fgray.copy()
-        fcount = self._vidreader.fcount
 
         lk_params = dict(
             winSize=(15, 15),
@@ -121,8 +133,14 @@ class Rigid(Experiment):
             criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
         )
 
+        self._vidreader.seek(0)
         for i in tqdm(range(fcount - 1)):
             frame = self._vidreader.read()
+
+            # Skip if frame is before frameidx
+            if i < frameidx:
+                continue
+
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             frame = filters.appfilter(crop.appcrop(frame))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -136,21 +154,21 @@ class Rigid(Experiment):
                     ptstrack[j] = p1p if p1p.size > 0 else p0
                 else:
                     ptstrack[j] = p0
-                x, y = self.pts2pt(ptstrack[j])
-                self.trackpts[j].append([x, y])
+                x, y = self.pts2pt(ptstrack[j], ptsoff[j])
+                self.trackpts[j][i] = [x, y]
 
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
                 text = self.ocr(frame, pixrect, pytesseract)
-                self.texts[j].append(text)
+                self.texts[j][i] = text
 
             fprev = fgray.copy()
 
-            # Optional live GUI update
+            # GUI frame update
             if self.tkqueue and not self.tkqueue.full():
                 tkframe = frame.copy()
                 for pts in self.trackpts:
-                    for k in range(max(0, i - 30), i):
+                    for k in range(max(frameidx, i - 30), i):
                         x, y = pts[k]
                         tkframe = cv2.circle(tkframe, (x, y), 5, (0, 0, 255), 1)
                 self.tkqueue.put(tkframe)
@@ -159,12 +177,18 @@ class Rigid(Experiment):
                 progress.set((i / (fcount - 1)) * 100)
 
         # Final formatting
-        for i in range(len(self.trackpts)):
-            self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
+        # for i in range(len(self.trackpts)):
+        #     if self.trackpts[i]:
+        #         self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
             
         self.texts = OCRData(self.texts)
+    # ---------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Rigid Class --------------------------------------------------
 
 
+# -------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     from core import PixelRect
     rigid = Rigid("track-sfriction.mp4", 900, 600)

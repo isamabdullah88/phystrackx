@@ -20,12 +20,14 @@ from media.videoreader import VideoReader
 from media import proxyvideo, trimvideo
 
 
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Experiment Class ---------------------------------------------
 class Experiment:
     """
     Handles video preprocessing, proxy generation, trimming, and motion analysis
     for frame selection.
     """
-
     def __init__(self, trimpath: str, vwidth: int, vheight: int) -> None:
         self._setup_logging()
 
@@ -43,12 +45,14 @@ class Experiment:
         self.trimpath: str = trimpath
         self.active_duration: list[int] = []
 
+    # ---------------------------------------------------------------------------------------------
     def _setup_logging(self) -> None:
         if not sys.stdout or not sys.stdout.isatty():
             os.makedirs("logs", exist_ok=True)
             sys.stdout = open("logs/stdout.log", "a")
             sys.stderr = open("logs/stderr.log", "a")
 
+    # ---------------------------------------------------------------------------------------------
     def addvideo(self, videopath: str, istrim=False) -> None:
         """
         Load the video and extract dimensions and frame count.
@@ -63,6 +67,18 @@ class Experiment:
         if not istrim:
             self.resize()
 
+    # ---------------------------------------------------------------------------------------------
+    def setseek(self, index: int) -> None:
+        """
+        Set the video reader to a specific frame index.
+
+        Args:
+            index (int): Frame index to seek to.
+        """
+        if self._vidreader:
+            self._vidreader.seek(index)
+
+    # ---------------------------------------------------------------------------------------------
     def resize(self) -> None:
         """
         Resize dimensions to fit inside the viewer while maintaining aspect ratio.
@@ -78,6 +94,7 @@ class Experiment:
         # Generate proxy video
         self._proxymize()
 
+    # ---------------------------------------------------------------------------------------------
     def _proxymize(self) -> None:
         """
         Create a lower-resolution proxy video and update internal reader.
@@ -91,6 +108,7 @@ class Experiment:
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
 
+    # ---------------------------------------------------------------------------------------------
     def trim(self, startidx: int = 0, endidx: int = 0) -> None:
         """
         Trim the video between specified frame indices using FFmpeg.
@@ -101,6 +119,7 @@ class Experiment:
         """
         trimvideo(self.videopath, self.trimpath, startidx, endidx, self.fps)
 
+    # ---------------------------------------------------------------------------------------------
     def frame(self, index: int | None = None) -> MatLike:
         """
         Retrieve a specific frame from the video.
@@ -118,6 +137,7 @@ class Experiment:
             return self._vidreader.read(self.active_duration[index])
         return self._vidreader.read(index)
 
+    # ---------------------------------------------------------------------------------------------
     def release(self) -> None:
         """
         Release the video reader resources.
@@ -125,6 +145,7 @@ class Experiment:
         if self._vidreader:
             self._vidreader.release()
 
+    # ---------------------------------------------------------------------------------------------
     def crop_intime(self) -> None:
         """
         Automatically detect active duration in the video using motion scoring.
@@ -173,16 +194,21 @@ class Experiment:
         self.active_duration = list(range(start, end))
         self.fcount = len(self.active_duration)
 
-    def pts2pt(self, pts: np.ndarray) -> tuple[int, int]:
+    # ---------------------------------------------------------------------------------------------
+    def pts2pt(self, pts: np.ndarray, ptoff: tuple[int, int]) -> tuple[int, int]:
         """
         Convert a collection of (x, y) points to a single mean point.
 
         Args:
             pts (np.ndarray): Array of shape (N, 2) or (N, 1, 2).
+            ptoff (tuple[int, int]): Offset to apply to the mean point.
 
         Returns:
             tuple[int, int]: Mean (x, y) as integer coordinates.
         """
         pts = pts.reshape(-1, 2)
         x, y = np.mean(pts, axis=0)
-        return floor(x), floor(y)
+        return floor(x) + floor(ptoff[0]), floor(y) + floor(ptoff[1])
+# -------------------------------------------------------------------------------------------------
+###################################################################################
+# ---------------------------------- Experiment Class ---------------------------------------------

@@ -80,7 +80,10 @@ class TPoints:
         self.tpts = [[] for _ in range(len(tpts))]
         for i, tpt in enumerate(tpts):
             for pt in tpt:
-                self.tpts[i].append(FPoint(pt[0], pt[1], fx, fy))
+                if len(pt) == 2:
+                    self.tpts[i].append(FPoint(pt[0], pt[1], fx, fy))
+                else:
+                    self.tpts[i].append(FPoint(-1, -1, -1, -1, valid=False))
 
         self.togglebtn.pack(side=ctk.TOP, anchor=ctk.E, padx=10, pady=10)
 
