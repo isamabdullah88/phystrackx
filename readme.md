@@ -1,5 +1,13 @@
 # PhysTrackX
 
+## 🎓 Purpose
+
+PhysTrackX is developed to assist students in understanding physics concepts through visualization and data analysis. It encourages curiosity, supports hands-on learning, and bridges theoretical concepts with practical application.
+
+This software was created by **Isam Abdullah Balghari** under the mentorship of **Dr. Muhammad Sabieh Anwar**.
+
+---
+
 **PhysTrackX** is a user-friendly, visually engaging application designed for physics education and analysis. It allows high school and early undergraduate students to interactively engage with real-world experiments using video analysis, mathematical tools, and data visualization. The software turns ordinary experiment footage into a powerful source of measurement, exploration, and understanding.
 
 <p align="center">
@@ -33,14 +41,6 @@
 
 - 🌌 **Clean, Dark-Themed GUI**  
   Built with `customtkinter` for a smooth and modern interface.
-
----
-
-## 🎓 Purpose
-
-PhysTrackX is developed to assist students in understanding physics concepts through visualization and data analysis. It encourages curiosity, supports hands-on learning, and bridges theoretical concepts with practical application.
-
-This software was created by **Isam Balghari** under the mentorship of **Dr. Muhammad Sabieh Anwar**.
 
 ---
 
