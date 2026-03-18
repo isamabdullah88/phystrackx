@@ -81,9 +81,25 @@ Contribute to science outreach by donating to:
 
 ---
 
-## 📄 License
+## 📜 License & Usage
 
-This project is licensed under the MIT License. See `LICENSE` for details.
+This project is licensed under the **Business Source License 1.1 (BSL)**.
+
+### For Researchers and Students
+You are free (and encouraged!) to use this software for **non-commercial** purposes, including:
+* Academic research and thesis work.
+* Personal learning and experimentation.
+* Educational demonstrations.
+
+If you use this work in your research, please provide attribution to **Isam Abdullah Balghari**.
+
+### For Commercial Entities
+Use of this software for primary commercial advantage or monetary compensation is **prohibited** until the Change Date (**March 18, 2030**). On that date, the license will automatically convert to the **GNU GPLv3**.
+
+If you are interested in using this technology commercially before 2030, please contact me directly to discuss a commercial license.
+
+---
+*For full details, please see the [LICENSE](LICENSE) file.*
 
 ---
 
