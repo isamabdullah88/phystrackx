@@ -73,6 +73,7 @@ class MenuScreen:
 
     def __init__(self):
         self.root = ctk.CTk()
+        self.root.title("PhysTrackX")
         
         self.width = 1280
         self.height = 720
