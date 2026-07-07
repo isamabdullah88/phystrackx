@@ -15,7 +15,23 @@ from .datamanager import DataManager
 
 
 class Plot:
-    def __init__(self, parent, datamanager: DataManager, theme: str = 'ggplot') -> None:
+    def __init__(self, parent, theme: str = 'ggplot') -> None:
+        """
+        Initializes the Plot component shell.
+        Data coupling is deferred until activate() is invoked.
+
+        Args:
+            parent: The parent GUI container.
+            theme (str): Matplotlib theme style.
+        """
+        self.parent = parent
+        self.datamanager: DataManager | None = None
+        
+        # Apply the visual plotting environment profile
+        plt.style.use(theme)
+        
+    def activate(self, datamanager: DataManager, theme: str = 'ggplot') -> None:
+    
         """
         Initializes the Plot component for visualizing data.
 
@@ -24,10 +40,8 @@ class Plot:
             datamanager (DataManager): The data manager with transformed coordinates.
             theme (str): Matplotlib theme style.
         """
-        self.parent = parent
         self.datamanager = datamanager
-
-        plt.style.use(theme)
+        
         self.checkbox = Checkbox(self.parent, PlotType, text="Choose Plots", callback=self.showplots)
 
     @property
@@ -37,22 +51,6 @@ class Plot:
     @property
     def timestamps(self):
         return self.datamanager.timestamps
-    
-    # @property
-    # def xmin(self):
-    #     return self.datamanager.xmin
-    
-    # @property
-    # def xmax(self):
-    #     return self.datamanager.xmax
-    
-    # @property
-    # def ymin(self):
-    #     return self.datamanager.ymin
-    
-    # @property
-    # def ymax(self):
-    #     return self.datamanager.ymax
 
     def showplots(self, selected_plots: list[str]) -> None:
         """Displays all selected plots."""
