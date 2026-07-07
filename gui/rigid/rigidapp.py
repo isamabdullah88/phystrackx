@@ -58,11 +58,6 @@ class RigidApp(App):
         self.geometry = Geometry(self.videoview, self.vwidth, self.vheight, self.btnlist,
                                  self.btnlist['geometry'])
 
-        # self.trimseekbar = TrimSeekBar(self.vidframe, self.vwidth, self.seekbarh,
-        #                                callback=self.updateframe)
-        # self.viewseekbar = ViewSeekBar(self.vidframe, self.vwidth, self.seekbarh,
-        #                                callback=self.updateframe)
-
         self.seekbar = SeekBar(self.vidframe, self.vwidth, self.seekbarh, self.updateframe)
         self.seekbar.set_trim_callback(self.trimvideo)
 
@@ -80,12 +75,10 @@ class RigidApp(App):
 
         self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.crop, self.filters,
                               self.processanim)
-        # self.trimseekbar.settrim(trimvideo=self.trimvideo)
 
         self.saver = Save(self.videoview)
         self.plotter = Plot(self.videoview)
         self.datamanager = DataManager()
-        # self.viewsb = False
 
     def loadvideo(self, videopath: str):
         """Loads the video into the viewer and initializes related components."""
@@ -105,9 +98,7 @@ class RigidApp(App):
 
         def trim(spinner):
             self.videoapp.trimvideo(startidx, endidx)
-            # self.viewsb = True
-            
-            # self.trimseekbar.clear()
+
             self.videoapp.loadvideo(self.videoapp.trimpath, True)
             self.loadcomponents()
             self.root.after(0, spinner.destroy())
@@ -118,10 +109,6 @@ class RigidApp(App):
         """Loads and updates components after video is loaded or modified."""
         Label(self.videoview, text=f"Frame Count: {self.videoapp.fcount:4d}").place(x=10, y=80)
 
-        # if self.viewsb:
-        #     self.viewseekbar.set(self.videoapp.fcount)
-        #     self.viewseekbar.pack()
-        # self.seekbar.refresh(self.videoapp.fcount)
         self.seekbar.set_mode(SeekMode.VIEW, self.videoapp.fcount)
 
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
@@ -133,21 +120,13 @@ class RigidApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        # self.trimseekbar.set(self.videoapp.fcount)
-        # self.trimseekbar.pack()
         self.seekbar.set_mode(SeekMode.TRIM, self.videoapp.fcount)
 
     def updateframe(self):
         """Updates canvas to show current frame and overlays points."""
-        # if self.viewsb:
-        #     idx = self.viewseekbar.idx
-        # else:
-        #     idx = self.trimseekbar.idx
         idx = self.seekbar.idx
         self.videoapp.showframe(idx)
         self.tpoints.drawpoints(idx)
-            
-
 
     def scale(self):
         """Displays the scale ruler on canvas."""
@@ -236,9 +215,6 @@ class RigidApp(App):
         self.trects.clear()
         self.crop.clear()
         
-        # self.trimseekbar.clear()
-        # self.viewseekbar.clear()
-        # self.viewsb = False
         self.seekbar.clear()
         
         if self.videopath:
