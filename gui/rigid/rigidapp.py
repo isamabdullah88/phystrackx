@@ -78,9 +78,9 @@ class RigidApp(App):
                               self.processanim)
         self.trimseekbar.settrim(trimvideo=self.trimvideo)
 
-        self.save = None
-        self.plotobj = None
-        self.datamanager = None
+        self.saver = Save(self.videoview)
+        self.plotter = Plot(self.videoview)
+        self.datamanager = DataManager()
         self.viewsb = False
 
     def loadvideo(self, videopath: str):
@@ -219,8 +219,7 @@ class RigidApp(App):
         self.axes.clear()
         self.tpoints.clear()
         self.scruler.clear()
-        self.datamanager.clear() if self.datamanager is not None else None
-        self.datamanager = None
+        self.datamanager.clear()
 
     def reset(self):
         """Resets the video view and related tracking/overlay data."""
@@ -246,14 +245,12 @@ class RigidApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
 
-        if self.datamanager is not None:
-            self.plotobj = Plot(self.videoview, self.datamanager)
-        else:
-            self.datamanager = DataManager(self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
-                                           self.vwidth, self.vheight, self.fwidth, self.fheight,
-                                           self.videoapp.fps, self.scruler.scalef)
-            self.datamanager.transform()
-            self.plotobj = Plot(self.videoview, self.datamanager)
+        self.datamanager.load_data(self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                                   float(self.vwidth), float(self.vheight), float(self.fwidth),
+                                   float(self.fheight), self.videoapp.fps, self.scruler.scale)
+            
+        self.datamanager.transform()
+        self.plotter.activate(self.datamanager)
 
     def savedata(self):
         """Saves data from tracking or OCR to file (CSV or other format)."""
@@ -264,16 +261,12 @@ class RigidApp(App):
 
         self.title = TitleBar(self.videoview, self.vwidth, "Save Data")
 
-        if self.datamanager is not None:
-            self.save = Save(self.videoview, self.datamanager)
-        else:
-            self.datamanager = DataManager(
-                self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
-                self.vwidth, self.vheight, self.fwidth, self.fheight,
-                self.videoapp.fps, self.scruler.scalef
-            )
-            self.datamanager.transform()
-            self.save = Save(self.videoview, self.datamanager)
+        self.datamanager.load_data(self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
+                                   float(self.vwidth), float(self.vheight), float(self.fwidth),
+                                   float(self.fheight), self.videoapp.fps, self.scruler.scale)
+            
+        self.datamanager.transform()
+        self.saver.activate(self.datamanager)
 
     def plugins(self):
         """Toggles the plugin selection toolbar interface."""

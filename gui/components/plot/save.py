@@ -15,7 +15,7 @@ from .savetype import SaveType
 
 
 class Save:
-    def __init__(self, parent, datamanager: DataManager) -> None:
+    def __init__(self, parent) -> None:
         """
         Initializes the Save handler for exporting processed data.
 
@@ -24,9 +24,14 @@ class Save:
             datamanager (DataManager): DataManager instance with processed tracking and OCR data.
         """
         self.parent = parent
-        self.datamanager = datamanager
+        self.datamanager = None
         self.filepath = None
 
+    def activate(self, datamanager: DataManager) -> None:
+        """
+        Activates the Save handler with a DataManager instance.
+        """
+        self.datamanager = datamanager
         self.checkbox = Checkbox(self.parent, SaveType, text="Choose Data", callback=self.savedata)
 
     @property

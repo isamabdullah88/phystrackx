@@ -22,8 +22,8 @@ class Axes:
         self.theta = ctk.DoubleVar(value=0)
         self.slider = None
 
-        self.ox = 0
-        self.oy = self.vheight
+        self.ox = 0.0
+        self.oy = float(self.vheight)
 
         self.btnlist = btnlist
         self.activebtn = activebtn
@@ -80,7 +80,7 @@ class Axes:
 
     def rotatez(self, x, y, theta):
         """Rotate a point (x, y) by angle `theta` (radians) around the origin."""
-        c, s = np.cos(theta), np.sin(theta)
+        c, s = np.cos(theta).item(), np.sin(theta).item()
         return x * c - y * s, x * s + y * c
 
     def rotate(self, event=None):
