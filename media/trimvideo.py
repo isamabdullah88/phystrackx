@@ -7,6 +7,7 @@ Author: Isam Balghari
 """
 
 import os
+import platform
 import subprocess
 from typing import Optional
 import logging
@@ -44,7 +45,11 @@ def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int,
         
     video_filter = f"trim=start_frame={startidx}:end_frame={endidx+1},setpts=PTS-STARTPTS"
 
-    ffmpeg = abspath("ffmpeg/ffmpeg.exe")
+    if platform.system() == "Windows":
+        ffmpeg = abspath("ffmpeg/ffmpeg.exe")
+    else:
+        ffmpeg = "ffmpeg" # Assumes ffmpeg is in PATH on non-Windows systems
+
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", video_filter,
                writepath]
 
