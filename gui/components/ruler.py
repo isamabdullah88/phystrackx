@@ -14,7 +14,7 @@ class ScaleRuler:
         self.height = 30
         self.p1 = [floor(vwidth/2)-floor(self.width), floor(vheight/2)]
         self.p2 = [floor(vwidth/2)+floor(self.width), floor(vheight/2)]
-        self.scalef = 1
+        self.scale : float = 1.0
         self.dragging = None
         
         self.btnlist = btnlist
@@ -78,14 +78,10 @@ class ScaleRuler:
             for i in range(11):
                 tx = x1 + i * (x2 - x1) / 10
                 self.canvas.create_line(tx, y - 10, tx, y + 15, width=2, tags="ruler")
-                if self.scalef and i % 2 == 0:
-                    val = self.scalef * (tx - x1)
-                    # self.canvas.create_text(tx, y + 25, text=f"{val:.1f}", font=("Arial", 9), tags="ruler")
 
         # Label
-        if self.scalef:
-            length = abs(x2 - x1)
-            self.canvas.create_text((x1 + x2) / 2, y - 25, text=f"{self.scalef * length:.2f} units", font=("Arial", 10, "bold"), fill="blue", tags="ruler")
+        length = abs(x2 - x1)
+        self.canvas.create_text((x1 + x2) / 2, y - 25, text=f"{self.scale * length:.2f} units", font=("Arial", 10, "bold"), fill="blue", tags="ruler")
 
         # Resize handles
         self.canvas.create_rectangle(x1 - 2, y - 10, x1 + 2, y + 10, fill="red", tags="ruler")
@@ -93,12 +89,11 @@ class ScaleRuler:
 
     def askscale(self):
         pixels = abs(self.p2[0] - self.p1[0])
-        # dialogbox = simpledialog.askfloat("Scale", "Enter real-world length this ruler represents:")
         dialogbox = DialogBox(self.canvas, title="Scale", message="Enter real-world length this" \
         " ruler represents:", expected_type=float)
         
         if dialogbox.result and pixels:
-            self.scalef = dialogbox.result / pixels
+            self.scale = dialogbox.result / float(pixels)
             self.draw()
 
     def onclick(self, event):
@@ -138,7 +133,6 @@ class ScaleRuler:
         
     def clear(self):
         self.canvas.delete("ruler")
-        self.scalef = 1
 
 if __name__ == "__main__":
         
