@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from customtkinter import CTkCanvas, IntVar
+from experiments.components import OCRData
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
@@ -78,7 +79,7 @@ class Video:
         return self.rigid.trackpts
     
     @property
-    def ocrdata(self) -> List[List[str]]:
+    def ocrdata(self) -> OCRData:
         """OCR data extracted from video"""
         return self.rigid.texts
 

@@ -42,7 +42,7 @@ class Rigid(Experiment):
         super().__init__(trimpath, vwidth, vheight)
         self.tkqueue = tkqueue
         self.trackpts: List[List[NDArray[np.float32]]] = []
-        self.texts: List[List[str]] = []
+        self.texts: OCRData = None
         
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info("Rigid(Exp) initialized")
@@ -104,7 +104,7 @@ class Rigid(Experiment):
 
         ptsoff = []
         self.trackpts = [[[] for _ in range(fcount)] for _ in rects]
-        self.texts = [[[] for _ in range(fcount)] for _ in ocrrects]
+        self.textsdata = [[[] for _ in range(fcount)] for _ in ocrrects]
         ptstrack = []
 
         # Initial good features to track
@@ -160,7 +160,7 @@ class Rigid(Experiment):
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
                 text = self.ocr(frame, pixrect, pytesseract)
-                self.texts[j][i] = text
+                self.textsdata[j][i] = text
 
             fprev = fgray.copy()
 
@@ -176,12 +176,7 @@ class Rigid(Experiment):
             if progress is not None:
                 progress.set((i / (fcount - 1)) * 100)
 
-        # Final formatting
-        # for i in range(len(self.trackpts)):
-        #     if self.trackpts[i]:
-        #         self.trackpts[i] = np.array(self.trackpts[i], dtype=np.float32).reshape(-1, 2)
-            
-        self.texts = OCRData(self.texts)
+        self.texts = OCRData(self.textsdata)
     # ---------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 ###################################################################################
