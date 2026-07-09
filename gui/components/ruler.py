@@ -18,6 +18,7 @@ from .dialogbox import DialogBox
 class ScaleRuler:
     # Enterprise Configuration Matrix (Centralized Constants)
     RULER_TAG = "ruler"
+    BUTTON_TAG = "ruler_button"  # 👈 FIXED: Isolated unique tag for the apply button
     MIN_RULER_WIDTH_PX = 40
     HIT_BOX_TOLERANCE = 14
     COLOR_HANDLE = "#EC17C5"
@@ -30,9 +31,7 @@ class ScaleRuler:
                  vheight: int, 
                  btnlist: Dict[str, ctk.CTkButton], 
                  activebtn: Optional[ctk.CTkButton]) -> None:
-        """
-        Initializes the ScaleRuler shell overlay framework.
-        """
+        """Initializes the ScaleRuler shell overlay framework."""
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
@@ -75,13 +74,13 @@ class ScaleRuler:
         # Create and draw the floating validation overlay action target
         self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=40)
         
-        # CRITICAL: Mount floating UI components using window coordinates over Canvas
+        # FIXED: Assigned BUTTON_TAG to prevent canvas deletion sweeps
         self.btn_window_id = self.canvas.create_window(
             self.vwidth - 20, 
             self.vheight - 20, 
-            window=self.applybtn, 
+            window=self.applybtn,
             anchor="se", 
-            tags=self.RULER_TAG
+            tags=self.BUTTON_TAG
         )
         
     def mkbutton(self, imgpath: str, command: Any, btnsize: int = 30) -> ctk.CTkButton:
@@ -114,7 +113,7 @@ class ScaleRuler:
 
     def draw(self) -> None:
         """Re-renders complete scalar wire structures across pixel transforms."""
-        self.canvas.delete(self.RULER_TAG)
+        self.canvas.delete(self.RULER_TAG)  # Now clears ONLY lines/text, keeps button safe!
         x1, y = self.p1
         x2, _ = self.p2
 
@@ -209,10 +208,12 @@ class ScaleRuler:
     def clear(self) -> None:
         """Wipes layer maps cleanly out of scope registers."""
         self.canvas.delete(self.RULER_TAG)
+        self.canvas.delete(self.BUTTON_TAG)  # Clear the button cleanly on completion
         if self.applybtn:
             self.applybtn.destroy()
             self.applybtn = None
 
+            
 if __name__ == "__main__":
         
     root = ctk.CTk()
