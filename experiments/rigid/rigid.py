@@ -75,7 +75,10 @@ class Rigid(Experiment):
         ptstrack, ptsoff = self.tracker_engine.extract_initial_features(fgray, rects, crwidth, crheight)
         fprev = fgray.copy()
 
-        # 3. Main Frame Processing Timeline Loop
+        # Main Frame Processing Timeline Loop
+        self.logger.info(f"Commencing rigid body tracking and OCR from frame {frameidx} to {fcount - 1}.")
+        self.logger.info(f"Textual OCR regions: {len(ocrrects)} | Feature tracking regions: {len(rects)}")
+
         self._vidreader.seek(0)
         for i in tqdm(range(fcount - 1), desc="Processing Video Rails"):
             frame = self._vidreader.read()
@@ -113,8 +116,10 @@ class Rigid(Experiment):
             if progress is not None:
                 progress.set(int((i / (fcount - 1)) * 100))
 
+        self.logger.info("Rigid body tracking and OCR processing complete. Compiling final digitized sequences.")
         # Compile final digitized sequences 
         self.texts = OCRData(self.textsdata)
+        self.logger.info(f"OCR Data Cleaning Complete: {len(self.texts)} channels with {self.texts.samplecount} samples each.")
 
     def _dispatch_preview_frame(self, preview_frame: np.ndarray, current_frame_idx: int, start_idx: int) -> None:
         """Overlays diagnostic visual tracking markers and pushes to the preview UI queue."""
