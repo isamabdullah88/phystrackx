@@ -12,7 +12,7 @@ Author: Isam Balghari
 import customtkinter as ctk
 from PIL import Image, ImageSequence, ImageEnhance
 from core import abspath
-from .rigid.rigidapp import RigidApp
+from .rigid.rigid_app import RigidApp
 import webbrowser
 
 from PIL import Image, ImageSequence
