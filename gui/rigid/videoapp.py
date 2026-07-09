@@ -74,7 +74,7 @@ class Video:
         return self.rigid.fcount
 
     @property
-    def trackpts(self) -> List[List[NDArray[np.float32]]]:
+    def trackpts(self) -> List[List[List[float]]]:
         """Tracking points recorded from video."""
         return self.rigid.trackpts
     

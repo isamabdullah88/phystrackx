@@ -35,8 +35,8 @@ class Rigid(Experiment):
         self.tkqueue = tkqueue
         
         # Core Repositories
-        self.trackpts: List[List[NDArray[np.float32]]] = []
-        self.texts: Optional[OCRData] = None
+        self.trackpts: List[List[List[float]]] = []
+        self.texts: Optional[OCRData] = OCRData([])
         
         # Isolated Processor Engines
         self.tracker_engine = FeatureTracker()
