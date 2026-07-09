@@ -34,6 +34,8 @@ class RigidApp(App):
         """Initializes the RigidApp interface and its associated components."""
         super().__init__(root)
 
+        self.logger.info("Initializing RigidApp.")
+
         self.subtoolbar = SubToolbar(self.videoview, width=self.twidth, btnsize=self.btnsize)
 
         buttons = [
@@ -91,6 +93,7 @@ class RigidApp(App):
             self.loadcomponents()
 
         threading.Thread(target=load, args=(self.spinner,)).start()
+        self.logger.info("Loading video: %s", videopath)
 
     def trimvideo(self, startidx, endidx):
         """Trims the video based on user-defined start and end indices."""
@@ -104,6 +107,7 @@ class RigidApp(App):
             self.root.after(0, spinner.destroy())
 
         threading.Thread(target=trim, args=(self.spinner,)).start()
+        self.logger.info(f"Trimming video from frame {startidx} to {endidx}.")
 
     def loadcomponents(self):
         """Loads and updates components after video is loaded or modified."""
@@ -113,6 +117,7 @@ class RigidApp(App):
 
         self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
         self.updateframe()
+        self.logger.info("Components loaded and updated after video load/trim.")
 
     def loadseek(self):
         """Displays seekbar if video has enough frames."""
@@ -121,6 +126,7 @@ class RigidApp(App):
             return
         
         self.seekbar.set_mode(SeekMode.TRIM, self.videoapp.fcount)
+        self.logger.info(f"Seekbar loaded for video with frame count: {self.videoapp.fcount}")
 
     def updateframe(self):
         """Updates canvas to show current frame and overlays points."""
@@ -136,6 +142,7 @@ class RigidApp(App):
         """Enables rectangle drawing mode for object tracking."""
         self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
         if self.videoapp.fcount < 10:
+            self.logger.error("No video to do OCR. Please upload a video!")
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx,
@@ -144,6 +151,7 @@ class RigidApp(App):
     def appfilter(self):
         """Activates video filter UI for user input."""
         if self.videoapp.fcount < 10:
+            self.logger.error("No video to apply filter. Please upload a video!")
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
             return
         self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
@@ -153,7 +161,8 @@ class RigidApp(App):
     def drawcrop(self):
         """Activates the cropping tool to trim the video frame area."""
         if self.videoapp.fcount < 10:
-            messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
+            self.logger.error("No video to crop. Please upload a video!")
+            messagebox.showerror("Error", "No video to crop. Please upload a video!")
             return
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
         self.crop.drawrect()
@@ -162,6 +171,7 @@ class RigidApp(App):
     def drawocr(self):
         """Draws a region for OCR (optical character recognition)."""
         if self.videoapp.fcount < 10:
+            self.logger.error("No video to do OCR. Please upload a video!")
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
@@ -171,14 +181,17 @@ class RigidApp(App):
 
     def dogeometry(self):
         """Launches the geometry analysis plugin UI."""
+        self.logger.info("Launching geometry analysis plugin.")
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
         self.subtoolbar.toggle()
 
     def strack(self):
         """Performs point tracking across video frames and visualizes result."""
+        self.logger.info("Starting tracking process.")
         if (self.videoapp.fcount < 10) or ((len(self.trects.rects) == 0) and 
             (len(self.ocrrects.rects) == 0)):
+            self.logger.error("No task to track, upload video and mark points first!")
             messagebox.showerror("Error", "No task to track, upload video and mark points first!")
             return
 
@@ -223,10 +236,12 @@ class RigidApp(App):
     def plot(self):
         """Creates plots from tracked data or OCR values."""
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
+            self.logger.error("No tracked and text data available. Please start tracking first.")
             messagebox.showerror("Error", "No tracked and text data available. " \
             "Please start tracking first.")
             return
 
+        self.logger.info("Loading data for plotting.")
         self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
 
         self.datamanager.load_data(self.tpoints.tpts, self.videoapp.ocrdata, self.axes,
@@ -238,7 +253,9 @@ class RigidApp(App):
 
     def savedata(self):
         """Saves data from tracking or OCR to file (CSV or other format)."""
+        self.logger.info("Preparing to save tracked and OCR data.")
         if (len(self.videoapp.trackpts) == 0) and (len(self.videoapp.ocrdata) == 0):
+            self.logger.error("No tracked and text data available. Please start tracking first.")
             messagebox.showerror("Error", "No tracked and text data and available. " \
             "Please start tracking first.")
             return
@@ -250,9 +267,13 @@ class RigidApp(App):
                                    float(self.fheight), self.videoapp.fps, self.scruler.scale)
             
         self.datamanager.transform()
+        self.logger.info("Data handed to DataManager and transformed with axes transformation"
+                         " and scale")
         self.saver.activate(self.datamanager)
+        self.logger.info("Data saved successfully.")
 
     def plugins(self):
         """Toggles the plugin selection toolbar interface."""
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()
+        self.logger.info("Plugin toolbar toggled.")
