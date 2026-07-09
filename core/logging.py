@@ -1,9 +1,31 @@
-# log_config.py
+"""
+logging.py
+
+Handles logging setup by routing colored output to the console and 
+creating unique timestamped file logs for each unique runtime session.
+
+Author: Isam Balghari
+"""
+
+import os
 import logging
+from datetime import datetime
 import colorlog
 
-def setup_logging():
-    """ Formatter for colored console output """
+
+def setup_logging() -> None:
+    """
+    Dynamically builds a unique log file per runtime session inside a 
+    dedicated directory, configuring colored console streaming profiles.
+    """
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+
+    # Format: YYYYMMDD_HHMMSS -> e.g., logs/20260707_170500.log
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = os.path.join(log_dir, f"{timestamp}.log")
+
+    # Formatter for colored console output
     color_formatter = colorlog.ColoredFormatter(
         "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt='%Y-%m-%d %H:%M:%S',
@@ -20,8 +42,8 @@ def setup_logging():
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(color_formatter)
 
-    # File handler (no color)
-    file_handler = logging.FileHandler("app.log", encoding='utf-8')
+    # File handler
+    file_handler = logging.FileHandler(log_filename, encoding='utf-8')
     file_handler.setFormatter(logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     ))
