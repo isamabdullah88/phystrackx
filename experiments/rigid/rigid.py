@@ -2,191 +2,129 @@
 rigid.py
 
 Implements rigid body tracking using optical flow and optional OCR from video frames.
+Orchestrates isolated calculation processors for performance efficiency.
 
 Author: Isam Balghari
 """
 
-from typing import Optional, List
-from queue import Queue
 import cv2
 import numpy as np
-from numpy.typing import NDArray
 import logging
+from queue import Queue
+from typing import Optional, List
+from numpy.typing import NDArray
 
 from tqdm import tqdm
 from customtkinter import IntVar
+
 from experiments.experiment import Experiment
 from experiments.components import OCRData
-from core import NormalizedRect, abspath
+from core import NormalizedRect
 from gui.plugins import Crop, Filters
 
-# -------------------------------------------------------------------------------------------------
-###################################################################################
-# ---------------------------------- Rigid Class --------------------------------------------------
+# Internal decoupled engine imports
+from .tracker import FeatureTracker
+from .ocr_engine import OcrEngine
+
+
 class Rigid(Experiment):
-    """
-    Tracks rigid objects using Lucas-Kanade optical flow,
-    and optionally performs OCR within user-defined regions.
-    """
+    """Orchestrates feature array tracking and automated digit capture."""
 
-    def __init__(self, trimpath: str, vwidth: int, vheight: int, tkqueue: Queue = None) -> None:
-        """
-        Initialize the rigid tracker.
-
-        Args:
-            trimpath: Path to save trimmed/tracked video.
-            vwidth: Maximum viewer width.
-            vheight: Maximum viewer height.
-            tkqueue: Optional Tkinter queue for live frame updates.
-        """
+    def __init__(self, trimpath: str, vwidth: int, vheight: int, tkqueue: Optional[Queue] = None) -> None:
         super().__init__(trimpath, vwidth, vheight)
         self.tkqueue = tkqueue
-        self.trackpts: List[List[NDArray[np.float32]]] = []
-        self.texts: OCRData = None
         
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.info("Rigid(Exp) initialized")
+        # Core Repositories
+        self.trackpts: List[List[NDArray[np.float32]]] = []
+        self.texts: Optional[OCRData] = None
+        
+        # Isolated Processor Engines
+        self.tracker_engine = FeatureTracker()
+        self.ocr_engine = OcrEngine()
+        
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Modularized Rigid analysis environment ready.")
 
-    # ---------------------------------------------------------------------------------------------
-    def ocr(self, frame: cv2.Mat, rect: 'PixelRect', pytesseract) -> str:
-        """
-        Extract text using OCR from the selected rectangular region.
-
-        Args:
-            frame: Frame from which to extract.
-            rect: Rectangle to crop before OCR.
-            pytesseract: pytesseract module reference.
-
-        Returns:
-            Extracted text.
-        """
-        crop_img = frame[rect.ymin:rect.ymax, rect.xmin:rect.xmax]
-        gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
-        config = r'--oem 3 --psm 6 outputbase digits'
-        text = pytesseract.image_to_string(gray, config=config)
-        cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        return text
-    # ---------------------------------------------------------------------------------------------
-
-
-    # ---------------------------------------------------------------------------------------------
-    def track(self, frameidx: int, rects: list[NormalizedRect], ocrrects: list[NormalizedRect], filters: Filters,
-              crop: Crop, progress: Optional[IntVar] = None) -> None:
-        """
-        Perform optical flow tracking and optional OCR detection.
-
-        Args:
-            rects: Rectangles to track.
-            ocrrects: Rectangles for OCR.
-            filters: Filters to apply to each frame.
-            crop: Cropper to apply to each frame.
-            progress: Optional variable to report GUI progress.
-        """
-        if ocrrects:
-            import pytesseract
-            import platform
-            if platform.system() == "Windows":
-                tesseract_path = abspath("Tesseract-OCR/tesseract.exe")
-                pytesseract.pytesseract.tesseract_cmd = tesseract_path
-                self.logger.info("Tesseract OCR initialized for Windows at path: %s", tesseract_path)
-            
-
+    def track(self, 
+              frameidx: int, 
+              rects: List[NormalizedRect], 
+              ocrrects: List[NormalizedRect], 
+              filters: Filters,
+              crop: Crop, 
+              progress: Optional[IntVar] = None) -> None:
+        """Executes analysis sequences across video payloads."""
+        
+        # 1. Establish frame limits and geometry dimensions
         crwidth = crop.crprect.width if crop.crprect else self.fwidth
         crheight = crop.crprect.height if crop.crprect else self.fheight
 
         self._vidreader.seek(frameidx)
         fcount = self._vidreader.fcount
 
+        # Read initial seed frame
         frame = self._vidreader.read()
         frame = cv2.resize(frame, (self.fwidth, self.fheight))
         frame = filters.appfilter(crop.appcrop(frame))
         fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        ptsoff = []
+        # 2. Initialize tracking series with None and empty text strings
         self.trackpts = [[[] for _ in range(fcount)] for _ in rects]
         self.textsdata = [[[] for _ in range(fcount)] for _ in ocrrects]
-        ptstrack = []
 
-        # Initial good features to track
-        for rect in rects:
-            pixrect = rect.norm2pix(crwidth, crheight)
-            mask = np.zeros_like(fgray, dtype=np.uint8)
-            mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
-
-            p0 = cv2.goodFeaturesToTrack(
-                fgray, maxCorners=100, qualityLevel=0.4,
-                minDistance=5, blockSize=5, mask=mask
-            )
-            if p0 is not None:
-                ptstrack.append(p0.astype(np.float32).reshape(-1, 1, 2))
-                pt0 = self.pts2pt(p0, [0, 0])
-                rcent = pixrect.tocenter()
-                ptsoff.append([int(rcent[0] - pt0[0]), int(rcent[1] - pt0[1])])
-            else:
-                ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
-
+        # Extract features targeting active structures
+        ptstrack, ptsoff = self.tracker_engine.extract_initial_features(fgray, rects, crwidth, crheight)
         fprev = fgray.copy()
 
-        lk_params = dict(
-            winSize=(15, 15),
-            maxLevel=5,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
-        )
-
+        # 3. Main Frame Processing Timeline Loop
         self._vidreader.seek(0)
-        for i in tqdm(range(fcount - 1)):
+        for i in tqdm(range(fcount - 1), desc="Processing Video Rails"):
             frame = self._vidreader.read()
 
-            # Skip if frame is before frameidx
             if i < frameidx:
                 continue
 
+            # Standard Transformation Pipeline
             frame = cv2.resize(frame, (self.fwidth, self.fheight))
             frame = filters.appfilter(crop.appcrop(frame))
             fgray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
+            # A. Process Spatial Translation Track Vectors
             for j, p0 in enumerate(ptstrack):
                 if p0.size == 0:
                     continue
-                p1, st, _ = cv2.calcOpticalFlowPyrLK(fprev, fgray, p0, None, **lk_params)
-                if p1 is not None and st is not None:
-                    p1p = p1[st == 1].reshape(-1, 1, 2)
-                    ptstrack[j] = p1p if p1p.size > 0 else p0
-                else:
-                    ptstrack[j] = p0
-                x, y = self.pts2pt(ptstrack[j], ptsoff[j])
+                p1p = self.tracker_engine.step_optical_flow(fprev, fgray, p0)
+                ptstrack[j] = p1p
+                
+                # Transform arrays via point converters
+                x, y = self.pts2pt(p1p, ptsoff[j])
                 self.trackpts[j][i] = [x, y]
 
+            # B. Process String Digit Conversions
             for j, rect in enumerate(ocrrects):
                 pixrect = rect.norm2pix(crwidth, crheight)
-                text = self.ocr(frame, pixrect, pytesseract)
-                self.textsdata[j][i] = text
+                self.textsdata[j][i] = self.ocr_engine.extract_digits(frame, pixrect)
 
             fprev = fgray.copy()
 
-            # GUI frame update
+            # 4. Dispatch Visual Buffers via Safe Thread Pipelines
             if self.tkqueue and not self.tkqueue.full():
-                tkframe = frame.copy()
-                for pts in self.trackpts:
-                    for k in range(max(frameidx, i - 30), i):
-                        x, y = pts[k]
-                        tkframe = cv2.circle(tkframe, (x, y), 5, (0, 0, 255), 1)
-                self.tkqueue.put(tkframe)
+                self._dispatch_preview_frame(frame.copy(), i, frameidx)
 
             if progress is not None:
-                progress.set((i / (fcount - 1)) * 100)
+                progress.set(int((i / (fcount - 1)) * 100))
 
+        # Compile final digitized sequences 
         self.texts = OCRData(self.textsdata)
-    # ---------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------
-###################################################################################
-# ---------------------------------- Rigid Class --------------------------------------------------
 
-
-# -------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    from core import PixelRect
-    rigid = Rigid("track-sfriction.mp4", 900, 600)
-    rigid.addvideo("R1.mp4")
-    rects = [PixelRect(284, 52, 23, 20)]
-    rigid.track(rects, [], Filters(), Crop())
+    def _dispatch_preview_frame(self, preview_frame: np.ndarray, current_frame_idx: int, start_idx: int) -> None:
+        """Overlays diagnostic visual tracking markers and pushes to the preview UI queue."""
+        for pts in self.trackpts:
+            # Render trace vectors matching history length constants
+            for k in range(max(start_idx, current_frame_idx - 30), current_frame_idx):
+                coords = pts[k]
+                if coords is None:  # Safely skip uninitialized tracking frames
+                    continue
+                
+                x, y = coords
+                cv2.circle(preview_frame, (x, y), 4, (0, 0, 255), -1)
+        self.tkqueue.put(preview_frame)
