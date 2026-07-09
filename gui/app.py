@@ -9,6 +9,7 @@ loading videos, interacting with toolbars, and initializing tracking operations.
 Author: Isam Balghari
 """
 
+from logging import getLogger
 from math import floor
 from tkinter import filedialog, font
 import customtkinter as ctk
@@ -23,7 +24,10 @@ from .components.tooltip import ToolTip
 class App:
     def __init__(self, root):
         self.root = root
-        
+
+        self.logger = getLogger(__name__)
+        self.logger.info("Initializing PhysTrackX Base App.")
+
         defaultfont = font.nametofont("TkDefaultFont")
         defaultfont.configure(family="Arial", size=14)
 
@@ -45,6 +49,9 @@ class App:
         self.vheight = self.theight - self.seekbarh - self.pady
         self.fwidth = self.vwidth
         self.fheight = self.vheight
+        self.logger.info(f"App dimensions set: Canvas({self.cwidth}x{self.cheight}), "
+                         f"Toolbar({self.twidth}x{self.theight}), "
+                         f"Video({self.vwidth}x{self.vheight})")
 
         self.btnlist = {}
 
@@ -67,6 +74,7 @@ class App:
 
     def toolbar(self) -> None:
         """Constructs toolbar and video area layout."""
+        self.logger.info("Setting up scrollable toolbar and video area.")
         self.scrollframe = ctk.CTkScrollableFrame(self.root, width=self.twidth, height=self.theight,
                                                   bg_color="#899fbd", fg_color="#5bdada")
         self.scrollframe.pack(padx=0, pady=0, side=ctk.LEFT)
@@ -94,6 +102,8 @@ class App:
             btn = self.mkbutton(imgpath, command)
             ToolTip(btn, tooltip)
             self.btnlist[imgpath.split('/')[-1][:-4]] = btn
+        
+        self.logger.info("Toolbar buttons created.")
 
         # Video panel layout
         self.vidframe = ctk.CTkFrame(self.root, width=self.vwidth, height=self.theight,
@@ -108,8 +118,11 @@ class App:
 
         # Title and Axes setup
         self.title = TitleBar(self.videoview, self.vwidth, "Welcome!")
+
         self.axes = Axes(self.vidframe, self.videoview, self.vwidth, self.vheight,
                          self.btnlist, self.btnlist["axis"])
+        
+        self.logger.info("Axes component initialized.")
 
     def openvideo(self) -> None:
         """Open a video file using file dialog."""
