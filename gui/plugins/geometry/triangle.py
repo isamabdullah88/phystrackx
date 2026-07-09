@@ -152,16 +152,16 @@ class Triangle:
             else:
                 self.canvas.itemconfig(line.tkline, fill="#3cd1df", width=2)
 
-    def label_lengths(self) -> None:
+    def label_lengths(self, scale: float) -> None:
         """
         Display the length of each side of the triangle on the canvas.
         """
         for line in self.lines:
-            line.label_length(self.canvas, color="#CCFFAE")
+            line.label_length(self.canvas, scale, color="#FFFFFF")
             
     def draw_angles(self) -> None:
             self.drawangles = DrawAngles(self.points[0], self.points[1], self.points[2])
-            self.drawangles.draw(self.canvas, color="#27e586")
+            self.drawangles.draw(self.canvas, color="#ffffff")
 
     def hide(self):
         """Hides the triangle and its components"""

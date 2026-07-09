@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from customtkinter import CTkCanvas, IntVar
+from experiments.components import OCRData
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
@@ -61,7 +62,7 @@ class Video:
                            tkqueue=self.processanim.queue)
         self.frameidx = 0
 
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger(__name__)
         self.logger.info("Video App initialized")
         self.trimvideo = self.rigid.trim
         
@@ -73,12 +74,12 @@ class Video:
         return self.rigid.fcount
 
     @property
-    def trackpts(self) -> List[List[NDArray[np.float32]]]:
+    def trackpts(self) -> List[List[List[float]]]:
         """Tracking points recorded from video."""
         return self.rigid.trackpts
     
     @property
-    def ocrdata(self) -> List[List[str]]:
+    def ocrdata(self) -> OCRData:
         """OCR data extracted from video"""
         return self.rigid.texts
 
@@ -123,6 +124,8 @@ class Video:
             self.logger.info("Video added from: %s", videopath)
         
         self.crop.set(self.fwidth, self.fheight)
+        self.logger.info(f"Video loaded: {videopath}, Frame count: {self.fcount}, FPS: {self.fps},"
+                         f"Width: {self.fwidth}, Height: {self.fheight}")
 
 
     def showframe(self, idx: int) -> None:
@@ -152,7 +155,7 @@ class Video:
             ocr (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
-        # self.rigid.setseek(self.frameidx)
+        self.logger.info("Starting tracking at frame index: %d", self.frameidx)
         self.rigid.track(self.frameidx, trect.rects, ocr.rects, self.filters, self.crop, progress)
 
     def clear(self) -> None:
@@ -160,3 +163,4 @@ class Video:
         Clear stored tracking points from memory.
         """
         self.rigid.trackpts.clear()
+        self.logger.info("Tracking points cleared from memory.")

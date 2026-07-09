@@ -33,7 +33,7 @@ class SelectPoints:
         self.trsize: int = trsize
 
         self.selectedpoints: List[FPoint] = []
-        self.currpts: List[List[int]] = []  # Format: [canvas_id, traj_index, frame_index]
+        self.currpts: List[List[any]] = []  # Format: [canvas_id, traj_index, frame_index]
 
         self.tidx: Optional[int] = None  # Selected trajectory index
         self.fidx: Optional[int] = None  # Current frame index

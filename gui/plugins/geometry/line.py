@@ -37,19 +37,19 @@ class Line:
         distance = math.hypot(x0 - proj_x, y0 - proj_y)
         return distance <= threshold
 
-    def label_length(self, canvas: tk.Canvas, color: str = "#5EDC16") -> None:
+    def label_length(self, canvas: tk.Canvas, scale: float, color: str = "#5EDC16") -> None:
         """
         Draws the length of the line on the canvas at its midpoint.
         """
         mid_x = (self.ptstart.x + self.ptend.x) / 2
         mid_y = (self.ptstart.y + self.ptend.y) / 2
-        length = self.ptstart.distance(self.ptend)
+        length = self.ptstart.distance(self.ptend) * scale
 
         self.tktxt = canvas.create_text(
             mid_x, mid_y,
             text=f"{length:.1f}",
             fill=color,
-            font=("Arial", 9, "italic")
+            font=("Arial", 12, "italic")
         )
 
     def hide(self, canvas: tk.Canvas):

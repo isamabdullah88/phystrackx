@@ -107,7 +107,7 @@ class DrawAngles:
         mid_angle = math.radians(start + extent / 2)
         label_x = x + 1.2 * r * math.cos(mid_angle)
         label_y = y + 1.2 * r * math.sin(mid_angle)
-        tktxt = canvas.create_text(label_x, label_y, text=f"{angle_deg:.1f}°", fill=color, font=("Arial", 10, "bold"))
+        tktxt = canvas.create_text(label_x, label_y, text=f"{angle_deg:.1f}°", fill=color, font=("Arial", 12, "bold"))
 
         return tkarc, tktxt
 
