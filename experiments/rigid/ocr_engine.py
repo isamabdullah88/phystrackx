@@ -31,11 +31,12 @@ class OcrEngine:
         
         crop_img = frame[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax]
         if crop_img.size == 0:
+            self.logger.warning("Empty crop region detected; returning empty string.")
             return ""
             
         gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
         config = r'--oem 3 --psm 6 outputbase digits'
         
         text = self.pytesseract.image_to_string(gray, config=config).strip()
-        cv2.putText(frame, text, (100, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
         return text
