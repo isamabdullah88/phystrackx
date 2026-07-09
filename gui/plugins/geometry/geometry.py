@@ -25,7 +25,10 @@ class Geometry:
         self.vheight = vheight
         self.btnlist = btnlist
         self.activebtn = activebtn
-        self.togglebtn : ToggleButton = ToggleButton(self.canvas, commandon=self.unhide, commandoff=self.hide)
+        self.togglebtn : ToggleButton = ToggleButton(self.canvas, commandon=self.unhide,
+                                                     commandoff=self.hide)
+
+        self.scale = 1.0
 
         self.currpt = None
         self.lines = []
@@ -44,15 +47,21 @@ class Geometry:
         self.unsltcolor = "#28a745"
         self.dragcolor = "#4fcfbe"
 
+    def set_scale(self, scale: float):
+        """Sets the scale factor for geometric measurements."""
+        self.scale = scale
+
     def pack(self):
         """Initialize buttons and canvas bindings."""
         self.btnframe = ctk.CTkFrame(self.canvas, width=60, fg_color="teal")
         
         self.anglebtn = mkbutton(self.btnframe, "assets/plugins/angle.png", self.compute_angle, 40)
-        self.distancebtn = mkbutton(self.btnframe, "assets/plugins/distance.png", self.compute_dist, 40)
+        self.distancebtn = mkbutton(self.btnframe, "assets/plugins/distance.png",
+                                    self.compute_dist, 40)
         self.delbtn = mkbutton(self.btnframe, "assets/bin.png", self.deltriangle, 40)
         self.applybtn = mkbutton(self.btnframe, "assets/plugins/exit.png", self.onexit, 60)
-        self.screenshot = mkbutton(self.btnframe, "assets/plugins/screenshot.png", self.capturescreen, 40)
+        self.screenshot = mkbutton(self.btnframe, "assets/plugins/screenshot.png", self.capturescreen,
+                                   40)
 
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<Motion>", self.ondrag)
@@ -146,7 +155,7 @@ class Geometry:
             return
 
         for triangle in selected_triangles:
-            triangle.label_lengths()
+            triangle.label_lengths(self.scale)
             triangle.select()
 
     def deltriangle(self):

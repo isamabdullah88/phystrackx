@@ -184,6 +184,8 @@ class RigidApp(App):
         self.logger.info("Launching geometry analysis plugin.")
         self.title = TitleBar(self.videoview, self.vwidth, "Geometry Tool")
         self.geometry.pack()
+        self.logger.info("Setting scale factor for geometry tool.")
+        self.geometry.set_scale(self.scruler.scale)
         self.subtoolbar.toggle()
 
     def strack(self):
