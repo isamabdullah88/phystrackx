@@ -1,3 +1,4 @@
+from logging import getLogger
 import cv2
 import numpy as np
 from typing import Tuple
@@ -11,6 +12,8 @@ class FeatureTracker:
             maxLevel=5,
             criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
         )
+
+        self.logger = getLogger(__name__)
 
     def extract_initial_features(self, gray_frame: np.ndarray, rects: list, crwidth: int, crheight: int) -> Tuple[list, list]:
         """Identifies prominent points to track inside designated regions of interest."""
@@ -37,6 +40,8 @@ class FeatureTracker:
             else:
                 ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
                 ptsoff.append([0, 0])
+
+        self.logger.info(f"Extracted {len(ptstrack)} feature point sets for tracking.")
                 
         return ptstrack, ptsoff
 
