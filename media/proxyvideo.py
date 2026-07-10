@@ -70,7 +70,7 @@ def proxyvideo(videopath: str, width: int = 1000, height: int = -2,
     # By default, FFmpeg applies -autorotate before video filters.
     # So it will rotate the portrait video upright, THEN apply the scale filter.
     command = [
-        'ffmpeg', 
+        ffmpeg, 
         "-y" if overwrite else "-n", 
         "-i", videopath, 
         "-vf", f"scale={resolution}", 
