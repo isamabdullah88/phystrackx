@@ -50,24 +50,6 @@ class FeatureTracker:
         ptsoff = []
         
         for k, rect in enumerate(rects):
-            # pixrect = rect.norm2pix(crpwidth, crpheight)
-            # mask = np.zeros_like(gframe, dtype=np.uint8)
-            # mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
-
-            # p0 = cv2.goodFeaturesToTrack(gframe, maxCorners=150, qualityLevel=0.01,
-            #                              minDistance=3, blockSize=3, mask=mask)
-            
-            # if p0 is not None:
-            #     ptstrack.append(p0.astype(np.float32).reshape(-1, 1, 2))
-                
-            #     # For decoupled scaling math, map initial offsets relative to center bounds
-            #     rcent = pixrect.tocenter()
-            #     # Default fallback calculation array structure matching standard points
-            #     mean_pt = np.mean(p0, axis=0).ravel()
-            #     ptsoff.append([int(rcent[0] - mean_pt[0]), int(rcent[1] - mean_pt[1])])
-            # else:
-            #     ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
-            #     ptsoff.append([0, 0])
             p0, off = self._feats_rect(gframe, rect, crpwidth, crpheight)
 
             ptstrack.append(p0)
