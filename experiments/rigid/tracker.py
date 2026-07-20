@@ -3,49 +3,64 @@ import cv2
 import numpy as np
 from typing import Tuple
 
+from core import NormalizedRect
+
 class FeatureTracker:
     """Manages Lucas-Kanade optical flow tracking calculations across frame transformations."""
     
     def __init__(self, lk_params: dict = None) -> None:
         self.lk_params = lk_params or dict(
-            winSize=(15, 15),
+            winSize=(50, 50),
             maxLevel=5,
-            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03)
+            criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)
         )
 
         self.logger = getLogger(__name__)
 
-    def extract_initial_features(self, gray_frame: np.ndarray, rects: list, crwidth: int, crheight: int) -> Tuple[list, list]:
+    def _feats_rect(self, gframe: np.ndarray, rect: NormalizedRect, crpwidth: int,
+                    crpheight: int) -> Tuple[np.ndarray, list]:
+        """Extracts feature points within a normalized rectangle."""
+        pixrect = rect.norm2pix(crpwidth, crpheight)
+        mask = np.zeros_like(gframe, dtype=np.uint8)
+        mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
+
+        p0 = cv2.goodFeaturesToTrack(gframe, maxCorners=150, qualityLevel=0.005,
+                                     minDistance=3, blockSize=10, mask=mask,
+                                     useHarrisDetector=True, k=0.04)
+        off = []
+        
+        if p0 is not None:
+            p0 = p0.astype(np.float32).reshape(-1, 1, 2)
+            self.logger.info(f"Extracted {p0.shape[0]} feature points for tracking.")
+
+            rcent = pixrect.tocenter()
+            mean_pt = np.mean(p0, axis=0).ravel()
+            off = [int(rcent[0] - mean_pt[0]), int(rcent[1] - mean_pt[1])]
+        else:
+            p0 = np.empty((0, 1, 2), dtype=np.float32)
+            off = [0, 0]
+            self.logger.warning("No feature points found in the specified rectangle.")
+
+        return p0, off
+
+    def extract_initial_features(self, gframe: np.ndarray, rects: list, crpwidth: int,
+                                 crpheight: int) -> Tuple[list, list]:
         """Identifies prominent points to track inside designated regions of interest."""
         ptstrack = []
         ptsoff = []
         
-        for rect in rects:
-            pixrect = rect.norm2pix(crwidth, crheight)
-            mask = np.zeros_like(gray_frame, dtype=np.uint8)
-            mask[pixrect.ymin:pixrect.ymax, pixrect.xmin:pixrect.xmax] = 255
+        for k, rect in enumerate(rects):
+            p0, off = self._feats_rect(gframe, rect, crpwidth, crpheight)
 
-            p0 = cv2.goodFeaturesToTrack(
-                gray_frame, maxCorners=100, qualityLevel=0.4,
-                minDistance=5, blockSize=5, mask=mask
-            )
-            if p0 is not None:
-                ptstrack.append(p0.astype(np.float32).reshape(-1, 1, 2))
-                # Note: Assuming self.pts2pt logic conversion is handled here or accessible
-                # For decoupled scaling math, map initial offsets relative to center bounds
-                rcent = pixrect.tocenter()
-                # Default fallback calculation array structure matching standard points
-                mean_pt = np.mean(p0, axis=0).ravel()
-                ptsoff.append([int(rcent[0] - mean_pt[0]), int(rcent[1] - mean_pt[1])])
-            else:
-                ptstrack.append(np.empty((0, 1, 2), dtype=np.float32))
-                ptsoff.append([0, 0])
+            ptstrack.append(p0)
+            ptsoff.append(off)
 
-        self.logger.info(f"Extracted {len(ptstrack)} feature point sets for tracking.")
+            self.logger.info(f"Extracted {p0.shape[0]} feature point sets for tracking for rectangle {k}.")
                 
         return ptstrack, ptsoff
 
-    def step_optical_flow(self, prev_gray: np.ndarray, curr_gray: np.ndarray, p0: np.ndarray) -> np.ndarray:
+    def step_optical_flow(self, prev_gray: np.ndarray, curr_gray: np.ndarray,
+                          p0: np.ndarray) -> np.ndarray:
         """Calculates displacement translations safely without losing vector alignments."""
         if p0.size == 0:
             return p0

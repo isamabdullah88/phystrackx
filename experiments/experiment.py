@@ -206,6 +206,9 @@ class Experiment:
         Returns:
             tuple[int, int]: Mean (x, y) as integer coordinates.
         """
+        if pts.shape[0] == 0:
+            return ptoff[0], ptoff[1]
+        
         pts = pts.reshape(-1, 2)
         x, y = np.mean(pts, axis=0)
         return floor(x) + floor(ptoff[0]), floor(y) + floor(ptoff[1])
