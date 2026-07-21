@@ -105,7 +105,12 @@ class Rect:
 
             self.pixelrects.append(PixelRect(sx, sy, ex-sx, ey-sy))
 
-            rect = PixelRect(sx-fx, sy-fy, ex-sx, ey-sy)            
+            xmin = min(sx, ex) - fx
+            ymin = min(sy, ey) - fy
+            width = abs(ex - sx)
+            height = abs(ey - sy)
+            rect = PixelRect(xmin, ymin, width, height)
+                        
             self.rects.append(rect.pix2norm(fwidth, fheight))
             
             self.canvas.unbind("<Button-1>")
