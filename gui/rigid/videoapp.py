@@ -146,17 +146,30 @@ class Video:
         self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
 
-    def track(self, trect: Rect, ocr: Rect, progress: IntVar) -> None:
+    def track(self, track_rects: Rect, ocr_rects: Rect, progress: IntVar) -> None:
         """
         Perform object tracking on the video using selected regions.
 
         Args:
-            trect (Rect): Region to track.
-            ocr (Rect): OCR target region.
+            track_rects (Rect): Region to track.
+            ocr_rects (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
         self.logger.info("Starting tracking at frame index: %d", self.frameidx)
-        self.rigid.track(self.frameidx, trect.rects, ocr.rects, self.filters, self.crop, progress)
+        self.logger.info("Tracking rectangles: ")
+        for rect in track_rects.rects:
+            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            self.logger.info("Track Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
+                             pixelrect.ymin, pixelrect.width, pixelrect.height)
+
+        self.logger.info("OCR rectangles: ")
+        for rect in ocr_rects.rects:
+            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            self.logger.info("OCR Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
+                             pixelrect.ymin, pixelrect.width, pixelrect.height)
+
+        self.rigid.track(self.frameidx, track_rects.rects, ocr_rects.rects, self.filters,
+                         self.crop, progress)
 
     def clear(self) -> None:
         """
