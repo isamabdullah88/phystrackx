@@ -13,7 +13,6 @@ from tkinter import messagebox
 from gui.app import App
 
 # Component imports
-from gui.components.processanim import ProcessAnimation
 from gui.components.spinner import Spinner
 from gui.components.progressbar import ProgressBar
 from gui.components.rect import Rect
@@ -46,16 +45,25 @@ class RigidApp(App):
         self.seekbar.set_trim_callback(self.trimvideo)
 
         # 2. Local Overlay Views
-        self.track_rects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist, self.plugin_mgr.btnlist.get('rectanglebd'))
-        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist, self.plugin_mgr.btnlist.get('rectanglebd'), toggle=self.plugin_mgr.subtoolbar.toggle)
+        self.track_rects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist,
+                                self.plugin_mgr.btnlist.get('rectanglebd'))
+
+        self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist,
+                             self.plugin_mgr.btnlist.get('rectanglebd'),
+                             toggle=self.plugin_mgr.subtoolbar.toggle)
+        
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
 
-        self.processanim = ProcessAnimation(self.videoview, self.plugin_mgr.crop)
-        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth, vheight=self.vheight)
-        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist, self.plugin_mgr.btnlist.get("ruler"))
+        # self.processanim = ProcessAnimation(self.videoview, self.plugin_mgr.crop)
+        self.progressbar = ProgressBar(self.root, self.videoview, vwidth=self.vwidth,
+                                       vheight=self.vheight)
+        
+        self.scruler = ScaleRuler(self.videoview, self.vwidth, self.vheight,
+                                  self.plugin_mgr.btnlist, self.plugin_mgr.btnlist.get("ruler"))
 
         # Video Backend Thread Attachment
-        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.crop, self.plugin_mgr.filters, self.processanim)
+        self.videoapp = Video(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.crop,
+                              self.plugin_mgr.filters)
 
         # Dynamic access alias configs
         self.btnlist = self.plugin_mgr.btnlist
@@ -67,7 +75,8 @@ class RigidApp(App):
     def _ensure_video_loaded(self) -> bool:
         """Internal interceptor safeguarding core functions from uninitialized states."""
         if self.videoapp.fcount < 10:
-            self.logger.warning("User attempted context command block activation without verified video payload frames.")
+            self.logger.warning("User attempted context command block activation without verified"
+                                " video payload frames.")
             messagebox.showerror("Error", "Please upload a video file first!")
             return False
         return True
@@ -75,7 +84,8 @@ class RigidApp(App):
     def _ensure_video_trimmed(self) -> bool:
         """Internal interceptor safeguarding core functions from uninitialized states."""
         if not self.seekbar.trimmed:
-            self.logger.warning("User attempted context command block activation without verified video trimming operation.")
+            self.logger.warning("User attempted context command block activation without verified"
+                                " video trimming operation.")
             messagebox.showerror("Error", "Please trim the video first!")
             return False
         return True
@@ -95,7 +105,8 @@ class RigidApp(App):
         ], daemon=True).start()
 
     def trimvideo(self, startidx: int, endidx: int) -> None:
-        self.logger.info(f"Targeted video clipping operation initialized. Frame coordinates range: [{startidx} -> {endidx}]")
+        self.logger.info(f"Targeted video clipping operation initialized. Frame coordinates range:"
+                         f" [{startidx} -> {endidx}]")
         self.spinner = Spinner(self.videoview, self.videoapp.imgview, self.plugin_mgr.crop)
         
         threading.Thread(target=lambda: [
@@ -111,7 +122,8 @@ class RigidApp(App):
 
     def loadcomponents(self) -> None:
         self.seekbar.set_mode(SeekMode.VIEW, self.videoapp.fcount)
-        self.tpoints.addpoints(self.videoapp.trackpts, self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
+        self.tpoints.addpoints(self.videoapp.trackpts, self.plugin_mgr.crop.crpx,
+                               self.plugin_mgr.crop.crpy)
         self.updateframe()
 
     def loadseek(self) -> None:
@@ -121,7 +133,8 @@ class RigidApp(App):
 
     def updateframe(self) -> None:
         # Note: Avoid high-frequency logger.info operations inside live frame renders. 
-        # Scrubbing the timeline would write 60+ logs/second, causing disk I/O bottlenecks and UI stutters.
+        # Scrubbing the timeline would write 60+ logs/second, causing disk I/O bottlenecks
+        # and UI stutters.
         self.videoapp.showframe(self.seekbar.idx)
         self.tpoints.drawpoints(self.seekbar.idx)
 
@@ -133,7 +146,8 @@ class RigidApp(App):
         if self._ensure_video_loaded() and self._ensure_video_trimmed():
             self.logger.info("Activating workspace item tracking validation boxes.")
             self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
-            self.track_rects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight, self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
+            self.track_rects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight,
+                                      self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
 
     def appfilter(self) -> None:
         if self._ensure_video_loaded():
@@ -153,7 +167,8 @@ class RigidApp(App):
         if self._ensure_video_loaded():
             self.logger.info("Mapping optical text zone character digit capture constraints.")
             self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
-            self.ocrrects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight, self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
+            self.ocrrects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight,
+                                   self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
             self.plugin_mgr.toggle()
 
     def dogeometry(self) -> None:
@@ -163,7 +178,8 @@ class RigidApp(App):
         self.plugin_mgr.toggle()
 
     def strack(self) -> None:
-        if not self._ensure_video_loaded() or (not self.track_rects.rects and not self.ocrrects.rects):
+        if not self._ensure_video_loaded() or not self._ensure_video_trimmed() or \
+            (not self.track_rects.rects and not self.ocrrects.rects):
             self.logger.warning("Tracking execution bypassed: no nodes or bounding layers found on canvas.")
             messagebox.showerror("Error", "No nodes mapped to track. Select regions first!")
             return
@@ -173,13 +189,13 @@ class RigidApp(App):
         self.axes.clear()
         self.track_rects.cleartkrects()
         self.ocrrects.cleartkrects()
-        self.processanim.pack()
+        # self.processanim.pack()
         self.progressbar.pack()
 
         threading.Thread(target=lambda: [
             self.videoapp.track(self.track_rects, self.ocrrects, self.progressbar.progress),
             self.root.after(0, lambda: [
-                self.processanim.destroy(), 
+                # self.processanim.destroy(), 
                 self.progressbar.destroy(), 
                 self.loadcomponents(),
                 self.logger.info("Background point tracking calculations wrapped cleanly.")
