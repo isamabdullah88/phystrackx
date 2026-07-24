@@ -50,6 +50,14 @@ class SeekBar:
             return self.view_seekbar.idx
         return self.trim_seekbar.idx
 
+    @property
+    def trimmed(self) -> bool:
+        """
+        Exposes a unified trimmed state property. 
+        The main application doesn't need to know which seekbar is active.
+        """
+        return self.trim_seekbar.trimmed
+
     def set_mode(self, mode: SeekMode, frame_count: int) -> None:
         """
         Handles the structural layout shuffling and resets safely when modes change.
@@ -80,6 +88,7 @@ class SeekBar:
     def clear(self) -> None:
         """Cleans and unpacks all controlled UI elements."""
         self.trim_seekbar.clear()
+        self.trim_seekbar.reset_state()
         self.view_seekbar.clear()
         self._mode = SeekMode.UNINITIALIZED
         self._frame_count = 0
