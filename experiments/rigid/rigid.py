@@ -45,11 +45,10 @@ class Rigid(Experiment):
         self.logger = logging.getLogger(__name__)
         self.logger.info("Modularized Rigid analysis environment ready.")
 
-        self.MIN_TRACK_POINTS = 1
-
     def inittrackers(self, rects: List[NormalizedRect], initframe: NDArray[np.uint8]) -> None:
         """Initializes deep learning trackers for each region of interest."""
-        
+
+        self.mltrackers = []
         for rect in rects:
             pixrect = rect.norm2pix(self.fwidth, self.fheight)
 
