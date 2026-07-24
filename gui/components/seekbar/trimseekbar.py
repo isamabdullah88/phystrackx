@@ -61,6 +61,8 @@ class TrimSeekBar:
         self.trimvideo: Optional[Callable] = None
         self.loadvideo: Optional[Callable] = None
 
+        self.trimmed: bool = False
+
     @property
     def startidx(self) -> int:
         """Return index of the left bar."""
@@ -102,6 +104,12 @@ class TrimSeekBar:
         
         if self.btnframe is not None:
             self.btnframe.destroy()
+
+    def reset_state(self) -> None:
+        """
+        Reset the internal state of the TrimSeekBar.
+        """
+        self.trimmed = False
 
     def pack(self) -> None:
         """
@@ -225,6 +233,7 @@ class TrimSeekBar:
         if self.trimvideo:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
+            self.trimmed = True
 
     def mkbutton(self, imgpath: str, command: Callable, btnsize: int = 30) -> ctk.CTkButton:
         """
