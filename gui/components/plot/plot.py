@@ -71,81 +71,84 @@ class Plot:
 
         plt.show(block=False)
 
+    def _plot(self, xdata, ydata, xlabel, ylabel, title, color):
+        plt.figure()
+        plt.title(title, fontname="Segoe UI Emoji")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+
+        xmin, xmax = np.min(xdata), np.max(xdata)
+        ymin, ymax = np.min(ydata), np.max(ydata)
+        plt.xlim((xmin*0.95, xmax*1.05))  # Add a 5% margin for better visibility
+        plt.ylim((ymin*0.95, ymax*1.05))  # Add a 5% margin for better visibility
+        plt.plot(xdata, ydata, '.', color=color)
+
     def plotx(self):
         for k, tpts in enumerate(self.points):
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$x$ vs $T$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$x$")
-            plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((np.min(tpts[:, 0]), np.max(tpts[:, 0])))
-            plt.plot(self.timestamps, tpts[:, 0], '-m')
+            # plt.figure()
+            # plt.title(f"[O-{k+1}] " + r"$x$ vs $T$", fontname= "Segoe UI Emoji")
+            # plt.xlabel(r"$T(s)$")
+            # plt.ylabel(r"$x$")
+            # plt.xlim((0, self.timestamps[-1]))
+            # plt.ylim((np.min(tpts[:, 0]), np.max(tpts[:, 0])))
+            # plt.plot(self.timestamps, tpts[:, 0], '-m')
+            self._plot(self.timestamps, tpts[:, 0], xlabel=r"$T(s)$", ylabel=r"$x$",
+                       title=f"[O-{k+1}] " + r"$x$ vs $T$", color='m')
 
     def ploty(self):
         for k, tpts in enumerate(self.points):
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$y$ vs $T$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$y$")
-            plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((np.min(tpts[:, 1]), np.max(tpts[:, 1])))
-            plt.plot(self.timestamps, tpts[:, 1], '-m')
+            # plt.figure()
+            # plt.title(f"[O-{k+1}] " + r"$y$ vs $T$", fontname= "Segoe UI Emoji")
+            # plt.xlabel(r"$T(s)$")
+            # plt.ylabel(r"$y$")
+            # plt.xlim((0, self.timestamps[-1]))
+            # plt.ylim((np.min(tpts[:, 1]), np.max(tpts[:, 1])))
+            # plt.plot(self.timestamps, tpts[:, 1], '-m')
+            self._plot(self.timestamps, tpts[:, 1], xlabel=r"$T(s)$", ylabel=r"$y$",
+                       title=f"[O-{k+1}] " + r"$y$ vs $T$", color='m')
 
     def plotxy(self):
         for k, tpts in enumerate(self.points):
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$y$ vs $x$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$x$")
-            plt.ylabel(r"$y$")
-            plt.xlim((np.min(tpts[:, 0]), np.max(tpts[:, 0])))
-            plt.ylim((np.min(tpts[:, 1]), np.max(tpts[:, 1])))
-            plt.plot(tpts[:, 0], tpts[:, 1], '-c')
+            # plt.figure()
+            # plt.title(f"[O-{k+1}] " + r"$y$ vs $x$", fontname= "Segoe UI Emoji")
+            # plt.xlabel(r"$x$")
+            # plt.ylabel(r"$y$")
+            # plt.xlim((np.min(tpts[:, 0]), np.max(tpts[:, 0])))
+            # plt.ylim((np.min(tpts[:, 1]), np.max(tpts[:, 1])))
+            # plt.plot(tpts[:, 0], tpts[:, 1], '-c')
+            self._plot(tpts[:, 0], tpts[:, 1], xlabel=r"$x$", ylabel=r"$y$",
+                       title=f"[O-{k+1}] " + r"$y$ vs $x$", color='c')
 
     def plotdx(self):
         for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$\frac{dx}{dt}$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$\frac{dx}{dt}$")
-            plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
-            plt.ylim((np.min(dx_dt), np.max(dx_dt)))
-            plt.plot(self.timestamps, dx_dt, '-g')
+            self._plot(self.timestamps, dx_dt, xlabel=r"$T(s)$", ylabel=r"$\frac{dx}{dt}$",
+                       title=f"[O-{k+1}] " + r"$\frac{dx}{dt}$", color='g')
+            # plt.plot(self.timestamps, dx_dt, '-g')
 
     def plotdy(self):
         for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$\frac{dy}{dt}$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$\frac{dy}{dt}$")
-            plt.xlim((np.min(self.timestamps), np.max(self.timestamps)))
-            plt.ylim((np.min(dy_dt), np.max(dy_dt)))
-            plt.plot(self.timestamps, dy_dt, '-g')
+            self._plot(self.timestamps, dy_dt, xlabel=r"$T(s)$", ylabel=r"$\frac{dy}{dt}$",
+                       title=f"[O-{k+1}] " + r"$\frac{dy}{dt}$", color='g')
+            # plt.ylim((np.min(dy_dt), np.max(dy_dt)))
+            # plt.plot(self.timestamps, dy_dt, '-g')
 
     def plotd2x(self):
         for k, tpts in enumerate(self.points):
             dx_dt = np.gradient(tpts[:, 0], self.timestamps)
             d2x_dt2 = np.gradient(dx_dt, self.timestamps)
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$\frac{d^2x}{dt^2}$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$\frac{d^2x}{dt^2}$")
-            plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((np.min(d2x_dt2), np.max(d2x_dt2)))
-            plt.plot(self.timestamps, d2x_dt2, '-b')
+            self._plot(self.timestamps, d2x_dt2, xlabel=r"$T(s)$", ylabel=r"$\frac{d^2x}{dt^2}$",
+                       title=f"[O-{k+1}] " + r"$\frac{d^2x}{dt^2}$", color='b')
 
     def plotd2y(self):
         for k, tpts in enumerate(self.points):
             dy_dt = np.gradient(tpts[:, 1], self.timestamps)
             d2y_dt2 = np.gradient(dy_dt, self.timestamps)
-            plt.figure()
-            plt.title(f"[O-{k+1}] " + r"$\frac{d^2y}{dt^2}$", fontname= "Segoe UI Emoji")
-            plt.xlabel(r"$T(s)$")
-            plt.ylabel(r"$\frac{d^2y}{dt^2}$")
-            plt.xlim((0, self.timestamps[-1]))
-            plt.ylim((np.min(d2y_dt2), np.max(d2y_dt2)))
-            plt.plot(self.timestamps, d2y_dt2, '-b')
+            self._plot(self.timestamps, d2y_dt2, xlabel=r"$T(s)$", ylabel=r"$\frac{d^2y}{dt^2}$",
+                       title=f"[O-{k+1}] " + r"$\frac{d^2y}{dt^2}$", color='b')
+            # plt.ylim((np.min(d2y_dt2), np.max(d2y_dt2)))
+            # plt.plot(self.timestamps, d2y_dt2, '-b')
 
 
 def main():
