@@ -29,9 +29,9 @@ from .ocr_engine import OcrEngine
 class Rigid(Experiment):
     """Orchestrates feature array tracking and automated digit capture."""
 
-    def __init__(self, trimpath: str, vwidth: int, vheight: int, tkqueue: Optional[Queue] = None) -> None:
+    def __init__(self, trimpath: str, vwidth: int, vheight: int) -> None:
         super().__init__(trimpath, vwidth, vheight)
-        self.tkqueue = tkqueue
+        # self.tkqueue = tkqueue
         
         # Core Repositories
         self.trackpts: List[List[List[float]]] = []
@@ -123,15 +123,15 @@ class Rigid(Experiment):
         self.texts = OCRData(self.textsdata)
         self.logger.info(f"OCR Data Cleaning Complete: {len(self.texts)} channels with {self.texts.samplecount} samples each.")
 
-    def _dispatch_preview_frame(self, preview_frame: np.ndarray, current_frame_idx: int, start_idx: int) -> None:
-        """Overlays diagnostic visual tracking markers and pushes to the preview UI queue."""
-        for pts in self.trackpts:
-            # Render trace vectors matching history length constants
-            for k in range(max(start_idx, current_frame_idx - 30), current_frame_idx):
-                coords = pts[k]
-                if coords is None:  # Safely skip uninitialized tracking frames
-                    continue
+    # def _dispatch_preview_frame(self, preview_frame: np.ndarray, current_frame_idx: int, start_idx: int) -> None:
+    #     """Overlays diagnostic visual tracking markers and pushes to the preview UI queue."""
+    #     for pts in self.trackpts:
+    #         # Render trace vectors matching history length constants
+    #         for k in range(max(start_idx, current_frame_idx - 30), current_frame_idx):
+    #             coords = pts[k]
+    #             if coords is None:  # Safely skip uninitialized tracking frames
+    #                 continue
                 
-                x, y = coords
-                cv2.circle(preview_frame, (x, y), 4, (0, 0, 255), -1)
-        self.tkqueue.put(preview_frame)
+    #             x, y = coords
+    #             cv2.circle(preview_frame, (x, y), 4, (0, 0, 255), -1)
+    #     self.tkqueue.put(preview_frame)
