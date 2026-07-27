@@ -24,6 +24,7 @@ from .videoapp import Video
 
 # Sub-module managers
 from gui.components.seekbar import SeekBar, SeekMode
+from gui.components.buttons import PluginsButton
 from .plugins_manager import PluginManager
 from .data_pipeline import DataPipelineManager
 
@@ -46,10 +47,10 @@ class RigidApp(App):
 
         # 2. Local Overlay Views
         self.track_rects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist,
-                                self.plugin_mgr.btnlist.get('rectanglebd'))
+                                self.plugin_mgr.btnlist.get('rectangle'))
 
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist,
-                             self.plugin_mgr.btnlist.get('rectanglebd'),
+                             self.plugin_mgr.btnlist.get('rectangle'),
                              toggle=self.plugin_mgr.subtoolbar.toggle)
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
@@ -67,8 +68,9 @@ class RigidApp(App):
 
         # Dynamic access alias configs
         self.btnlist = self.plugin_mgr.btnlist
-        self.pluginsbtn = self.mkbutton("assets/plugin.png", self.plugins)
-        ToolTip(self.pluginsbtn, "Plugins")
+        self.pluginsbtn = PluginsButton(self.scrollframe, command=self.plugins, size=self.btnsize,
+                                        tooltip="Toggle Plugins")
+        self.pluginsbtn.pack(padx=self.padx/4, pady=self.pady/4)
         
         self.logger.info("RigidApp UI system fully mapped and operational.")
 
