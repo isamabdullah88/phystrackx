@@ -34,8 +34,8 @@ class ToggleButton(ctk.CTkButton):
         """
         super().__init__(master, **kwargs)
 
-        self.imgon = ButtonCache.get("assets/switch-on.png", size=20)
-        self.imgoff = ButtonCache.get("assets/switch-off.png", size=20)
+        self.imgon = ButtonCache.get("assets/switch-on.png", size=40, height=20)
+        self.imgoff = ButtonCache.get("assets/switch-off.png", size=40, height=20)
         self.commandon = commandon
         self.commandoff = commandoff
         self.ison = True
