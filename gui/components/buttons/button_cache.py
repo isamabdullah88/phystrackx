@@ -23,8 +23,7 @@ class ButtonCache:
 
         if cache_key not in cls._cache:
             # Load and resize ONCE
-            pil_img = Image.open(abspath(imgpath)).resize((size, size),
-                                                                          Image.Resampling.LANCZOS)
+            pil_img = Image.open(abspath(imgpath)).resize((size, size), Image.Resampling.LANCZOS)
             ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(size, size))
             
             # Store in RAM permanently

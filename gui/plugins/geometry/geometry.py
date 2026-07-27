@@ -12,7 +12,7 @@ import customtkinter as ctk
 
 from .point import Point
 from .triangle import Triangle
-from ...components.togglebutton import ToggleButton
+from gui.components.buttons.togglebutton import ToggleButton
 from gui.components.buttons import AngleButton, DistanceButton, ScreenshotButton, ExitButton
 from gui.components.buttons.toolbar_buttons import BinButton
 

@@ -19,7 +19,6 @@ from gui.components.rect import Rect
 from gui.components.tpoints import TPoints
 from gui.components.ruler import ScaleRuler
 from gui.components.titlebar import TitleBar
-from gui.components.tooltip import ToolTip
 from .videoapp import Video
 
 # Sub-module managers
