@@ -18,7 +18,7 @@ from PIL import Image
 from core import abspath
 from .components.titlebar import TitleBar
 from .components.axes import Axes
-from .components.tooltip import ToolTip
+from .components.buttons import *
 
 
 class App:
@@ -60,17 +60,6 @@ class App:
 
         self.videopath = None
 
-    def mkbutton(self, imgpath: str, command: callable) -> ctk.CTkButton:
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath))
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
-        button = ctk.CTkButton(self.scrollframe, text="", width=self.btnsize, height=self.btnsize,
-                               image=img, command=command)
-        button.pack(padx=self.padx/4, pady=self.pady/4)
-        button.image = img  # prevent garbage collection
-        return button
 
     def toolbar(self) -> None:
         """Constructs toolbar and video area layout."""
@@ -86,22 +75,20 @@ class App:
         self.fwidth = self.vwidth
         self.fheight = self.vheight
 
-        buttons = [
-            ("assets/video.png", self.openvideo, "Load Video File"),
-            ("assets/seek.png", self.loadseek, "Trim Video"),
-            ("assets/axis.png", self.markaxes, "Setup Coordinate Axes"),
-            ("assets/ruler.png", self.scale, "Add Scale"),
-            ("assets/rectanglebd.png", self.drawrect, "Mark Objects"),
-            ("assets/track.png", self.strack, "Start Tracking"),
-            ("assets/plot.png", self.plot, "Plot Tracked Data"),
-            ("assets/save.png", self.savedata, "Save Tracked Data"),
-            ("assets/reset.png", self.reset, "Clear Everything")
-        ]
+        self.btnlist = {
+            "video": VideoButton(self.scrollframe, command=self.openvideo, size=self.btnsize, tooltip="Load Video File"),
+            "seek": SeekButton(self.scrollframe, command=self.loadseek, size=self.btnsize, tooltip="Trim Video"),
+            "axis": AxisButton(self.scrollframe, command=self.markaxes, size=self.btnsize, tooltip="Setup Coordinate Axes"),
+            "ruler": RulerButton(self.scrollframe, command=self.scale, size=self.btnsize, tooltip="Add Scale"),
+            "rectangle": RectangleButton(self.scrollframe, command=self.drawrect, size=self.btnsize, tooltip="Mark Objects"),
+            "track": TrackButton(self.scrollframe, command=self.strack, size=self.btnsize, tooltip="Start Tracking"),
+            "plot": PlotButton(self.scrollframe, command=self.plot, size=self.btnsize, tooltip="Plot Tracked Data"),
+            "save": SaveButton(self.scrollframe, command=self.savedata, size=self.btnsize, tooltip="Save Tracked Data"),
+            "reset": ResetButton(self.scrollframe, command=self.reset, size=self.btnsize, tooltip="Clear Everything")
+        }
 
-        for imgpath, command, tooltip in buttons:
-            btn = self.mkbutton(imgpath, command)
-            ToolTip(btn, tooltip)
-            self.btnlist[imgpath.split('/')[-1][:-4]] = btn
+        for button in self.btnlist.values():
+            button.pack(padx=self.padx/4, pady=self.pady/4)
         
         self.logger.info("Toolbar buttons created.")
 

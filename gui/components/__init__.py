@@ -12,4 +12,3 @@
 # from .Label import Label
 # from .Titlebar import TitleBar
 # from .Circle import Circle
-# from .ToolTip import ToolTip

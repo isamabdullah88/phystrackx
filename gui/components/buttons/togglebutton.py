@@ -9,8 +9,7 @@ Author: [Isam Balghari]
 from typing import Callable, Optional
 import tkinter as tk
 import customtkinter as ctk
-from PIL import Image
-from core import abspath
+from .button_cache import ButtonCache
 
 
 class ToggleButton(ctk.CTkButton):
@@ -19,15 +18,9 @@ class ToggleButton(ctk.CTkButton):
     and user-defined callback functions.
     """
 
-    def __init__(
-        self,
-        master: tk.Widget,
-        commandon: Optional[Callable[[], None]] = None,
-        commandoff: Optional[Callable[[], None]] = None,
-        width: int = 40,
-        height: int = 40,
-        **kwargs
-    ) -> None:
+    def __init__(self, master: tk.Widget, commandon: Optional[Callable[[], None]] = None,
+                 commandoff: Optional[Callable[[], None]] = None, width: int = 40,
+                 height: int = 40, **kwargs) -> None:
         """
         Initialize the toggle button.
 
@@ -41,26 +34,13 @@ class ToggleButton(ctk.CTkButton):
         """
         super().__init__(master, **kwargs)
 
-        self.imgon = ctk.CTkImage(
-            dark_image=Image.open(abspath("assets/switch-on.png")),
-            size=(50, 20)
-        )
-        self.imgoff = ctk.CTkImage(
-            dark_image=Image.open(abspath("assets/switch-off.png")),
-            size=(50, 20)
-        )
-
+        self.imgon = ButtonCache.get("assets/switch-on.png", size=20)
+        self.imgoff = ButtonCache.get("assets/switch-off.png", size=20)
         self.commandon = commandon
         self.commandoff = commandoff
         self.ison = True
 
-        self.configure(
-            image=self.imgon,
-            text="",
-            width=width,
-            height=height,
-            command=self.toggle
-        )
+        self.configure(image=self.imgon, text="", width=width, height=height, command=self.toggle)
 
     def toggle(self) -> None:
         """
@@ -89,11 +69,7 @@ if __name__ == "__main__":
     root.geometry("300x200")
     root.title("CustomTkinter Toggle Button")
 
-    toggle = ToggleButton(
-        root,
-        commandon=on_toggle,
-        commandoff=off_toggle
-    )
+    toggle = ToggleButton(root, commandon=on_toggle, commandoff=off_toggle)
     toggle.pack(pady=50)
 
     root.mainloop()

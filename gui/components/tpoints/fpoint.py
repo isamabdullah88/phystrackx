@@ -44,7 +44,7 @@ class FPoint:
         self.valid = valid
         self.cpt = None  # Canvas point ID
 
-    def draw(self, canvas):
+    def draw(self, canvas, color='magenta'):
         """
         Draw the point on the canvas if not already drawn.
 
@@ -57,11 +57,8 @@ class FPoint:
         if self.cpt is not None:
             return
 
-        self.cpt = canvas.create_oval(
-            self.x - 6, self.y - 6, self.x + 6, self.y + 6,
-            fill='magenta', outline='black', width=1,
-            tags="points"
-        )
+        self.cpt = canvas.create_oval(self.x - 6, self.y - 6, self.x + 6, self.y + 6, fill=color,
+                                      outline='black', width=1, tags="points")
 
     def undraw(self, canvas):
         """

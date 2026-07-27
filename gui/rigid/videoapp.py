@@ -19,7 +19,6 @@ from experiments.components import OCRData
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
-from gui.components.processanim import ProcessAnimation
 from gui.components.rect import Rect
 from core import filexists
 
@@ -29,8 +28,7 @@ class Video:
     Video handler for loading, displaying, trimming, and tracking frames on a canvas.
     """
 
-    def __init__(self, canvas: CTkCanvas, vwidth: int, vheight: int, crop: Crop, filters: Filters,
-                 processanim: ProcessAnimation) -> None:
+    def __init__(self, canvas: CTkCanvas, vwidth: int, vheight: int, crop: Crop, filters: Filters) -> None:
         """
         Initialize the Video app.
 
@@ -39,16 +37,13 @@ class Video:
             vwidth (int): Width of the video display area.
             vheight (int): Height of the video display area.
             crop (Crop): Crop handler.
-            seekbar (TrimSeekBar): Seekbar for video navigation.
             filters (Filters): Filters to apply on video.
-            processanim (Spinner): UI processanim to show progress or status.
         """
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
         self.crop = crop
         self.filters = filters
-        self.processanim = processanim
 
         self.frame: Optional[any] = None
         self.imgview = None
@@ -58,8 +53,7 @@ class Video:
         os.makedirs(tempdir, exist_ok=True)
         self.trimpath = os.path.join(tempdir, "Track_Rigid.mp4")
 
-        self.rigid = Rigid(trimpath=self.trimpath, vwidth=self.vwidth, vheight=self.vheight-50,
-                           tkqueue=self.processanim.queue)
+        self.rigid = Rigid(trimpath=self.trimpath, vwidth=self.vwidth, vheight=self.vheight-50)
         self.frameidx = 0
 
         self.logger = logging.getLogger(__name__)
@@ -146,17 +140,30 @@ class Video:
         self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
 
-    def track(self, trect: Rect, ocr: Rect, progress: IntVar) -> None:
+    def track(self, track_rects: Rect, ocr_rects: Rect, progress: IntVar) -> None:
         """
         Perform object tracking on the video using selected regions.
 
         Args:
-            trect (Rect): Region to track.
-            ocr (Rect): OCR target region.
+            track_rects (Rect): Region to track.
+            ocr_rects (Rect): OCR target region.
             progress (IntVar): Variable for UI progress tracking.
         """
         self.logger.info("Starting tracking at frame index: %d", self.frameidx)
-        self.rigid.track(self.frameidx, trect.rects, ocr.rects, self.filters, self.crop, progress)
+        self.logger.info("Tracking rectangles: ")
+        for rect in track_rects.rects:
+            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            self.logger.info("Track Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
+                             pixelrect.ymin, pixelrect.width, pixelrect.height)
+
+        self.logger.info("OCR rectangles: ")
+        for rect in ocr_rects.rects:
+            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            self.logger.info("OCR Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
+                             pixelrect.ymin, pixelrect.width, pixelrect.height)
+
+        self.rigid.track(self.frameidx, track_rects.rects, ocr_rects.rects, self.filters,
+                         self.crop, progress)
 
     def clear(self) -> None:
         """

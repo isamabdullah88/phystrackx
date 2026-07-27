@@ -50,7 +50,8 @@ class TitleBar:
             font=font.Font(family="Segoe UI", size=20, weight="bold")
         )
 
-    def _draw_gradient_bar(self, x1: int, y1: int, x2: int, y2: int, color1: str, color2: str, steps: int = 100) -> None:
+    def _draw_gradient_bar(self, x1: int, y1: int, x2: int, y2: int, color1: str, color2: str,
+                           steps: int = 100) -> None:
         """Draw a vertical gradient between two colors."""
         r1, g1, b1 = self._hex_to_rgb(color1)
         r2, g2, b2 = self._hex_to_rgb(color2)
