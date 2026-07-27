@@ -10,10 +10,11 @@ from PIL import ImageGrab
 import tkinter as tk
 import customtkinter as ctk
 
-from ..utils import mkbutton
 from .point import Point
 from .triangle import Triangle
 from ...components.togglebutton import ToggleButton
+from gui.components.buttons import AngleButton, DistanceButton, ScreenshotButton, ExitButton
+from gui.components.buttons.toolbar_buttons import BinButton
 
 
 class Geometry:
@@ -55,13 +56,11 @@ class Geometry:
         """Initialize buttons and canvas bindings."""
         self.btnframe = ctk.CTkFrame(self.canvas, width=60, fg_color="teal")
         
-        self.anglebtn = mkbutton(self.btnframe, "assets/plugins/angle.png", self.compute_angle, 40)
-        self.distancebtn = mkbutton(self.btnframe, "assets/plugins/distance.png",
-                                    self.compute_dist, 40)
-        self.delbtn = mkbutton(self.btnframe, "assets/bin.png", self.deltriangle, 40)
-        self.applybtn = mkbutton(self.btnframe, "assets/plugins/exit.png", self.onexit, 60)
-        self.screenshot = mkbutton(self.btnframe, "assets/plugins/screenshot.png", self.capturescreen,
-                                   40)
+        self.anglebtn = AngleButton(self.btnframe, self.compute_angle, 40)
+        self.distancebtn = DistanceButton(self.btnframe, self.compute_dist, 40)
+        self.delbtn = BinButton(self.btnframe, self.deltriangle, 40)
+        self.screenshot = ScreenshotButton(self.btnframe, self.capturescreen, 40)
+        self.exitbutton = ExitButton(self.btnframe, self.onexit, 60)
 
         self.canvas.bind("<Button-1>", self.onclick)
         self.canvas.bind("<Motion>", self.ondrag)
@@ -80,7 +79,7 @@ class Geometry:
             self.distancebtn.pack(padx=10, pady=10)
             self.delbtn.pack(padx=10, pady=10)
             self.screenshot.pack(padx=10, pady=10)
-            self.applybtn.pack(padx=10, pady=10)
+            self.exitbutton.pack(padx=10, pady=10)
             self.showbtn = False
 
             self.togglebtn.pack(anchor=tk.N, pady=50)
@@ -191,7 +190,7 @@ class Geometry:
         self.anglebtn.pack_forget()
         self.distancebtn.pack_forget()
         self.delbtn.pack_forget()
-        self.applybtn.pack_forget()
+        self.exitbutton.pack_forget()
         self.screenshot.pack_forget()
         self.togglebtn.pack_forget()
         self.btnframe.destroy()
@@ -201,7 +200,7 @@ class Geometry:
         self.canvas.unbind("<ButtonRelease-1>")
 
         for _,btn in self.btnlist.items():
-            btn.configure(state="normal")
+            btn.configure(state="hidden")
             
         self.canvas.config(cursor="arrow")
 
