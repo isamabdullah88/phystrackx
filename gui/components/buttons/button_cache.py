@@ -15,18 +15,21 @@ class ButtonCache:
     _cache: dict[str, ctk.CTkImage] = {}
 
     @classmethod
-    def get(cls, imgpath: str, size: int = 40) -> ctk.CTkImage:
+    def get(cls, imgpath: str, size: int = 40, height: int = None) -> ctk.CTkImage:
         """
         Retrieves a pre-scaled CTkImage from RAM cache, or loads and caches it on first call.
         """
         cache_key = f"{imgpath}"
 
         if cache_key not in cls._cache:
-            # Load and resize ONCE
-            pil_img = Image.open(abspath(imgpath)).resize((size, size), Image.Resampling.LANCZOS)
-            ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(size, size))
+            if height is not None:
+                pil_img = Image.open(abspath(imgpath)).resize((size, height), Image.Resampling.LANCZOS)
+                ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(size, height))
+            else:
+                pil_img = Image.open(abspath(imgpath)).resize((size, size), Image.Resampling.LANCZOS)
+                ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(size, size))
             
-            # Store in RAM permanently
+            # Store in cache
             cls._cache[cache_key] = ctk_img
             
         return cls._cache[cache_key]
