@@ -93,6 +93,24 @@ class TPoints:
             for pt in tpts:
                 pt.undraw(self.canvas)
 
+    def _color(self, idx: int, startidx: int) -> str:
+        """
+        Generates a color based on the index of the point trail.
+        Args:
+            idx: Index of the point trail.
+            startidx: Starting index for color calculation.
+        Returns:
+            Hex color string.
+        """
+        progress = (idx - startidx) / self.trsize
+        r = 255
+        g = int(230 * (1.0 - progress))
+        b = 255
+        
+        # Format into hex string
+        fade_color = f"#{r:02x}{g:02x}{b:02x}"
+        return fade_color
+    
     def drawpoints(self, fidx: int) -> None:
         """
         Draws points on the canvas up to the given frame index.
@@ -109,12 +127,17 @@ class TPoints:
         self.undrawpoints()
         self.selectpoints.currpts.clear()
 
+        startidx = max(self.fidx - self.trsize, 0)
         for i, tpts in enumerate(self.tpts):
-            for idx in range(max(self.fidx - self.trsize, 0), min(self.fidx + 1, len(tpts))):
+            endidx = min(self.fidx + 1, len(tpts))
+            for idx in range(startidx, endidx):
                 if tpts[idx] is None:
                     continue
                 tpt = tpts[idx]
-                tpt.draw(self.canvas)
+
+                color = self._color(idx, startidx)
+                tpt.draw(self.canvas, color=color)
+
                 self.selectpoints.currpts.append([tpt.cpt, i, self.fidx])
 
     def matchid(self, cid: int) -> Optional[list[int]]:
