@@ -9,10 +9,10 @@ Author: Isam Balghari
 
 import logging
 from gui.components.subtoolbar import SubToolbar
-from gui.components.tooltip import ToolTip
 from gui.plugins.filters import Filters
 from gui.plugins.crop import Crop
 from gui.plugins.geometry.geometry import Geometry
+from gui.components.buttons import FiltersButton, CropButton, GeometryButton, OCRButton
 
 
 class PluginManager:
@@ -25,7 +25,7 @@ class PluginManager:
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing PluginManager sub-toolbar canvas interfaces.")
         
-        self.subtoolbar = SubToolbar(app.videoview, width=app.twidth, btnsize=app.btnsize)
+        self.subtoolbar = SubToolbar(app.videoview, width=app.twidth)
         self.btnlist = {}
         
         self._build_toolbar()
@@ -33,20 +33,21 @@ class PluginManager:
         self.logger.info("All workflow sub-toolbar action hooks and plugins instantiated successfully.")
 
     def _build_toolbar(self) -> None:
-        buttons = [
-            ("assets/plugins/filters.png", self.app.appfilter, "Apply Filters to Video"),
-            ("assets/plugins/crop.png", self.app.drawcrop, "Crop the Video"),
-            ("assets/plugins/ocr.png", self.app.drawocr, "Draw to Apply OCR"),
-            ("assets/plugins/geometry.png", self.app.dogeometry, "Geometry Tool")
-        ]
-        
-        for imgpath, command, tooltip in buttons:
-            btn = self.subtoolbar.mkbutton(imgpath, command)
-            ToolTip(btn, tooltip)
-            btn_key = imgpath.split('/')[-1].replace('.png', '')
-            self.btnlist[btn_key] = btn
+        self.btnlist = {
+            "filters": FiltersButton(self.subtoolbar.frame, command=self.app.appfilter, size=self.app.btnsize,
+                                     tooltip="Apply Filters to Video"),
+            "crop": CropButton(self.subtoolbar.frame, command=self.app.drawcrop, size=self.app.btnsize,
+                               tooltip="Crop the Video"),
+            "ocr": OCRButton(self.subtoolbar.frame, command=self.app.drawocr, size=self.app.btnsize,
+                             tooltip="Draw to Apply OCR"),
+            "geometry": GeometryButton(self.subtoolbar.frame, command=self.app.dogeometry, size=self.app.btnsize,
+                                       tooltip="Geometry Tool")
+        }
+
+        for button in self.btnlist.values():
+            button.pack(padx=self.app.padx/4, pady=self.app.pady/4)
             
-        self.logger.info(f"Registered {len(buttons)} workflow buttons to the sub-toolbar array matrix.")
+        self.logger.info(f"Registered {len(self.btnlist)} workflow buttons to the sub-toolbar array matrix.")
 
     def _load_plugins(self) -> None:
         self.logger.info("Mounting plugin tracking engines (Filters, Crop, Geometry) to active video view viewport bounds.")
