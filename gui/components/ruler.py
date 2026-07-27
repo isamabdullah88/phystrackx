@@ -9,10 +9,9 @@ Author: Isam Balghari
 
 import customtkinter as ctk
 from math import floor
-from PIL import Image
 from typing import Dict, Any, Optional
-from core import abspath
 from .dialogbox import DialogBox
+from .buttons import SubmitButton
 
 
 class ScaleRuler:
@@ -25,12 +24,8 @@ class ScaleRuler:
     COLOR_TEXT = "white"
     FONT_LABEL = ("Arial", 12, "bold")
 
-    def __init__(self, 
-                 canvas: ctk.CTkCanvas, 
-                 vwidth: int, 
-                 vheight: int, 
-                 btnlist: Dict[str, ctk.CTkButton], 
-                 activebtn: Optional[ctk.CTkButton]) -> None:
+    def __init__(self, canvas: ctk.CTkCanvas, vwidth: int, vheight: int,
+                 btnlist: Dict[str, ctk.CTkButton], activebtn: Optional[ctk.CTkButton]) -> None:
         """Initializes the ScaleRuler shell overlay framework."""
         self.canvas = canvas
         self.vwidth = vwidth
@@ -72,7 +67,8 @@ class ScaleRuler:
                 btn.configure(state="disabled")
         
         # Create and draw the floating validation overlay action target
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=40)
+        self.applybtn = SubmitButton(self.canvas, command=self.onapply, size=50,
+                                     tooltip="Apply Scale")
         
         # FIXED: Assigned BUTTON_TAG to prevent canvas deletion sweeps
         self.btn_window_id = self.canvas.create_window(
@@ -82,18 +78,6 @@ class ScaleRuler:
             anchor="se", 
             tags=self.BUTTON_TAG
         )
-        
-    def mkbutton(self, imgpath: str, command: Any, btnsize: int = 30) -> ctk.CTkButton:
-        """Creates a modern styled CustomTkinter button over an image reference asset."""
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        
-        button = ctk.CTkButton(
-            self.canvas, text="", width=btnsize, height=btnsize,
-            image=ctk_img, command=command, fg_color="#2b2b2b", hover_color="#3a3a3a"
-        )
-        button.image = ctk_img  # Protect from Garbage Collection mechanisms
-        return button
 
     def ondclick(self, event: Any) -> None:
         """Triggers the scale parameter dialog prompts upon registration."""
@@ -128,7 +112,8 @@ class ScaleRuler:
         if pixels > 50:
             for i in range(11):
                 tx = x1 + i * pixels / 10
-                self.canvas.create_line(tx, y - 10, tx, y + 15, width=2, fill="black", tags=self.RULER_TAG)
+                self.canvas.create_line(tx, y - 10, tx, y + 15, width=2, fill="black",
+                                        tags=self.RULER_TAG)
 
         # Dynamic Value Mapping Logic (Preserves user calibration inputs over drags)
         if self.real_world_length is not None:
