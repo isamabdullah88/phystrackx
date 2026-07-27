@@ -1,9 +1,8 @@
 import customtkinter as ctk
 from customtkinter import CTkCanvas
-from PIL import Image
-from core import abspath
 from core import PixelRect
 from ..label import Label
+from gui.components.buttons import SubmitButton, BinButton
 
 class Circle:
     def __init__(self, canvas:CTkCanvas, vwidth, vheight, toggle=None):
@@ -19,23 +18,10 @@ class Circle:
         
         self.toggle = toggle
         self.btnsize = 30
-        self.button = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.binbutton = BinButton(self.canvas, command=self.clearrect, size=self.btnsize)
         
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = SubmitButton(self.canvas, command=self.onapply, size=50)
         
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img, command=command)
-        
-        button.image = img
-        
-        return button
         
     def clearrect(self):
         """Deletes the last drawn rectangle"""
@@ -44,16 +30,16 @@ class Circle:
             self.circles.pop()
             self._tkcircles.pop()
             if self._tkcircles:
-                self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+                self.binbutton.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             else:
-                self.button.place_forget()
+                self.binbutton.place_forget()
                 
     def clearrects(self):
         """Deletes all drawn rectangles"""
         for rect in self._tkcircles:
             self.canvas.delete(rect)
         self._tkcircles.clear()
-        # self.button.place_forget()
+        # self.binbutton.place_forget()
         
     def cleardata(self):
         self.circles.clear()
@@ -93,7 +79,7 @@ class Circle:
             self.canvas.unbind("<B1-Motion>")
             self.canvas.unbind("<ButtonRelease-1>")
             
-            self.button.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
+            self.binbutton.place(x=self.vwidth/2-self.btnsize/2, y=self.vheight-self.btnsize-20, anchor="nw")
             self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
             
 
@@ -102,7 +88,7 @@ class Circle:
         self.canvas.bind("<ButtonRelease-1>", onrelease)
         
     def onapply(self):
-        self.button.destroy()
+        self.binbutton.destroy()
         self.applybtn.destroy()
         
         if self.toggle:
