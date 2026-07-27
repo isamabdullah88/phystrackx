@@ -79,9 +79,9 @@ class Plot:
 
         xmin, xmax = np.min(xdata), np.max(xdata)
         ymin, ymax = np.min(ydata), np.max(ydata)
-        plt.xlim((xmin*0.95, xmax*1.05))  # Add a 5% margin for better visibility
-        plt.ylim((ymin*0.95, ymax*1.05))  # Add a 5% margin for better visibility
-        plt.plot(xdata, ydata, '^', color=color)
+        plt.xlim((xmin*0.90, xmax*1.10))  # Add a 10% margin for better visibility
+        plt.ylim((ymin*0.90, ymax*1.10))  # Add a 10% margin for better visibility
+        plt.plot(xdata, ydata, '.', color=color)
 
     def plotx(self):
         for k, tpts in enumerate(self.points):
