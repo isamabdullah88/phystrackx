@@ -8,7 +8,6 @@ Integrates automatic image caching to ensure fast initialization during UI rebui
 from typing import Callable, Optional
 import customtkinter as ctk
 from .button_cache import ButtonCache
-from .tooltip import ToolTip
 
 
 class Button(ctk.CTkButton):
@@ -31,5 +30,5 @@ class Button(ctk.CTkButton):
 
         # 3. Optional ToolTip integration
         if tooltip:
-            from gui.components.tooltip import ToolTip
+            from .tooltip import ToolTip
             ToolTip(self, tooltip)
