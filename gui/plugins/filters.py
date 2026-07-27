@@ -21,9 +21,6 @@ class Filters:
         
         self.slider = None
         
-        self.btnsize = 30
-        # self.applybtn = self.mkbutton("assets/apply.png", self.onapplybtn, 80)
-        
     def spawnfilter(self):
         """
         Opens a popup to select a filter type and apply it to the video frame.
@@ -57,9 +54,6 @@ class Filters:
         self.updateframe()
         self.radiobox.destroy()
         
-        # Apply button
-        # self.applybtn.place(x=self.vwidth-110, y=self.vheight-100)
-        
     def clear(self):
         self.fvar.set(FilterTypes.NONE.name)
         
@@ -90,22 +84,3 @@ class Filters:
             fltframe = frame
 
         return fltframe
-        
-    
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img, command=command)
-        
-        button.image = img
-        
-        return button
-    
-    # def onapplybtn(self):
-    #     self.applybtn.place_forget()
-        # self.toggle()
