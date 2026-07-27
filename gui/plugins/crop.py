@@ -1,8 +1,8 @@
 from typing import Callable
 import customtkinter as ctk
-from core import PixelRect, abspath
-from PIL import Image
+from core import PixelRect
 from math import floor
+from gui.components.buttons import SubmitButton, BinButton
 
 class Crop:
     def __init__(self, canvas, vwidth, vheight, updateframe:Callable, toggle:Callable):
@@ -25,8 +25,8 @@ class Crop:
         self.crprect = None
         
         self.btnsize = 30
-        self.applybtn = self.mkbutton("assets/apply.png", self.apply, 80)
-        self.binbtn = self.mkbutton("assets/bin.png", self.clearrect, btnsize=self.btnsize)
+        self.applybtn = SubmitButton(self.canvas, command=self.apply, size=50)
+        self.binbtn = BinButton(self.canvas, command=self.clearrect, size=self.btnsize)
         
     def set(self, fwidth, fheight):
         self.fwidth = fwidth
@@ -38,20 +38,6 @@ class Crop:
         self.fy = floor(self.vheight/2 - self.fheight/2)
         self.crpx = self.fx
         self.crpy = self.fy
-        
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """
-        Creates a button with an image and a command.
-        """
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                            image=img, command=command)
-        
-        button.image = img
-        
-        return button
         
     def clearrect(self):
         """Deletes the last drawn rectangle"""
