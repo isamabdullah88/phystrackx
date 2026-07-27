@@ -9,12 +9,11 @@ Author: Isam Balghari
 from tkinter import ttk
 import numpy as np
 import customtkinter as ctk
-from PIL import Image
-from core import abspath
-
+from .buttons import SubmitButton
 
 class Axes:
-    def __init__(self, root, canvas, vwidth: int, vheight: int, btnlist: dict, activebtn: ctk.CTkButton):
+    def __init__(self, root, canvas, vwidth: int, vheight: int, btnlist: dict,
+                 activebtn: ctk.CTkButton):
         self.root = root
         self.canvas = canvas
         self.vwidth = vwidth
@@ -27,7 +26,8 @@ class Axes:
 
         self.btnlist = btnlist
         self.activebtn = activebtn
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply, btnsize=80)
+        self.applybtn = SubmitButton(self.canvas, command=self.onapply, size=50,
+                                     tooltip="Apply Axes")
 
     def clear(self):
         """Clear all canvas drawings related to sliders and axes."""
@@ -126,19 +126,8 @@ class Axes:
 
     def onapply(self):
         """Finalize axis placement and restore other UI buttons."""
-        # self.canvas.itemconfigure("slider", state="hidden")
         self.slider.pack_forget()
         self.applybtn.pack_forget()
 
         for btn in self.btnlist.values():
             btn.configure(state="normal")
-
-    def mkbutton(self, imgpath, command, btnsize=30):
-        """Create a CTkButton with image loaded from `imgpath`."""
-        img = Image.open(abspath(imgpath)).resize((btnsize, btnsize), Image.Resampling.LANCZOS)
-        img = ctk.CTkImage(light_image=img, dark_image=img, size=(btnsize, btnsize))
-
-        button = ctk.CTkButton(self.canvas, text="", width=btnsize, height=btnsize,
-                               image=img, command=command)
-        button.image = img
-        return button
