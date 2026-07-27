@@ -11,10 +11,9 @@ import tkinter as tk
 from typing import Optional, Callable
 from math import ceil
 import customtkinter as ctk
-from PIL import Image
-from core import abspath
 from .seek import Seek
 from .bar import Bar
+from gui.components.buttons import SubmitButton
 
 
 class TrimSeekBar:
@@ -152,8 +151,8 @@ class TrimSeekBar:
         self.seekcanvas.bind("<Button-1>", self.onclick)
         self.seekcanvas.bind("<B1-Motion>", self.ondrag)
 
-        self.applybtn = self.mkbutton("assets/apply.png", self.onapply,
-                                      btnsize=self.height - int(2.5*self.padx))
+        self.applybtn = SubmitButton(self.btncanvas, command=self.onapply, 
+                                     size=self.height - self.padx, tooltip="Apply Trim")
         self.applybtn.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def unpack(self):
@@ -194,9 +193,7 @@ class TrimSeekBar:
         if self.rightbar:
             self.rightbar.onclick(event)
 
-        if (self.leftbar and self.leftbar.clicked) or (
-            self.rightbar and self.rightbar.clicked
-        ):
+        if (self.leftbar and self.leftbar.clicked) or (self.rightbar and self.rightbar.clicked):
             if self.callback:
                 self.callback()
 
@@ -234,32 +231,6 @@ class TrimSeekBar:
             self.trimvideo(self.startidx, self.endidx)
             self.set(self.endidx - self.startidx)
             self.trimmed = True
-
-    def mkbutton(self, imgpath: str, command: Callable, btnsize: int = 30) -> ctk.CTkButton:
-        """
-        Create a CTk image button on the seekcanvas.
-
-        Args:
-            imgpath (str): Path to image asset.
-            command (Callable): Click event handler.
-            btnsize (int): Size of button.
-
-        Returns:
-            ctk.CTkButton: The created button widget.
-        """
-        img = Image.open(abspath(imgpath))
-        w, h = img.size
-        ratio = w / h
-        height = btnsize
-        width = int(ratio * height)
-        
-        img = img.resize((width, height), Image.Resampling.LANCZOS)
-        ctkimg = ctk.CTkImage(light_image=img, dark_image=img, size=(width, height))
-        
-        button = ctk.CTkButton(self.btncanvas, text="", width=btnsize, height=btnsize, 
-                               image=ctkimg, command=command)
-        button.image = ctkimg  # prevent garbage collection
-        return button
 
 
 class App(tk.Tk):
