@@ -42,11 +42,8 @@ class TPoints:
         self.toggled: bool = True
 
         self.delbtn: ctk.CTkButton = self._mkbutton("assets/bin.png", self.removept)
-        self.togglebtn: ToggleButton = ToggleButton(
-            canvas,
-            commandon=self.toggleon,
-            commandoff=self.toggleoff
-        )
+        self.togglebtn: ToggleButton = ToggleButton(canvas, commandon=self.toggleon,
+                                                    commandoff=self.toggleoff)
 
         self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize)
 
