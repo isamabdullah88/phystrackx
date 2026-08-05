@@ -110,6 +110,7 @@ Have suggestions, ideas, or want to collaborate?
 - GitHub: [github.com/isamabdullah88](https://github.com/isamabdullah88)
 - Email: isamabdullah88[at]gmail.com
 
+---
 
 ## 📜 Acknowledgments & Credits
 
