@@ -109,3 +109,15 @@ Have suggestions, ideas, or want to collaborate?
 
 - GitHub: [github.com/isamabdullah88](https://github.com/isamabdullah88)
 - Email: isamabdullah88[at]gmail.com
+
+
+## 📜 Acknowledgments & Credits
+
+PhysTrackX relies on open-source software, models, and community assets:
+
+* **Tracking Engine:** [NanoTrack](https://github.com/HaoGao/NanoTrack) deployed via [ONNX Runtime](https://onnxruntime.ai/).
+* **OCR Integration:** [Tesseract OCR Engine](https://github.com/tesseract-ocr/tesseract).
+* **UI Icons:** Downloaded from [Flaticon](https://www.flaticon.com).
+* **Media & Audio:** Background music by *BG4V — Background Music for Videos*.
+
+For a full list of third-party licenses and asset credits, see [ATTRIBUTION.md](ATTRIBUTION.md).
