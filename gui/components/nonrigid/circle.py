@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from customtkinter import CTkCanvas
 from core import PixelRect
-from ..label import Label
+from ..rects.label import Label
 from gui.components.buttons import SubmitButton, BinButton
 
 class Circle:

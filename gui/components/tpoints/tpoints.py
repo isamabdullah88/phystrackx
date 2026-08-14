@@ -15,7 +15,7 @@ from typing import Optional
 import customtkinter as ctk
 from PIL import Image
 from core import abspath
-from ..buttons.togglebutton import ToggleButton
+from ..buttons.toggle_button import ToggleButton
 from .fpoint import FPoint
 from .selectpoints import SelectPoints
 

@@ -15,11 +15,11 @@ from gui.app import App
 # Component imports
 from gui.components.spinner import Spinner
 from gui.components.progressbar import ProgressBar
-from gui.components.rect import Rect
+from gui.components.rects.rect import Rect
 from gui.components.tpoints import TPoints
 from gui.components.ruler import ScaleRuler
 from gui.components.titlebar import TitleBar
-from .videoapp import Video
+from .video_app import Video
 
 # Sub-module managers
 from gui.components.seekbar import SeekBar, SeekMode
@@ -49,8 +49,7 @@ class RigidApp(App):
                                 self.plugin_mgr.btnlist.get('rectangle'))
 
         self.ocrrects = Rect(self.videoview, self.vwidth, self.vheight, self.plugin_mgr.btnlist,
-                             self.plugin_mgr.btnlist.get('rectangle'),
-                             toggle=self.plugin_mgr.subtoolbar.toggle)
+                             self.plugin_mgr.btnlist.get('rectangle'))
         
         self.tpoints = TPoints(self.videoview, self.vwidth, self.vheight)
 
