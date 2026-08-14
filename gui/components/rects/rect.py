@@ -32,9 +32,7 @@ class Rect:
         
         self._rcoords = None
         self._ctkbox = 0
-        # self.rects = []
-        # self.pixelrects = []
-        # self._ctkrects = []
+        
         self.boxes: list[BoundingBox] = []
         
         self.labels = Labels(self.canvas)
@@ -58,21 +56,17 @@ class Rect:
             else:
                 self.bin_button.pack_forget()
                 
-    # def cleartkrects(self):
-    #     """Deletes all drawn rectangles"""
-    #     for box in self.boxes:
-    #         self.canvas.delete(box.tkrect)
-        
-    #     self.boxes.clear()
+    def cleartkrects(self):
+        """Deletes all drawn rectangles"""
+        for box in self.boxes:
+            self.canvas.delete(box.tkrect)
 
         
     def clear(self):
         self.labels.clear()
-        self.labels.destroy()
-    
-        # self.cleartkrects()
-        # self.pixelrects.clear()
-        # self.rects.clear()
+        self.labels.pack_forget()
+
+        self.cleartkrects()
         self.boxes.clear()
     
     def drawrect(self, fwidth, fheight, fx, fy):
@@ -90,7 +84,9 @@ class Rect:
         def ondown(event):           
             self._rcoords = (event.x, event.y)
             
-            self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y, outline=self.OUTLINE_DRAWING, width=self.LINE_WIDTH)
+            self._ctkbox = self.canvas.create_rectangle(event.x, event.y, event.x, event.y,
+                                                        outline=self.OUTLINE_DRAWING,
+                                                        width=self.LINE_WIDTH)
             
         def inrect(event):
             sx, sy = self._rcoords
@@ -128,8 +124,6 @@ class Rect:
     def onapply(self):
         """Finalize rects and colors on apply"""
         for box in self.boxes:
-            print("Box: ", box)
-            print(f"Box: tkrect {box.tkrect}, Pixel: {box.pixelrect}, Normalized: {box.normrect}")
             self.canvas.itemconfig(box.tkrect, outline=self.OUTLINE_APPLIED, width=self.LINE_WIDTH)
 
         self.bin_button.pack_forget()
@@ -141,6 +135,11 @@ class Rect:
         # Activate all buttons
         for k,btn in self.button_list.items():
             btn.configure(state="normal")
+
+    @property
+    def rects(self) -> list[NormalizedRect]:
+        """Returns a list of normalized rectangles."""
+        return [box.normrect for box in self.boxes]
 
 
 
