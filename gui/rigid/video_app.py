@@ -19,7 +19,7 @@ from experiments.components import OCRData
 from experiments.rigid.rigid import Rigid
 from gui.plugins.crop import Crop
 from gui.plugins.filters import Filters
-from gui.components.rect import Rect
+from gui.components.rects.rect import Rect
 from core import filexists
 
 

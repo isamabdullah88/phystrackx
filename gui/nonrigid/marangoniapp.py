@@ -14,8 +14,8 @@ from gui.components.seekbar import TrimSeekBar
 from gui.components.ruler import ScaleRuler
 from gui.components.subtoolbar import SubToolbar
 from gui.components.titlebar import TitleBar
-from gui.components.label import Label
-from gui.components.rect import Rect
+from gui.components.rects.label import Label
+from gui.components.rects.rect import Rect
 from gui.components.nonrigid.circle import Circle
 from gui.plugins import Crop, Filters, Geometry
 from core import abspath
