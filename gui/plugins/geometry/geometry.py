@@ -1,134 +1,102 @@
 """
 Geometry plugin for PhysTrackX.
 
-This module handles interactive geometry drawing and measurement,
-including triangles, distances, angles, and canvas screenshots.
+Modular architecture separating UI overlay, geometry state management,
+and interactive canvas controllers.
 """
 
+from typing import Dict, Optional
+import customtkinter as ctk
+import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageGrab
-import tkinter as tk
-import customtkinter as ctk
 
-from .point import Point
+from .geometry_manager import GeometryManager
+from .geometry_toolbar import GeometryToolbar
 from .triangle import Triangle
-from gui.components.buttons.toggle_button import ToggleButton
-from gui.components.buttons import AngleButton, DistanceButton, ScreenshotButton, ExitButton
-from gui.components.buttons.toolbar_buttons import BinButton
-
+from .point import Point
 
 class Geometry:
-    """Handles user interaction with geometric elements on a canvas."""
+    """Main plugin controller handling canvas interactions and coordinating UI & Model."""
 
-    def __init__(self, canvas: ctk.CTkCanvas, vwidth: int, vheight: int, btnlist, activebtn):
+    def __init__(self, canvas: ctk.CTkCanvas, vwidth: int, vheight: int, 
+                 button_list: Optional[Dict[str, ctk.CTkButton]] = None,
+                 active_button: Optional[ctk.CTkButton] = None
+    ):
         self.canvas = canvas
         self.vwidth = vwidth
         self.vheight = vheight
-        self.btnlist = btnlist
-        self.activebtn = activebtn
-        self.togglebtn : ToggleButton = ToggleButton(self.canvas, commandon=self.unhide,
-                                                     commandoff=self.hide)
+        self.button_list = button_list or {}
+        self.active_button = active_button
 
-        self.scale = 1.0
+        self.model = GeometryManager()
+        self.active_triangle: Optional[Triangle] = Triangle(self.canvas)
 
-        self.currpt = None
-        self.lines = []
-        self.sltlines = []
-        self.sltdpoints: list[Point] = []
-        self.triangles: list[Triangle] = []
-        self.triangle = Triangle(canvas)
+        # Wire up Toolbar callbacks
+        actions = {
+            "angle": self._on_angle,
+            "distance": self._on_distance,
+            "delete": self._on_delete,
+            "screenshot": self._on_screenshot,
+            "exit": self.onexit,
+            "hide": lambda: self.model.set_visibility(False),
+            "unhide": lambda: self.model.set_visibility(True),
+        }
+        self.toolbar = GeometryToolbar(self.canvas, actions)
 
-        self.tkline = None
-        self.tkpt = None
-        self.selected = False
-        self.showbtn = True
-        self.clicked = False
+    def set_scale(self, scale: float) -> None:
+        self.model.scale = scale
 
-        self.sltcolor = "#d4f3db"
-        self.unsltcolor = "#28a745"
-        self.dragcolor = "#4fcfbe"
-
-    def set_scale(self, scale: float):
-        """Sets the scale factor for geometric measurements."""
-        self.scale = scale
-
-    def pack(self):
-        """Initialize buttons and canvas bindings."""
-        self.btnframe = ctk.CTkFrame(self.canvas, width=60, fg_color="teal")
-        
-        self.anglebtn = AngleButton(self.btnframe, self.compute_angle, 40)
-        self.distancebtn = DistanceButton(self.btnframe, self.compute_dist, 40)
-        self.delbtn = BinButton(self.btnframe, self.deltriangle, 40)
-        self.screenshot = ScreenshotButton(self.btnframe, self.capturescreen, 40)
-        self.exitbutton = ExitButton(self.btnframe, self.onexit, 60)
-
-        self.canvas.bind("<Button-1>", self.onclick)
-        self.canvas.bind("<Motion>", self.ondrag)
+    def pack(self) -> None:
+        """Enables interactive mode."""
+        self.canvas.bind("<Button-1>", self._on_click)
+        self.canvas.bind("<Motion>", self._on_drag)
         self.canvas.config(cursor="crosshair")
+        self._set_external_toolbar_state(disabled=True)
 
-        # Disable other buttons
-        for k, btn in self.btnlist.items():
-            if btn != self.activebtn:
-                btn.configure(state="disabled")
-
-    def disp_buttons(self):
-        """Display floating action buttons."""
-        if self.showbtn:
-            self.btnframe.pack(side=tk.RIGHT, padx=10)
-            self.anglebtn.pack(padx=10, pady=10)
-            self.distancebtn.pack(padx=10, pady=10)
-            self.delbtn.pack(padx=10, pady=10)
-            self.screenshot.pack(padx=10, pady=10)
-            self.exitbutton.pack(padx=10, pady=10)
-            self.showbtn = False
-
-            self.togglebtn.pack(anchor=tk.N, pady=50)
-
-    def onclick(self, event):
-        """Handle left-click to add points or select triangles."""
+    def _on_click(self, event: tk.Event) -> None:
         point = Point(event.x, event.y)
 
-        if self.triangle.complete:
-            self.triangles.append(self.triangle.copy())
-            found, triangle = self.is_pt_ontriangle(point)
-            if found:
-                triangle.select()
-                return
-            self.triangle = Triangle(self.canvas)
+        # In-progress triangle creation
+        if self.active_triangle and not self.active_triangle.complete:
+            self.active_triangle.addpoint(point)
+            if self.active_triangle.complete:
+                self.model.add_triangle(self.active_triangle)
+                self.active_triangle = None
+                self.toolbar.show()
+            return
 
-        self.triangle.addpoint(point)
+        # Hit-testing existing shapes
+        found, hit_triangle = self.model.hit_test(point)
+        if found and hit_triangle:
+            hit_triangle.select()
+        else:
+            self.active_triangle = Triangle(self.canvas)
+            self.active_triangle.addpoint(point)
 
-        if self.triangle.complete:
-            self.disp_buttons()
+    def _on_drag(self, event: tk.Event) -> None:
+        if self.active_triangle and not self.active_triangle.complete:
+            self.active_triangle.ondrag(event)
 
-    def ondrag(self, event):
-        """Handle dragging a line to a new point."""
-        self.triangle.ondrag(event)
+    # ---------------- Tool Actions ----------------
 
-    def is_pt_ontriangle(self, point: Point) -> tuple[bool, Triangle | None]:
-        """Check if a point lies on any existing triangle."""
-        if not self.triangle.complete:
-            return False, None
+    def _on_angle(self) -> None:
+        if not self.model.compute_angles():
+            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
 
-        for triangle in self.triangles:
-            if triangle.is_pt_ontriangle(point):
-                return True, triangle
-        return False, None
+    def _on_distance(self) -> None:
+        if not self.model.compute_distances():
+            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
 
-    def compute_angle(self):
-        """Compute and display angles for selected triangles."""
-        selected_triangles = [t for t in self.triangles if t.selected]
-
-        if not selected_triangles:
+    def _on_delete(self) -> None:
+        if not self.model.delete_selected():
             messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
             return
 
-        for triangle in selected_triangles:
-            triangle.draw_angles()
-            triangle.select()
+        if not self.model.triangles:
+            self.toolbar.hide()
 
-    def capturescreen(self):
-        """Capture and save a screenshot of the canvas."""
+    def _on_screenshot(self) -> None:
         filepath = ctk.filedialog.asksaveasfilename(
             defaultextension=".png",
             filetypes=[("PNG files", "*.png"), ("All files", "*.*")]
@@ -137,71 +105,31 @@ class Geometry:
             return
 
         self.canvas.update()
-        x = self.canvas.winfo_rootx()
-        y = self.canvas.winfo_rooty()
-        w = x + self.canvas.winfo_width()
-        h = y + self.canvas.winfo_height()
+        x, y = self.canvas.winfo_rootx(), self.canvas.winfo_rooty()
+        w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
 
-        ImageGrab.grab().crop((x, y, w, h)).save(filepath)
-        messagebox.showinfo("Success", "Screenshot saved successfully.")
+        try:
+            ImageGrab.grab(bbox=(x, y, x + w, y + h)).save(filepath)
+            messagebox.showinfo("Success", "Screenshot saved successfully.")
+        except Exception as err:
+            messagebox.showerror("Error", f"Failed to save screenshot:\n{err}")
 
-    def compute_dist(self):
-        """Compute and label the side lengths of selected triangles."""
-        selected_triangles = [t for t in self.triangles if t.selected]
-
-        if not selected_triangles:
-            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
-            return
-
-        for triangle in selected_triangles:
-            triangle.label_lengths(self.scale)
-            triangle.select()
-
-    def deltriangle(self):
-        """Delete selected triangles from canvas and internal list."""
-        selected_triangles = [t for t in self.triangles if t.selected]
-
-        if not selected_triangles:
-            messagebox.showerror("Error", "No triangles selected. Please select at least one triangle.")
-            return
-
-        for triangle in selected_triangles:
-            triangle.delete()
-            self.triangles.remove(triangle)
-
-    def hide(self):
-        """Hides all triangles if they are hidden"""
-        for triangle in self.triangles:
-            triangle.hide()
-
-        # Hide current triangle
-        self.triangle.hide()
-
-    def unhide(self):
-        """Unhides all triangles if they are hidden"""
-        for triangle in self.triangles:
-            triangle.unhide()
-
-        # Unhide current triangle
-        self.triangle.unhide()
-    
-    def onexit(self):
-        """Cleanup when exiting the geometry tool."""
-        self.anglebtn.pack_forget()
-        self.distancebtn.pack_forget()
-        self.delbtn.pack_forget()
-        self.exitbutton.pack_forget()
-        self.screenshot.pack_forget()
-        self.togglebtn.pack_forget()
-        self.btnframe.destroy()
-
-        self.canvas.unbind("<ButtonPress-1>")
-        self.canvas.unbind("<B1-Motion>")
-        self.canvas.unbind("<ButtonRelease-1>")
-
-        for _,btn in self.btnlist.items():
-            btn.configure(state="hidden")
-            
+    def onexit(self) -> None:
+        self.toolbar.hide()
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<Motion>")
         self.canvas.config(cursor="arrow")
+        self._set_external_toolbar_state(disabled=False)
 
-        self.showbtn = True
+    def reset(self) -> None:
+        self.model.clear()
+        if self.active_triangle:
+            self.active_triangle.delete()
+        self.active_triangle = Triangle(self.canvas)
+        self.toolbar.hide()
+
+    def _set_external_toolbar_state(self, disabled: bool) -> None:
+        state = "disabled" if disabled else "normal"
+        for btn in self.button_list.values():
+            if btn != self.active_button:
+                btn.configure(state=state)

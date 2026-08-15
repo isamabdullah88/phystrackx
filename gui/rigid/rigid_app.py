@@ -216,8 +216,11 @@ class RigidApp(App):
         self.videoapp.trackpts.clear()
         self.ocrrects.clear()
         self.track_rects.clear()
-        self.plugin_mgr.crop.clear()
         self.seekbar.clear()
+
+        self.plugin_mgr.crop.clear()
+        self.plugin_mgr.geometry.reset()
+
         if self.videopath:
             self.loadvideo(self.videopath)
 
