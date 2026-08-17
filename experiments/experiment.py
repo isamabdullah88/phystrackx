@@ -9,6 +9,7 @@ Author: Isam Balghari
 
 import os
 import sys
+import logging
 from math import floor
 from itertools import groupby
 
@@ -45,6 +46,8 @@ class Experiment:
         self.trimpath: str = trimpath
         self.active_duration: list[int] = []
 
+        self.logger = logging.getLogger(__name__)
+
     # ---------------------------------------------------------------------------------------------
     def _setup_logging(self) -> None:
         if not sys.stdout or not sys.stdout.isatty():
@@ -53,7 +56,7 @@ class Experiment:
             sys.stderr = open("logs/stderr.log", "a")
 
     # ---------------------------------------------------------------------------------------------
-    def addvideo(self, videopath: str, istrim=False) -> None:
+    def addvideo(self, videopath: str, istrim=False, fwidth: int = 0, fheight: int = 0) -> None:
         """
         Load the video and extract dimensions and frame count.
         """
@@ -63,6 +66,11 @@ class Experiment:
         self.fheight = self._vidreader.height
         self.fcount = self._vidreader.fcount
         self.fps = self._vidreader.fps
+
+        if fwidth > 0 and fheight > 0:
+            self.fwidth = fwidth
+            self.fheight = fheight
+            self.logger.info(f"Setting custom frame dimensions: width={self.fwidth}, height={self.fheight}")
 
         if not istrim:
             self.resize()
