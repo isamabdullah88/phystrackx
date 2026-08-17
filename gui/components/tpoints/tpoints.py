@@ -13,9 +13,9 @@ Author: [Isam Balghari]
 
 from typing import Optional
 import customtkinter as ctk
-from ..buttons import ToggleButton, BinButton
 from .fpoint import FPoint
 from .selectpoints import SelectPoints
+from .label import Label
 
 
 class TPoints:
@@ -39,10 +39,11 @@ class TPoints:
         self.btnsize: int = 30
         self.toggled: bool = True
 
-        self.bin_button = BinButton(canvas, command=self.removept, size=self.btnsize)
+        # self.bin_button = BinButton(canvas, command=self.removept, size=self.btnsize)
 
-        self.toggle_button: ToggleButton = ToggleButton(canvas, commandon=self.toggleon,
-                                                    commandoff=self.toggleoff)
+        # self.toggle_button: ToggleButton = ToggleButton(canvas, commandon=self.toggleon,
+        #                                             commandoff=self.toggleoff)
+        self.label = Label(canvas, toggleon=self.toggleon, toggleoff=self.toggleoff)
 
         self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize)
 
@@ -68,8 +69,7 @@ class TPoints:
                 else:
                     self.tpts[i].append(FPoint(-1.0, -1.0, -1.0, -1.0, valid=False))
 
-        # self.toggle_button.pack(side=ctk.TOP, anchor=ctk.NE, padx=10, pady=10)
-        self.toggle_button.place(x=self.vwidth - self.btnsize, y=55, anchor=ctk.NE)
+        self.label.place(x=self.vwidth - self.btnsize, y=55, anchor=ctk.NE)
 
     def undrawpoints(self) -> None:
         """Undraw all points from canvas."""
@@ -149,11 +149,11 @@ class TPoints:
         _, tidx, fidx = match
         self.selectpoints.select(self.canvas, self.tpts, tidx, fidx)
 
-        if self.selectpoints.selected:
-            self.bin_button.pack(anchor=ctk.N, pady=10)
-        else:
+        # if self.selectpoints.selected:
+        #     self.bin_button.pack(anchor=ctk.N, pady=10)
+        # else:
             # self.bin_button.place_forget()
-            self.bin_button.pack_forget()
+            # self.bin_button.pack_forget()
 
     def toggleon(self) -> None:
         """Toggle on: show currently active trail of points."""
@@ -162,7 +162,7 @@ class TPoints:
     def toggleoff(self) -> None:
         """Toggle off: hide current trail of points and hide delete button."""
         self.selectpoints.toggleoff(self.canvas, self.tpts)
-        self.bin_button.pack_forget()
+        # self.bin_button.pack_forget()
 
     def removept(self) -> None:
         """Remove selected point trail from canvas and internal list."""
@@ -173,18 +173,13 @@ class TPoints:
             pt.undraw(self.canvas)
 
         self.tpts.pop(tidx)
-        self.bin_button.pack_forget()
-
-        if len(self.tpts) == 0:
-            self.toggle_button.place_forget()
-            # self.toggle_button.pack_forget()
+        # self.bin_button.pack_forget()
 
     def clear(self) -> None:
         """Remove all points from canvas and clear all data."""
         self.canvas.delete("points")
         self.tpts.clear()
-        self.bin_button.pack_forget()
-        self.toggle_button.pack_forget()
+        self.label.place_forget()
 
 
 # === Demo App ===
