@@ -13,11 +13,9 @@ Author: [Isam Balghari]
 
 from typing import Optional
 import customtkinter as ctk
-from PIL import Image
-from core import abspath
-from ..buttons.toggle_button import ToggleButton
 from .fpoint import FPoint
 from .selectpoints import SelectPoints
+from .label import Label
 
 
 class TPoints:
@@ -41,26 +39,15 @@ class TPoints:
         self.btnsize: int = 30
         self.toggled: bool = True
 
-        self.delbtn: ctk.CTkButton = self._mkbutton("assets/bin.png", self.removept)
-        self.togglebtn: ToggleButton = ToggleButton(canvas, commandon=self.toggleon,
-                                                    commandoff=self.toggleoff)
+        # self.bin_button = BinButton(canvas, command=self.removept, size=self.btnsize)
+
+        # self.toggle_button: ToggleButton = ToggleButton(canvas, commandon=self.toggleon,
+        #                                             commandoff=self.toggleoff)
+        self.label = Label(canvas, toggleon=self.toggleon, toggleoff=self.toggleoff)
 
         self.selectpoints: SelectPoints = SelectPoints(trsize=self.trsize)
 
         self.canvas.tag_bind("points", "<Button-1>", self.onclick)
-
-    def _mkbutton(self, imgpath: str, command: callable) -> ctk.CTkButton:
-        """Creates a CTkButton with an image and command."""
-        img = Image.open(abspath(imgpath)).resize(
-            (self.btnsize, self.btnsize), Image.Resampling.LANCZOS
-        )
-        ctkimg = ctk.CTkImage(light_image=img, dark_image=img, size=(self.btnsize, self.btnsize))
-        button = ctk.CTkButton(
-            self.canvas, text="", width=self.btnsize, height=self.btnsize,
-            command=command, image=ctkimg
-        )
-        button.image = ctkimg
-        return button
 
     def addpoints(self, tpts: list[list[list[float]]], fx: float, fy: float) -> None:
         """
@@ -82,7 +69,7 @@ class TPoints:
                 else:
                     self.tpts[i].append(FPoint(-1.0, -1.0, -1.0, -1.0, valid=False))
 
-        self.togglebtn.pack(side=ctk.TOP, anchor=ctk.E, padx=10, pady=10)
+        self.label.place(x=self.vwidth - self.btnsize, y=55, anchor=ctk.NE)
 
     def undrawpoints(self) -> None:
         """Undraw all points from canvas."""
@@ -162,11 +149,11 @@ class TPoints:
         _, tidx, fidx = match
         self.selectpoints.select(self.canvas, self.tpts, tidx, fidx)
 
-        if self.selectpoints.selected:
-            self.delbtn.pack(anchor=ctk.N, pady=10)
-        else:
-            # self.delbtn.place_forget()
-            self.delbtn.pack_forget()
+        # if self.selectpoints.selected:
+        #     self.bin_button.pack(anchor=ctk.N, pady=10)
+        # else:
+            # self.bin_button.place_forget()
+            # self.bin_button.pack_forget()
 
     def toggleon(self) -> None:
         """Toggle on: show currently active trail of points."""
@@ -175,7 +162,7 @@ class TPoints:
     def toggleoff(self) -> None:
         """Toggle off: hide current trail of points and hide delete button."""
         self.selectpoints.toggleoff(self.canvas, self.tpts)
-        self.delbtn.pack_forget()
+        # self.bin_button.pack_forget()
 
     def removept(self) -> None:
         """Remove selected point trail from canvas and internal list."""
@@ -186,18 +173,13 @@ class TPoints:
             pt.undraw(self.canvas)
 
         self.tpts.pop(tidx)
-        self.delbtn.pack_forget()
-
-        if len(self.tpts) == 0:
-            # self.togglebtn.place_forget()
-            self.togglebtn.pack_forget()
+        # self.bin_button.pack_forget()
 
     def clear(self) -> None:
         """Remove all points from canvas and clear all data."""
         self.canvas.delete("points")
         self.tpts.clear()
-        self.delbtn.pack_forget()
-        self.togglebtn.pack_forget()
+        self.label.place_forget()
 
 
 # === Demo App ===

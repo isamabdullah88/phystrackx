@@ -65,6 +65,7 @@ class RigidApp(App):
                               self.plugin_mgr.filters)
 
         # Dynamic access alias configs
+        # TODO: Abstract the button into plugin manager and remove this direct reference
         self.btnlist = self.plugin_mgr.btnlist
         self.pluginsbtn = PluginsButton(self.scrollframe, command=self.plugins, size=self.btnsize,
                                         tooltip="Toggle Plugins")
@@ -122,8 +123,8 @@ class RigidApp(App):
 
     def loadcomponents(self) -> None:
         self.seekbar.set_mode(SeekMode.VIEW, self.videoapp.fcount)
-        self.tpoints.addpoints(self.videoapp.trackpts, self.plugin_mgr.crop.crpx,
-                               self.plugin_mgr.crop.crpy)
+        self.tpoints.addpoints(self.videoapp.trackpts, self.plugin_mgr.crop.cropx,
+                               self.plugin_mgr.crop.cropy)
         self.updateframe()
 
     def loadseek(self) -> None:
@@ -146,10 +147,10 @@ class RigidApp(App):
         if self._ensure_video_loaded() and self._ensure_video_trimmed():
             self.logger.info("Activating workspace item tracking validation boxes.")
             self.title = TitleBar(self.videoview, self.vwidth, "Mark Tool")
-            self.track_rects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight,
-                                      self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
+            self.track_rects.drawrect(self.plugin_mgr.crop.cropwidth, self.plugin_mgr.crop.cropheight,
+                                      self.plugin_mgr.crop.cropx, self.plugin_mgr.crop.cropy)
 
-    def appfilter(self) -> None:
+    def apply_filter(self) -> None:
         if self._ensure_video_loaded():
             self.logger.info("Opening dynamic filter modification matrix menu panel.")
             self.title = TitleBar(self.videoview, self.vwidth, "Filters Tool")
@@ -160,15 +161,15 @@ class RigidApp(App):
         if self._ensure_video_loaded():
             self.logger.info("Initializing visual spatial geometric crop tool profiles.")
             self.title = TitleBar(self.videoview, self.vwidth, "Crop Tool")
-            self.plugin_mgr.crop.drawrect()
+            self.plugin_mgr.crop.drawrect(self.videoapp.set_size)
             self.plugin_mgr.toggle()
 
     def drawocr(self) -> None:
         if self._ensure_video_loaded():
             self.logger.info("Mapping optical text zone character digit capture constraints.")
             self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
-            self.ocrrects.drawrect(self.plugin_mgr.crop.crpwidth, self.plugin_mgr.crop.crpheight,
-                                   self.plugin_mgr.crop.crpx, self.plugin_mgr.crop.crpy)
+            self.ocrrects.drawrect(self.plugin_mgr.crop.cropwidth, self.plugin_mgr.crop.cropheight,
+                                   self.plugin_mgr.crop.cropx, self.plugin_mgr.crop.cropy)
             self.plugin_mgr.toggle()
 
     def dogeometry(self) -> None:

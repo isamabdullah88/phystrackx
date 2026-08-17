@@ -11,8 +11,6 @@ import os
 import logging
 import cv2
 from PIL import Image, ImageTk
-import numpy as np
-from numpy.typing import NDArray
 
 from customtkinter import CTkCanvas, IntVar
 from experiments.components import OCRData
@@ -77,11 +75,6 @@ class Video:
         """OCR data extracted from video"""
         return self.rigid.texts
 
-    # @property
-    # def texts(self) -> List[List[str]]:
-    #     """Text overlays on tracked frames."""
-    #     return self.rigid.texts
-
     @property
     def fps(self) -> int:
         """Video frames per second."""
@@ -97,6 +90,16 @@ class Video:
         """Current video frame height."""
         return self.rigid.fheight
 
+    def set_size(self, fwidth: int, fheight: int) -> None:
+        """
+        Set the size of the video frame.
+
+        Args:
+            fwidth (int): New width for the video frame.
+            fheight (int): New height for the video frame.
+        """
+        self.rigid.set(fwidth, fheight)
+
     def loadvideo(self, videopath: str, istrim:bool=False) -> None:
         """
         Load a video from file or fallback to trimmed path.
@@ -111,15 +114,15 @@ class Video:
             if not filexists(self.trimpath):
                 self.logger.error("Trim video not found!")
                 return
-            self.rigid.addvideo(self.trimpath, istrim)
+            self.rigid.addvideo(self.trimpath, istrim, self.crop.fwidth, self.crop.fheight)
             self.logger.info("Video added from: %s", self.trimpath)
         else:
             self.rigid.addvideo(videopath)
-            self.logger.info("Video added from: %s", videopath)
-        
-        self.crop.set(self.fwidth, self.fheight)
+            self.logger.info("Video added from: %s", videopath)    
+            self.crop.set(self.fwidth, self.fheight)
+
         self.logger.info(f"Video loaded: {videopath}, Frame count: {self.fcount}, FPS: {self.fps},"
-                         f"Width: {self.fwidth}, Height: {self.fheight}")
+                         f"Width: {self.crop.cropwidth}, Height: {self.crop.cropheight}")
 
 
     def showframe(self, idx: int) -> None:
@@ -131,13 +134,13 @@ class Video:
         """
         self.frameidx = idx
         frame = self.rigid.frame(index=self.frameidx)
-        frame = self.filters.appfilter(frame)
-        self.frame = self.crop.appcrop(frame)
+        frame = self.filters.apply_filter(frame)
+        self.frame = self.crop.apply_crop(frame)
 
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.tkimg = ImageTk.PhotoImage(image=img)
 
-        self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
+        self.canvas.coords(self.imgview, self.crop.cropx, self.crop.cropy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
 
     def track(self, track_rects: Rect, ocr_rects: Rect, progress: IntVar) -> None:
@@ -152,13 +155,13 @@ class Video:
         self.logger.info("Starting tracking at frame index: %d", self.frameidx)
         self.logger.info("Tracking rectangles: ")
         for rect in track_rects.rects:
-            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            pixelrect = rect.norm2pix(self.crop.cropwidth, self.crop.cropheight)
             self.logger.info("Track Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
                              pixelrect.ymin, pixelrect.width, pixelrect.height)
 
         self.logger.info("OCR rectangles: ")
         for rect in ocr_rects.rects:
-            pixelrect = rect.norm2pix(self.fwidth, self.fheight)
+            pixelrect = rect.norm2pix(self.crop.cropwidth, self.crop.cropheight)
             self.logger.info("OCR Rect: (x=%.02f, y=%.02f, w=%.02f, h=%.02f)", pixelrect.xmin,
                              pixelrect.ymin, pixelrect.width, pixelrect.height)
 

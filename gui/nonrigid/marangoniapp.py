@@ -56,7 +56,7 @@ class MarangoniApp(App):
         
         # TODO: Use enum for these
         buttons = [
-            ("assets/plugins/filters.png", self.appfilter, "Apply Filters to Video"),
+            ("assets/plugins/filters.png", self.apply_filter, "Apply Filters to Video"),
             ("assets/plugins/crop.png", self.drawcrop, "Crop the Video"),
             ("assets/plugins/ocr.png", self.drawocr, "Draw to Apply OCR"),
             ("assets/plugins/geometry.png", self.dogeometry, "Geometry Tool")
@@ -65,7 +65,7 @@ class MarangoniApp(App):
         for imgpath, command, tooltip in buttons:
             self.btn = self.subtoolbar.mkbutton(imgpath, command)
             ToolTip(self.btn, tooltip)
-        # self.subtoolbar.button("assets/plugins/filters.png", self.appfilter).pack(pady=2)
+        # self.subtoolbar.button("assets/plugins/filters.png", self.apply_filter).pack(pady=2)
         # self.subtoolbar.button("assets/plugins/crop.png", self.drawcrop).pack(pady=2)
         # self.subtoolbar.button("assets/plugins/ocr.png", self.drawocr).pack(pady=2)
         # self.subtoolbar.button("assets/plugins/geometry.png", self.dogeometry).pack(pady=2)
@@ -120,7 +120,7 @@ class MarangoniApp(App):
         
         self.seekbar.setcount(self.videoapp.fcount)
         
-        # self.tpoints.addpoints(self.videoapp.trackpts, self.crop.crpx, self.crop.crpy)
+        # self.tpoints.addpoints(self.videoapp.trackpts, self.crop.cropx, self.crop.cropy)
         
         self.updateframe()
 
@@ -136,7 +136,7 @@ class MarangoniApp(App):
         
     def drawcircle(self):
         """Draws circle"""
-        self.circle.drawcircle(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.circle.drawcircle(self.crop.crpwidth, self.crop.crpheight, self.crop.cropx, self.crop.cropy)
 
     def drawrect(self):
         """Draws rectangle with simple lines"""
@@ -146,7 +146,7 @@ class MarangoniApp(App):
             messagebox.showerror("Error", "No video to do OCR. Please upload a video!")
             return
         
-        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.trects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.cropx, self.crop.cropy)
 
     def plugins(self):
         """
@@ -155,7 +155,7 @@ class MarangoniApp(App):
         self.title = TitleBar(self.videoview, self.vwidth, "Plugins")
         self.subtoolbar.toggle()
     
-    def appfilter(self):
+    def apply_filter(self):
         if self.videoapp.fcount < 10:
             messagebox.showerror("Error", "No video to apply filter. Please upload a video!")
             return
@@ -181,7 +181,7 @@ class MarangoniApp(App):
             return
         
         self.title = TitleBar(self.videoview, self.vwidth, "OCR Tool")
-        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.crpx, self.crop.crpy)
+        self.ocrrects.drawrect(self.crop.crpwidth, self.crop.crpheight, self.crop.cropx, self.crop.cropy)
         self.subtoolbar.toggle()
         
     def dogeometry(self):

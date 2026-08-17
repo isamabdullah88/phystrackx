@@ -11,6 +11,7 @@ from typing import Optional
 import logging
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 
 class VideoReader:
@@ -40,8 +41,9 @@ class VideoReader:
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.info(f"VideoReader initialized at: {videopath}.")
+        self.logger.info(f"Video properties: {self.fcount} frames, {self.width}x{self.height}, {self.fps} fps.")
 
-    def read(self, index: Optional[int] = None) -> Optional[any]:
+    def read(self, index: Optional[int] = None) -> NDArray[np.uint8]:
         """
         Read a single frame from the video.
 

@@ -58,7 +58,7 @@ class Filters:
         self.fvar.set(FilterTypes.NONE.name)
         
         
-    def appfilter(self, frame):
+    def apply_filter(self, frame):
         """
         Applies the selected filter to the current video frame.
         """

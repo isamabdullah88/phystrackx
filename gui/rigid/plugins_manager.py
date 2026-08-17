@@ -34,7 +34,7 @@ class PluginManager:
 
     def _build_toolbar(self) -> None:
         self.btnlist = {
-            "filters": FiltersButton(self.subtoolbar.frame, command=self.app.appfilter, size=self.app.btnsize,
+            "filters": FiltersButton(self.subtoolbar.frame, command=self.app.apply_filter, size=self.app.btnsize,
                                      tooltip="Apply Filters to Video"),
             "crop": CropButton(self.subtoolbar.frame, command=self.app.drawcrop, size=self.app.btnsize,
                                tooltip="Crop the Video"),
@@ -53,8 +53,7 @@ class PluginManager:
         self.logger.info("Mounting plugin tracking engines (Filters, Crop, Geometry) to active video view viewport bounds.")
         self.filters = Filters(self.app.scrollframe, self.app.videoview, self.app.vwidth, self.app.vheight,
                                self.app.updateframe, self.subtoolbar.toggle)
-        self.crop = Crop(self.app.videoview, self.app.vwidth, self.app.vheight, self.app.updateframe,
-                         self.subtoolbar.toggle)
+        self.crop = Crop(self.app.videoview, self.app.vwidth, self.app.vheight, self.app.updateframe)
         self.geometry = Geometry(self.app.videoview, self.app.vwidth, self.app.vheight, self.btnlist,
                                  self.btnlist.get('geometry'))
 
