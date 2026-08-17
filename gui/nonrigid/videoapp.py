@@ -70,15 +70,15 @@ class Video:
         frame = cv2.resize(frame, (self.fwidth, self.fheight)
         
         # Apply filter
-        frame = self.filters.appfilter(frame)
+        frame = self.filters.apply_filter(frame)
         
         # Apply crop
-        self.frame = self.crop.appcrop(frame)
+        self.frame = self.crop.apply_crop(frame)
         
         img = Image.fromarray(cv2.cvtColor(self.frame.copy(), cv2.COLOR_BGR2RGB))
         self.tkimg = ImageTk.PhotoImage(image=img)
         
-        self.canvas.coords(self.imgview, self.crop.crpx, self.crop.crpy)
+        self.canvas.coords(self.imgview, self.crop.cropx, self.crop.cropy)
         self.canvas.itemconfig(self.imgview, image=self.tkimg)
         
     def track(self, trect:Rect, ocr:Rect, progress:IntVar):
