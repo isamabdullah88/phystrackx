@@ -1,6 +1,7 @@
 import cv2
 import platform
 import logging
+import pytesseract
 from core import abspath
 
 class OcrEngine:
@@ -15,7 +16,6 @@ class OcrEngine:
         if self._initialized:
             return
             
-        import pytesseract
         self.pytesseract = pytesseract
         
         if platform.system() == "Windows":
