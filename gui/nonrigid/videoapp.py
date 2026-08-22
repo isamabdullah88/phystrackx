@@ -67,7 +67,7 @@ class Video:
         """Updates and shows the frame to video view"""
         
         frame = self.rigid.frame(index=self.seekbar.idx)
-        frame = cv2.resize(frame, (self.fwidth, self.fheight)
+        frame = cv2.resize(frame, (self.fwidth, self.fheight))
         
         # Apply filter
         frame = self.filters.apply_filter(frame)
