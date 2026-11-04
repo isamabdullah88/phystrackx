@@ -12,6 +12,8 @@ import hashlib
 import logging
 import os
 import tempfile
+import time
+import urllib.error
 import urllib.request
 
 from core import abspath
@@ -90,6 +92,25 @@ def _download(url: str, dest: str, expected: str) -> None:
             os.remove(tmp)
 
 
+def _download_retrying(url: str, dest: str, expected: str, attempts: int = 4) -> None:
+    """_download, tried again after a network failure or a server error (5xx): a busy CDN can drop a
+    large file part-way ("503: between bytes timeout"). Waits 5, 10, 20 s between tries."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return _download(url, dest, expected)
+        except urllib.error.HTTPError as e:
+            if e.code < 500 or attempt == attempts:
+                raise
+            reason = f"HTTP {e.code}"
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            if attempt == attempts:
+                raise
+            reason = str(e)
+        wait = 5 * 2 ** (attempt - 1)
+        logger.warning(f"Download of {os.path.basename(dest)} failed ({reason}); trying again in {wait} s")
+        time.sleep(wait)
+
+
 def missing_models(relpaths: list[str]) -> list[str]:
     """Returns the relative paths that are not present on disk."""
     return [p for p in relpaths if not os.path.isfile(abspath(p))]
@@ -103,7 +124,7 @@ def ensure_models(relpaths: list[str]) -> None:
             raise FileNotFoundError(f"No download source is known for {rel}.")
         url, sha = ALL_MODELS[rel]
         logger.info(f"Tracking model not found; downloading {rel}")
-        _download(url, abspath(rel), sha)
+        _download_retrying(url, abspath(rel), sha)
         logger.info(f"Saved {rel}")
 
 
