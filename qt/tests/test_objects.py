@@ -56,13 +56,16 @@ def test_object_manager() -> None:
     # A circle: dragged corner to corner, as a box is; the circle is inscribed in the square dragged
     w.start_circle()
     centre = (300.0, 200.0)
-    drag(w.view, (280.0, 180.0), (320.0, 215.0))  # Top-left to bottom-right: a 40 by 35 drag, so a 40 square
+    # Top-left to bottom-right: a 40 by 35 drag, so a 40 square. Checked against where the mouse landed (it
+    # moves in whole view pixels, over a frame pixel each in a small view, as on the Windows runner)
+    (ax, ay), (bx, by) = drag(w.view, (280.0, 180.0), (320.0, 215.0))
     w.view.set_tool(TOOL_NONE)
     circle = w.objects[-1]
     r = circle.rect.rect()
+    side = max(bx - ax, by - ay)
     h.check("a circle is kept as its bounding square, from the press point (top-left) to the release",
-            circle.circle and abs(r.width() - 40) < 1.5 and abs(r.height() - 40) < 1.5
-            and abs(r.x() - 280) < 1.5 and abs(r.y() - 180) < 1.5, f"{r}")
+            circle.circle and abs(r.width() - side) < 1.0 and abs(r.height() - side) < 1.0
+            and abs(r.x() - ax) < 1.0 and abs(r.y() - ay) < 1.0, f"{r}; mouse {ax:.1f},{ay:.1f} -> {bx:.1f},{by:.1f}")
     h.check("and the circle is centred in that square", abs(r.center().x() - centre[0]) < 1.5
             and abs(r.center().y() - centre[1]) < 1.5, f"{r.center()}")
     h.check("the list calls it a circle", "Circle 4" in w.object_list.item(w.object_list.count() - 1).text(),
@@ -106,7 +109,8 @@ def test_drag_selected_object() -> None:
     h.check("the selected object is the one that can be dragged",
             first.rect.flags() & first.rect.GraphicsItemFlag.ItemIsMovable and not
             second.rect.flags() & second.rect.GraphicsItemFlag.ItemIsMovable)
-    (ax, ay), (bx, by) = drag(w.view, (120, 120), (160, 140))
+    # From inside the box but off its centre: in a small view the size knob's reach covers the centre
+    (ax, ay), (bx, by) = drag(w.view, (110, 130), (150, 150))
     x, y, bw, bh = first.marked
     h.check("dragging the selected object moves its box (before tracking)",   # By where the mouse landed
             abs(x - (100 + bx - ax)) < 0.5 and abs(y - (100 + by - ay)) < 0.5 and bw == 40 and bh == 40,

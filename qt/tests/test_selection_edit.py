@@ -55,10 +55,11 @@ def test_move_and_size() -> None:
 
     QTest.keyClick(w, Qt.Key.Key_M)
     h.check("M turns Move on", w.move_obj_btn.isChecked() and w.view.tool == TOOL_MOVE)
-    drag(w.view, (300, 300), (330, 310))   # Far from the box: Move drags from anywhere
+    (ax, ay), (bx, by) = drag(w.view, (300, 300), (330, 310))   # Far from the box: Move drags from anywhere
+    moved = (100 + bx - ax, 100 + by - ay, 40, 40)   # By where the mouse landed (whole view pixels)
     h.check("a drag anywhere moves the selected object by the drag",
-            all(abs(a - b) < 1.0 for a, b in zip(obj.marked, (130, 110, 40, 40))), str(obj.marked))
-    h.check("...and its knob follows", abs(obj.handle.pos().x() - 170) < 1.0, str(obj.handle.pos()))
+            all(abs(a - b) < 0.5 for a, b in zip(obj.marked, moved)), f"{obj.marked}; expected {moved}")
+    h.check("...and its knob follows", abs(obj.handle.pos().x() - (moved[0] + 40)) < 1.0, str(obj.handle.pos()))
     QTest.keyClick(w, Qt.Key.Key_Escape)
     h.check("Escape ends Move", not w.move_obj_btn.isChecked() and w.view.tool == TOOL_NONE)
 
