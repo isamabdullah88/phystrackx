@@ -109,8 +109,12 @@ def test_drag_selected_object() -> None:
     h.check("the selected object is the one that can be dragged",
             first.rect.flags() & first.rect.GraphicsItemFlag.ItemIsMovable and not
             second.rect.flags() & second.rect.GraphicsItemFlag.ItemIsMovable)
-    # From inside the box but off its centre: in a small view the size knob's reach covers the centre
-    (ax, ay), (bx, by) = drag(w.view, (110, 130), (150, 150))
+    # From a point of the box where the box itself is under the mouse: in a small view (the Windows
+    # runner's) the size knob and its line reach over much of the box, and a press there resizes it
+    to_view = lambda p: w.view.mapFromScene(w.view.picture.mapToScene(*p))  # noqa: E731
+    start = next(((px, py) for py in range(102, 139, 3) for px in range(102, 139, 3)
+                  if w.view.itemAt(to_view((px, py))) is first.rect), (110, 130))
+    (ax, ay), (bx, by) = drag(w.view, start, (start[0] + 40, start[1] + 20))
     x, y, bw, bh = first.marked
     h.check("dragging the selected object moves its box (before tracking)",   # By where the mouse landed
             abs(x - (100 + bx - ax)) < 0.5 and abs(y - (100 + by - ay)) < 0.5 and bw == 40 and bh == 40,
