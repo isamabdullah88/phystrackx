@@ -131,11 +131,11 @@ def test_drag_selected_object() -> None:
     centre = (before[0] + before[2] / 2, before[1] + before[3] / 2)
     w.seek.setValue(0)
     h.check("frame 0 is shown before the drag", h.pump(lambda: w.frame_label.text().startswith("frame 0 "), 5))
-    drag(w.view, centre, (centre[0] + 10, centre[1]))
+    (ax, ay), (bx, by) = drag(w.view, centre, (centre[0] + 10, centre[1]))
     after = first.boxes[0]
-    h.check("the box on frame 0 moves with the drag",
-            abs(after[0] - before[0] - 10) < 1.5 and abs(after[1] - before[1]) < 1.5,
-            f"{before} -> {after}")
+    h.check("the box on frame 0 moves with the drag",   # By where the mouse landed (whole view pixels)
+            abs(after[0] - before[0] - (bx - ax)) < 0.5 and abs(after[1] - before[1] - (by - ay)) < 0.5,
+            f"{before} -> {after}; mouse {ax:.1f},{ay:.1f} -> {bx:.1f},{by:.1f}")
     h.check("other frames keep their boxes", first.boxes[1] != after)
     w._dirty = False
     w.close()

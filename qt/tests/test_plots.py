@@ -182,8 +182,9 @@ def test_drag_fit_keeps_the_app_usable() -> None:
     h.check("...and says it is fitting", "Fitting: Quadratic drag" in window.results.get_text())
     h.check("the drag fit is done within seconds", _fitted(window, 20), window.results.get_text()[-200:])
     ticker.stop()
-    # (One redraw of the whole figure, about 0.1-0.25 s, is matplotlib's own; the fit took 87 s here)
-    h.check("the window kept responding while it fitted", max(gaps) < 400, f"longest gap {max(gaps)} ms")
+    # (One redraw of the whole figure, about 0.1-0.25 s, is matplotlib's own, up to ~0.5 s on a slow CI
+    # runner; a fit on the Qt thread would freeze it for the whole fit, 87 s here)
+    h.check("the window kept responding while it fitted", max(gaps) < 600, f"longest gap {max(gaps)} ms")
     results = window.results.get_text()
     h.check("the drag fit's results are shown", "k     =" in results and "gamma" not in results, results[:120])
 
