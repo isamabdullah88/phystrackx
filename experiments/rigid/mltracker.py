@@ -9,8 +9,8 @@ Author: Isam Balghari
 
 import cv2
 import logging
-import os
 from core import abspath, PixelRect
+from .modelfiles import ensure_models
 
 class MLTracker:
     """Manages deep learning template tracking using lightweight ONNX models."""
@@ -29,10 +29,11 @@ class MLTracker:
             rect: A PixelRect object representing the bounding box.
         """
         if self.tracking_type == "nanotrack":
-            
+
+            ensure_models(["models/nanotrack_backbone.onnx", "models/nanotrack_head.onnx"])
             param_path = abspath("models/nanotrack_backbone.onnx")
             model_path = abspath("models/nanotrack_head.onnx")
-            
+
             params = cv2.TrackerNano_Params()
             params.backbone = param_path
             params.neckhead = model_path
@@ -40,7 +41,8 @@ class MLTracker:
             self.tracker = cv2.TrackerNano_create(params)
             
         elif self.tracking_type == "vittrack":
-            param_path = abspath("models/vit_tracker_baseline.onnx")
+            ensure_models(["models/object_tracking_vittrack_2023sep.onnx"])
+            param_path = abspath("models/object_tracking_vittrack_2023sep.onnx")
             params = cv2.TrackerVit_Params()
             params.net = param_path
             
@@ -50,6 +52,13 @@ class MLTracker:
         bbox = (rect.xmin, rect.ymin, rect.width, rect.height)
         self.tracker.init(initial_frame, bbox)
         self.logger.info(f"Deep learning {self.tracking_type} engine successfully initialized on custom user ROI.")
+
+    def score(self) -> float:
+        """The tracker's confidence in its last update (1.0 when the tracker has no score)."""
+        try:
+            return float(self.tracker.getTrackingScore())
+        except (AttributeError, cv2.error):
+            return 1.0
 
     def update_tracker(self, frame: cv2.Mat) -> tuple[bool, PixelRect]:
         """

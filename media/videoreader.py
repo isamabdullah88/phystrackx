@@ -30,6 +30,7 @@ class VideoReader:
         self._reader = cv2.VideoCapture(videopath, cv2.CAP_FFMPEG)
         self._idx = 0
         self._start_idx = 0
+        self._next: Optional[int] = 0  # Frame the next plain read returns (None if unknown)
 
         if not self._reader.isOpened():
             raise IOError(f"Unable to open video: {videopath}")
@@ -54,12 +55,16 @@ class VideoReader:
             The read frame as a NumPy array, or None if reading fails.
         """
         if index is not None:
-            self.seek(index)
+            # Seeking decodes from the previous keyframe, which costs tens of frames; stepping to
+            # the next frame does not need it
+            if index != self._next:
+                self.seek(index)
             self._idx = index
         else:
             self._idx += 1
 
         ret, frame = self._reader.read()
+        self._next = self._next + 1 if ret and self._next is not None else None
 
         if not ret:
             self.logger.warning("Sending blank frame!")
@@ -75,6 +80,7 @@ class VideoReader:
             index: Frame number to seek to.
         """
         self._reader.set(cv2.CAP_PROP_POS_FRAMES, index)
+        self._next = index
         self.logger.debug(f"Seeked to frame {index}.")
 
     def release(self) -> None:

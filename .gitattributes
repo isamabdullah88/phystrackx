@@ -1,0 +1,4 @@
+install.bat text eol=crlf
+uninstall.bat text eol=crlf
+install.sh text eol=lf
+uninstall.sh text eol=lf

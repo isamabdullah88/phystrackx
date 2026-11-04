@@ -7,15 +7,15 @@ Author: Isam Balghari
 """
 
 import os
-import platform
 import subprocess
 from typing import Optional
 import logging
 
-from core import abspath
+from core import find_ffmpeg
 
-def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int, 
-              fps: Optional[float] = None, overwrite: bool = True) -> bool:
+def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int,
+              fps: Optional[float] = None, overwrite: bool = True,
+              crop: Optional[tuple[int, int, int, int]] = None) -> bool:
     """
     Trim a video between startidx and endidx using ffmpeg.
 
@@ -44,22 +44,35 @@ def trimvideo(videopath: str, writepath: str, startidx: int, endidx: int,
         fps = 30.0  # Default if not given
         
     video_filter = f"trim=start_frame={startidx}:end_frame={endidx+1},setpts=PTS-STARTPTS"
+    if crop is not None:
+        # Keep only the selected region; x, y, w, h are in pixels of the input video
+        x, y, w, h = crop
+        video_filter = f"crop={w}:{h}:{x}:{y}," + video_filter
 
-    if platform.system() == "Windows":
-        ffmpeg = abspath("ffmpeg/ffmpeg.exe")
-    else:
-        ffmpeg = "ffmpeg" # Assumes ffmpeg is in PATH on non-Windows systems
+    try:
+        ffmpeg = find_ffmpeg()
+    except FileNotFoundError as e:
+        logger.error(str(e))
+        return False
 
+    # Write to a partial file and swap it in on success. Trimming a clip into its own path would
+    # otherwise destroy the input while FFmpeg is still reading it, and a failed trim would
+    # leave nothing usable behind.
+    partial = f"{os.path.splitext(writepath)[0]}.partial.mp4"
     command = [ffmpeg, "-y" if overwrite else "-n", "-i", videopath, "-vf", video_filter,
-               writepath]
+               partial]
 
     logger.info(f"Trimming video: {videopath} → {writepath}")
     logger.debug(f"Command: {' '.join(command)}")
 
     try:
         subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        logger.info(f"Trim successful: {writepath}")
-        return True
     except subprocess.CalledProcessError as e:
         logger.error(f"FFmpeg error: {e}")
+        if os.path.exists(partial):
+            os.remove(partial)
         return False
+
+    os.replace(partial, writepath)
+    logger.info(f"Trim successful: {writepath}")
+    return True

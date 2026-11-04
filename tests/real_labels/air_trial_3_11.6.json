@@ -1,0 +1,28 @@
+{
+ "video": "Air Trial 3.mp4",
+ "start": 9.062756,
+ "frames": 600,
+ "range": [
+  113,
+  316
+ ],
+ "fps": 29.970639196229516,
+ "width": 540,
+ "radius": 6.0,
+ "labels": {
+  "0": [
+   229.0,
+   326.17
+  ],
+  "60": [
+   259.5,
+   758.91
+  ],
+  "65": [
+   259.25,
+   758.0
+  ]
+ },
+ "checked": "pre-filled",
+ "note": "Pre-filled by tests/prelabel_real.py: frames where two trackers (blob, offline) agree within 1.5 px, tracking backward from the ball at rest at the end, each moved to the ball's geometric centre by a circle fit to its edge. Not yet checked by hand. Frame numbers count from range[0] of the decoded stretch."
+}

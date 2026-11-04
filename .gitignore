@@ -179,3 +179,9 @@ cython_debug/
 temp/
 outputs/
 assets-archive/
+# Tracking models (downloaded on demand; see experiments/rigid/modelfiles.py)
+models/
+*.part
+
+projects/*
+

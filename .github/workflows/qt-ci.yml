@@ -1,0 +1,144 @@
+# Qt app: runs the installers the way a user would, then the tests, on Windows, macOS and Linux.
+# The installers are at the repo root: install.sh (macOS and Linux) and install.bat (Windows). Each runs
+# twice, to show that a second run replaces the first cleanly. The uninstaller runs last and must leave
+# nothing behind. Runs on every change to the app, the installers or the parent code it uses. After the tests it
+# measures how fast the app is on each OS (speed report, informational).
+# Local equivalent: sh install.sh && cd qt && uv run python build.py test && uv run python tests/perf_report.py
+name: Qt app CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "qt/**"
+      - "core/**"
+      - "media/**"
+      - "experiments/**"
+      - "filters/**"
+      - "install.*"
+      - "uninstall.*"
+      - ".github/workflows/qt-*.yml"
+  pull_request:
+    paths:
+      - "qt/**"
+      - "core/**"
+      - "media/**"
+      - "experiments/**"
+      - "filters/**"
+      - "install.*"
+      - "uninstall.*"
+      - ".github/workflows/qt-*.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40   # Usually 1-11 min; a hung test file is stopped sooner (build.py TEST_TIMEOUT)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+        working-directory: qt
+    env:
+      PHYSTRACK_NO_PAUSE: "1"   # install.bat and uninstall.bat do not wait for a key press here
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: qt/uv.lock
+
+      - name: Qt's system libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0 libdbus-1-3 \
+            libfontconfig1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0
+
+      - name: Python
+        run: uv python install 3.12
+
+      # The installers fetch the models themselves; the wheel that installs the command needs them
+      - name: Install (first run)
+        working-directory: .
+        if: runner.os != 'Windows'
+        run: sh install.sh
+
+      - name: Install (first run, Windows)
+        working-directory: .
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: install.bat
+
+      - name: Install again (replaces the first run)
+        working-directory: .
+        if: runner.os != 'Windows'
+        run: sh install.sh
+
+      - name: Install again (Windows; replaces the first run)
+        working-directory: .
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: install.bat
+
+      - name: The command and the app start (no Qt needed for --help and --version)
+        run: |
+          "$(uv tool dir --bin)/phystrackx" --version
+          "$(uv tool dir --bin)/phystrackx" --help
+          set +e
+          "$(uv tool dir --bin)/phystrackx" no-such-file.mp4
+          test $? -eq 2
+          if [ "$(uname -s)" = Darwin ]; then
+            app=/Applications/PhysTrackX.app
+            test -d "$app" || app="$HOME/Applications/PhysTrackX.app"
+            "$app/Contents/MacOS/phystrackx" --version
+          fi
+
+      - name: Tests
+        env:
+          PYTHONUTF8: "1"   # Windows prints the app's text (▸ and the like) in UTF-8
+        run: uv run python build.py test
+
+      # How fast the app is on this OS (qt/tests/perf_report.py): the table is on the run's summary page, and the
+      # numbers are kept as an artifact. Informational: a slow number or a broken measurement never fails the build.
+      - name: Speed report
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          PYTHONUTF8: "1"
+        run: uv run python tests/perf_report.py --json "../perf/perf-${RUNNER_OS}.json" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the speed numbers
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-${{ runner.os }}
+          path: perf/perf-${{ runner.os }}.json
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Uninstall (leaves nothing behind)
+        working-directory: .
+        if: runner.os != 'Windows'
+        run: |
+          sh uninstall.sh --purge
+          test ! -e "$(uv tool dir --bin)/phystrackx"
+          test ! -e /Applications/PhysTrackX.app
+          test ! -e "$HOME/Applications/PhysTrackX.app"
+
+      - name: Uninstall (Windows)
+        working-directory: .
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          uninstall.bat --purge
+          uv tool list 2>nul | findstr /b /c:"phystrackx " && exit /b 1
+          exit /b 0

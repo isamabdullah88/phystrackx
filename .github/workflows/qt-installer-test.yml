@@ -1,0 +1,142 @@
+# Tests the Windows installer on GitHub's Windows runner: builds PhysTrackX-Setup.exe as the release does, then
+# installs, upgrades, uninstalls and reinstalls it silently, and checks the shortcuts, the program and its log.
+# It does not click through the wizard and does not meet SmartScreen (no download, so no Mark of the Web):
+# qt/packaging/README.md says what this leaves for a manual test.
+name: Qt installer test (Windows)
+
+on:
+  push:
+    paths:
+      - "qt/build.py"
+      - "qt/packaging/**"
+      - "qt/phystrack_qt/**"
+      - "qt/pyproject.toml"
+      - "qt/uv.lock"
+      - ".github/workflows/qt-installer-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qt-installer-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  installer:
+    name: Build and test the installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: qt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: qt/uv.lock
+
+      - name: Python
+        run: uv python install 3.12
+
+      - name: Inno Setup 6 (builds the installer)
+        run: choco install innosetup --yes --no-progress
+
+      - name: The models the app ships with
+        run: |
+          uv run --no-project --with colorlog python build.py models
+          if ($LASTEXITCODE -ne 0) { throw "build.py models failed" }
+
+      # app() builds the program folder, then the zip and the installer (build.py make_installer)
+      - name: Build the app and the installer
+        run: |
+          uv run --group build python build.py app
+          if ($LASTEXITCODE -ne 0) { throw "build.py app failed" }
+
+      - name: The version, and the files the build made
+        run: |
+          $version = (Select-String -Path phystrack_qt/version.py -Pattern '__version__ = "([^"]+)"').Matches[0].Groups[1].Value
+          "VERSION=$version" >> $env:GITHUB_ENV
+          Write-Host "Version $version"
+          foreach ($file in "build/PhysTrackX-Setup.exe", "build/dist/PhysTrackX/phystrackx.exe") {
+              if (-not (Test-Path $file)) { throw "missing $file" }
+          }
+
+      # PE header: the subsystem field says whether Windows opens a console for the program (2 = GUI, 3 = console)
+      - name: The program has no console window
+        run: |
+          $bytes = [IO.File]::ReadAllBytes("build/dist/PhysTrackX/phystrackx.exe")
+          $pe = [BitConverter]::ToInt32($bytes, 0x3c)
+          $subsystem = [BitConverter]::ToUInt16($bytes, $pe + 0x5c)
+          if ($subsystem -ne 2) { throw "subsystem is ${subsystem}: 2 (GUI) expected; 3 would open a console window" }
+
+      - name: Install, upgrade, uninstall, reinstall (silent)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = (Resolve-Path build/PhysTrackX-Setup.exe).Path
+          $app = Join-Path $env:LOCALAPPDATA 'Programs\PhysTrackX'
+          $exe = Join-Path $app 'phystrackx.exe'
+          $uninstaller = Join-Path $app 'unins000.exe'
+          $startMenu = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\PhysTrackX.lnk'
+          $desktop = Join-Path ([Environment]::GetFolderPath('Desktop')) 'PhysTrackX.lnk'
+          $log = Join-Path $env:LOCALAPPDATA 'PhysTrackX\Logs\phystrackx.log'
+          $silent = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART')
+
+          function Run-Native([string]$File, [string[]]$Arguments) {
+              $process = Start-Process -FilePath $File -ArgumentList $Arguments -Wait -PassThru
+              if ($process.ExitCode -ne 0) { throw "$File exited with $($process.ExitCode)" }
+          }
+
+          function Uninstall {
+              Run-Native $uninstaller $silent
+              # Inno's uninstaller may hand the work to a copy of itself, so wait for the program to go
+              for ($i = 0; $i -lt 60 -and (Test-Path $exe); $i++) { Start-Sleep -Seconds 1 }
+          }
+
+          function Expect([bool]$condition, [string]$message) {
+              if (-not $condition) { throw $message }
+              Write-Host "  ok: $message"
+          }
+
+          Write-Host "== 1. Install (the desktop icon is ticked by default)"
+          Run-Native $setup $silent
+          Expect (Test-Path $exe) "the program is installed in $app"
+          Expect (Test-Path $startMenu) "a Start menu shortcut is made"
+          Expect (Test-Path $desktop) "a desktop icon is made"
+
+          Write-Host "== 2. The program runs; with no console, its output goes to the log"
+          Remove-Item $log -ErrorAction SilentlyContinue
+          Run-Native $exe @('--version')
+          Expect ((Get-Content $log -Raw) -match ("phystrackx " + [regex]::Escape($env:VERSION))) "the log shows phystrackx $env:VERSION"
+
+          Write-Host "== 3. Install over the existing install (an upgrade)"
+          Run-Native $setup $silent
+          Expect (Test-Path $exe) "the program is still installed after the upgrade"
+          Expect (Test-Path $desktop) "the desktop icon is still there after the upgrade"
+
+          Write-Host "== 4. Uninstall"
+          Uninstall
+          Expect (-not (Test-Path $exe)) "the program is removed"
+          Expect (-not (Test-Path $startMenu)) "the Start menu shortcut is removed"
+          Expect (-not (Test-Path $desktop)) "the desktop icon is removed"
+          Expect (-not (Test-Path $app)) "the install folder is removed"
+
+          Write-Host "== 5. Install with the desktop icon unticked"
+          Run-Native $setup ($silent + '/MERGETASKS=!desktopicon')
+          Expect (Test-Path $exe) "the program is installed"
+          Expect (Test-Path $startMenu) "a Start menu shortcut is made"
+          Expect (-not (Test-Path $desktop)) "no desktop icon is made"
+
+          Write-Host "== 6. Uninstall"
+          Uninstall
+          Expect (-not (Test-Path $app)) "the install folder is removed"
+
+      - name: Keep the installer for a manual try
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhysTrackX-Setup-test
+          path: qt/build/PhysTrackX-Setup.exe
+          if-no-files-found: error

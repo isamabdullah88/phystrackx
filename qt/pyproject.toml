@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "phystrackx"
+dynamic = ["version"]
+description = "Measure motion in a video: track objects and fit the physics."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+# Pinned where the parent app pins them (OpenCV and NumPy must match the parent's media code)
+dependencies = [
+    "PySide6-Essentials>=6.12,<6.13",
+    "opencv-python-headless==4.11.0.86",
+    "numpy==1.26.4",
+    "scipy>=1.16",
+    "matplotlib>=3.10",
+    "colorlog>=6",
+    "imageio-ffmpeg>=0.5",   # Brings ffmpeg, so no system install is needed
+    "platformdirs>=4",
+]
+
+[project.scripts]
+phystrackx = "phystrack_qt.cli:main"
+
+# The same, without a console window: what the Start menu and desktop shortcuts open (Windows)
+[project.gui-scripts]
+phystrackx-gui = "phystrack_qt.cli:main"
+
+# Only for building the app (`uv run --group build python build.py app`)
+[dependency-groups]
+build = ["pyinstaller>=6.11"]
+
+[tool.hatch.version]
+path = "phystrack_qt/version.py"
+
+# The app is this folder plus the parent repo's packages it reuses (read-only), and the small
+# tracking models (the big SAM model is downloaded on first use, as the Tk app does).
+[tool.hatch.build.targets.wheel]
+packages = ["phystrack_qt"]
+exclude = ["**/__pycache__", "**/*.pyc"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"../core" = "core"
+"../media" = "media"
+"../experiments" = "experiments"
+"../filters" = "filters"
+"../models/nanotrack_backbone.onnx" = "models/nanotrack_backbone.onnx"
+"../models/nanotrack_head.onnx" = "models/nanotrack_head.onnx"
+"../models/object_tracking_vittrack_2023sep.onnx" = "models/object_tracking_vittrack_2023sep.onnx"
