@@ -70,10 +70,18 @@ jobs:
         run: uv python install 3.12
 
       # The installers fetch the models themselves; the wheel that installs the command needs them
+      # The models (SAM is ~375 MB): downloaded once, then from the cache
+      - uses: actions/cache@v4
+        with:
+          path: models
+          key: models-${{ hashFiles('experiments/rigid/modelfiles.py') }}
+
+      # --no-app: the command only. Bundling PhysTrackX.app (macOS) takes longer than this job's 5 min;
+      # the release workflow (qt-release.yml) builds and tests the app
       - name: Install (first run)
         working-directory: .
         if: runner.os != 'Windows'
-        run: sh install.sh
+        run: sh install.sh --no-app
 
       - name: Install (first run, Windows)
         working-directory: .
@@ -84,7 +92,7 @@ jobs:
       - name: Install again (replaces the first run)
         working-directory: .
         if: runner.os != 'Windows'
-        run: sh install.sh
+        run: sh install.sh --no-app
 
       - name: Install again (Windows; replaces the first run)
         working-directory: .
@@ -92,18 +100,13 @@ jobs:
         shell: cmd
         run: install.bat
 
-      - name: The command and the app start (no Qt needed for --help and --version)
+      - name: The command starts (no Qt needed for --help and --version)
         run: |
           "$(uv tool dir --bin)/phystrackx" --version
           "$(uv tool dir --bin)/phystrackx" --help
           set +e
           "$(uv tool dir --bin)/phystrackx" no-such-file.mp4
           test $? -eq 2
-          if [ "$(uname -s)" = Darwin ]; then
-            app=/Applications/PhysTrackX.app
-            test -d "$app" || app="$HOME/Applications/PhysTrackX.app"
-            "$app/Contents/MacOS/phystrackx" --version
-          fi
 
       - name: Tests
         env:
