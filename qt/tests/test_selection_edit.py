@@ -50,8 +50,10 @@ def test_move_and_size() -> None:
     w.view.set_tool(TOOL_NONE)
     obj = w.objects[0]
     h.check("the selected object shows its size line and knob", obj.handle.isVisible() and obj.spoke.isVisible())
-    h.check("the knob is on the box's right edge, level with its centre",
-            abs(obj.handle.pos().x() - 140) < 0.5 and abs(obj.handle.pos().y() - 120) < 0.5, str(obj.handle.pos()))
+    # On the right edge, or stepped aside past it when the box is small on screen (this window is small)
+    h.check("the knob is on the box's right edge (or aside, past it), level with its centre",
+            obj._knob_extra >= 0 and abs(obj.handle.pos().x() - (140 + obj._knob_extra)) < 0.5
+            and abs(obj.handle.pos().y() - 120) < 0.5, f"{obj.handle.pos()}, aside {obj._knob_extra:.1f}")
 
     QTest.keyClick(w, Qt.Key.Key_M)
     h.check("M turns Move on", w.move_obj_btn.isChecked() and w.view.tool == TOOL_MOVE)
@@ -59,15 +61,18 @@ def test_move_and_size() -> None:
     moved = (100 + bx - ax, 100 + by - ay, 40, 40)   # By where the mouse landed (whole view pixels)
     h.check("a drag anywhere moves the selected object by the drag",
             all(abs(a - b) < 0.5 for a, b in zip(obj.marked, moved)), f"{obj.marked}; expected {moved}")
-    h.check("...and its knob follows", abs(obj.handle.pos().x() - (moved[0] + 40)) < 1.0, str(obj.handle.pos()))
+    h.check("...and its knob follows", abs(obj.handle.pos().x() - (moved[0] + 40 + obj._knob_extra)) < 1.0,
+            str(obj.handle.pos()))
     QTest.keyClick(w, Qt.Key.Key_Escape)
     h.check("Escape ends Move", not w.move_obj_btn.isChecked() and w.view.tool == TOOL_NONE)
 
     # The knob: dragged out from the centre, the box grows about its centre
     cx, cy = obj.marked[0] + 20, obj.marked[1] + 20
-    _, (bx, by) = drag(w.view, (cx + 20, cy), (cx + 30, cy))
+    kx, aside = obj.handle.pos().x(), obj._knob_extra   # Grabbed where it is (aside from a small box)
+    _, (bx, by) = drag(w.view, (kx, cy), (kx + 10, cy))
     x, y, bw, bh = obj.marked
-    reach = 2 * math.hypot(bx - cx, by - cy)   # The knob goes where the mouse let go (in whole view pixels)
+    # The knob goes where the mouse let go (in whole view pixels); the box's edge stays `aside` short of it
+    reach = 2 * (math.hypot(bx - cx, by - cy) - aside)
     h.check("dragging the knob out grows the box about its centre",
             abs(bw - reach) < 0.5 and abs(bw - 60) < 4 and bw == bh
             and abs(x + bw / 2 - cx) < 1e-6 and abs(y + bh / 2 - cy) < 1e-6, f"{obj.marked}; to {reach:.2f}")

@@ -248,6 +248,7 @@ class MainWindow(QMainWindow):
         self.view.box_drawn.connect(self._add_object)
         self.view.dragged.connect(self._move_drag)
         self.view.zoom_changed.connect(lambda z: self.zoom_label.setText(f"zoom {z:.2f}x"))
+        self.view.zoom_changed.connect(self._replace_knobs)   # A knob steps aside when its box is small on screen
 
         # Seek bar, frame number, and the trim row (shown while trimming)
         self.seek = QSlider(Qt.Orientation.Horizontal)
@@ -1723,6 +1724,11 @@ class MainWindow(QMainWindow):
             obj.remove()
         self.objects.clear()
         self._after_objects_change("All objects removed")
+
+    def _replace_knobs(self, _zoom=None) -> None:
+        for obj in self.objects:
+            if getattr(obj, "_handle_on", False):
+                obj.show_handle(True)
 
     def _after_objects_change(self, message: str) -> None:
         self._refresh_objects()

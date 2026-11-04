@@ -97,27 +97,28 @@ def test_drag_selected_object() -> None:
     w.load_video(make_clip())
     h.pump(lambda: w.source.has_proxy, 60)
     w.start_mark()
-    # A box big enough to grab on screen in a small window (the Windows runner's: about 4 frame pixels a
-    # view pixel), where the size knob, 12 view pixels, would cover a 40-pixel box; the test makes the
-    # window that small on every system
-    w._add_object(QRectF(100, 100, 120, 120))
+    # A small window (as the Windows runner's: about 4 frame pixels a view pixel), where the 40-pixel box
+    # is about 9 view pixels across: the size knob (12) steps aside, so the box can still be dragged
+    w._add_object(QRectF(100, 100, 40, 40))
     w._add_object(QRectF(300, 200, 40, 40))
     w.view.set_tool(TOOL_NONE)
     first, second = w.objects
     w.resize(500, 350)
     h.pump(lambda: False, 0.5)
 
-    drag(w.view, (130, 130), (170, 150))  # Not selected: the drag must not move it
-    h.check("an unselected object does not move", first.marked == (100, 100, 120, 120), str(first.marked))
+    drag(w.view, (120, 120), (160, 140))  # Not selected: the drag must not move it
+    h.check("an unselected object does not move", first.marked == (100, 100, 40, 40), str(first.marked))
 
     w.object_list.setCurrentRow(0)
     h.check("the selected object is the one that can be dragged",
             first.rect.flags() & first.rect.GraphicsItemFlag.ItemIsMovable and not
             second.rect.flags() & second.rect.GraphicsItemFlag.ItemIsMovable)
-    (ax, ay), (bx, by) = drag(w.view, (130, 130), (170, 150))   # Inside the box, away from the knob
+    knob = first.handle.pos().x()
+    h.check("the size knob steps aside from a box that is small on screen", knob > 140 + 1, f"knob at x {knob:.1f}")
+    (ax, ay), (bx, by) = drag(w.view, (120, 120), (160, 140))
     x, y, bw, bh = first.marked
     h.check("dragging the selected object moves its box (before tracking)",   # By where the mouse landed
-            abs(x - (100 + bx - ax)) < 0.5 and abs(y - (100 + by - ay)) < 0.5 and bw == 120 and bh == 120,
+            abs(x - (100 + bx - ax)) < 0.5 and abs(y - (100 + by - ay)) < 0.5 and bw == 40 and bh == 40,
             f"{first.marked}; mouse {ax:.1f},{ay:.1f} -> {bx:.1f},{by:.1f}")
     h.check("and the other object stays put", second.marked == (300, 200, 40, 40), str(second.marked))
     h.check("moving it marks the project as changed", w._dirty)

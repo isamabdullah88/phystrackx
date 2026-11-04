@@ -69,6 +69,9 @@ class OutlineItem(QGraphicsRectItem):
             painter.drawPath(path)
 
 
+KNOB_REACH = 24   # Screen pixels: the knob is at least this far from the box's centre (stepped aside)
+
+
 class SizeHandle(QGraphicsEllipseItem):
     """The knob at the end of a selected object's size line (from its centre to its right edge):
     dragging it grows or shrinks the object about its centre. The same size on screen at any zoom."""
@@ -85,13 +88,17 @@ class SizeHandle(QGraphicsEllipseItem):
     def _point(self, event) -> QPointF:
         return self.parentItem().mapFromScene(event.scenePos())
 
+    dragging = False   # While held, the knob's place is the mouse's, not recomputed (_place_handle)
+
     def mousePressEvent(self, event) -> None:
+        self.dragging = True
         event.accept()
 
     def mouseMoveEvent(self, event) -> None:
         self.on_drag(self._point(event), False)
 
     def mouseReleaseEvent(self, event) -> None:
+        self.dragging = False
         self.on_drag(self._point(event), True)
 
 
@@ -141,6 +148,7 @@ class TrackedObject:
         self.spoke.setPen(_pen(self.color, 1.5, Qt.PenStyle.DashLine))
         self.spoke.setZValue(3)
         self.handle = SizeHandle(picture, self._resize_to)
+        self._knob_extra = 0.0   # Frame pixels the knob sits past the box's right edge (_place_handle)
         self.handle.setBrush(QColor("white"))
         self.handle.setPen(_pen(self.color, 2.5))
         self.handle.setZValue(4)
@@ -166,10 +174,22 @@ class TrackedObject:
             self._place_handle()
 
     def _place_handle(self) -> None:
+        """The knob on the box's right edge; or, when the box is small on screen (the knob would cover
+        it, and a drag meant to move the box would resize it), stepped aside to KNOB_REACH screen
+        pixels from the centre, outside the box. `_knob_extra` (frame pixels past the edge) is kept for
+        the drag, so the box does not jump when the knob is grabbed."""
         r = self.rect.rect().translated(self.rect.pos())
         c = r.center()
-        self.spoke.setLine(c.x(), c.y(), r.right(), c.y())
-        self.handle.setPos(r.right(), c.y())
+        if not self.handle.dragging:
+            per_view_px = 1.0
+            views = self.rect.scene().views() if self.rect.scene() else []
+            if views:
+                scale = views[0].transform().m11() * self.rect.sceneTransform().m11()
+                per_view_px = 1.0 / scale if scale > 0 else 1.0
+            self._knob_extra = max(0.0, c.x() + KNOB_REACH * per_view_px - r.right())
+        x = r.right() + self._knob_extra
+        self.spoke.setLine(c.x(), c.y(), x, c.y())
+        self.handle.setPos(x, c.y())
 
     def _resize_to(self, point: QPointF, done: bool) -> None:
         """The knob was dragged to `point`: the box keeps its centre and shape, and its half-width
@@ -183,7 +203,8 @@ class TrackedObject:
         r = self.rect.rect()
         c = r.center()
         half = r.width() / 2
-        new_half = half + pixels if point is None else math.hypot(point.x() - c.x(), point.y() - c.y())
+        new_half = half + pixels if point is None else \
+            math.hypot(point.x() - c.x(), point.y() - c.y()) - self._knob_extra   # The knob may sit aside
         k = max(2.0, new_half) / max(half, 1e-6)
         box = QRectF(c.x() - r.width() * k / 2, c.y() - r.height() * k / 2, r.width() * k, r.height() * k)
         self.rect.setRect(box)
