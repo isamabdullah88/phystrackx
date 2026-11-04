@@ -51,6 +51,7 @@ jobs:
     env:
       PHYSTRACK_NO_PAUSE: "1"   # install.bat and uninstall.bat do not wait for a key press here
       PHYSTRACK_TEST_TIMEOUT: "120"   # s: one test file (the job has 5 min in all)
+      PHYSTRACK_TEST_JOBS: "4"        # Test files at once: the runners have 4 CPUs (half, the default, is too slow on macOS)
     steps:
       - uses: actions/checkout@v4
 
