@@ -37,6 +37,8 @@ goto :after_command
 echo not installed with uv
 
 :after_command
+echo == Start menu entry and desktop icon
+powershell -NoProfile -Command "foreach ($d in @([Environment]::GetFolderPath('Programs'), [Environment]::GetFolderPath('Desktop'))) { $f = Join-Path $d 'PhysTrackX.lnk'; if (Test-Path -LiteralPath $f) { Remove-Item -LiteralPath $f; Write-Output ('removed ' + $f) } }"
 if not defined PURGE goto :done
 
 echo == Cache, recent projects and build environments

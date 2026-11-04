@@ -23,6 +23,10 @@ dependencies = [
 [project.scripts]
 phystrackx = "phystrack_qt.cli:main"
 
+# The same, without a console window: what the Start menu and desktop shortcuts open (Windows)
+[project.gui-scripts]
+phystrackx-gui = "phystrack_qt.cli:main"
+
 # Only for building the app (`uv run --group build python build.py app`)
 [dependency-groups]
 build = ["pyinstaller>=6.11"]

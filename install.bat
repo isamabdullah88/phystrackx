@@ -42,6 +42,12 @@ uv tool install --python 3.12 --force --constraints build\constraints.txt .
 if errorlevel 1 goto :fail
 
 for /f "delims=" %%B in ('uv tool dir --bin') do set "BIN=%%B"
+
+echo == Start menu entry and desktop icon
+if not exist "%LOCALAPPDATA%\PhysTrackX" mkdir "%LOCALAPPDATA%\PhysTrackX"
+copy /y "%~dp0assets\icon.ico" "%LOCALAPPDATA%\PhysTrackX\icon.ico" >nul
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$s = New-Object -ComObject WScript.Shell; foreach ($d in @([Environment]::GetFolderPath('Programs'), [Environment]::GetFolderPath('Desktop'))) { $l = $s.CreateShortcut((Join-Path $d 'PhysTrackX.lnk')); $l.TargetPath = Join-Path $env:BIN 'phystrackx-gui.exe'; $l.IconLocation = Join-Path $env:LOCALAPPDATA 'PhysTrackX\icon.ico'; $l.WorkingDirectory = $env:USERPROFILE; $l.Save(); Write-Output ('  ' + $l.FullName) }"
+if errorlevel 1 echo Could not make the shortcuts; run phystrackx from a terminal instead.
 echo == Done
 "%BIN%\phystrackx.exe" --version
 echo If phystrackx is not found in a new terminal, add %BIN% to your PATH.

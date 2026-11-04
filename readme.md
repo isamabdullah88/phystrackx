@@ -1,5 +1,57 @@
 # PhysTrackX
 
+Measure motion in a video: track a ball, plot it, and fit the physics.
+
+## Quick start
+
+### 1. Install
+
+**Windows**
+1. Download the code: on https://github.com/xoth42/phystrackx click **Code > Download ZIP**, and unzip it
+   (or `git clone https://github.com/xoth42/phystrackx`).
+2. Open the folder and double-click **`install.bat`**. It installs everything it needs (uv, Python and the
+   libraries) and takes a few minutes the first time.
+3. When it says **Done**, start PhysTrackX from the **desktop icon** or the **Start menu**.
+
+   (Alternative: [PhysTrackX-Setup.exe](https://github.com/xoth42/phystrackx/releases/latest/download/PhysTrackX-Setup.exe),
+   a normal installer. If Windows says "Windows protected your PC", choose More info, then Run anyway.)
+
+**macOS**
+1. Download or clone the code as above.
+2. In Terminal, in that folder: `sh install.sh`
+3. Open **PhysTrackX** from Applications (or run `phystrackx` in a terminal).
+
+**Linux**
+1. Download or clone the code as above.
+2. In a terminal, in that folder: `sh install.sh`
+3. Run `phystrackx`.
+
+### 2. Measure a video
+
+1. **Open Video…** and pick your video (or **Open Project…** for a saved .phystrack).
+2. **Trim** to the part you want (from just before the motion starts).
+3. **Place Ruler** (or **Auto Ruler**): put it along something of known length, type the length, **Apply Ruler**.
+4. **Place Axis** (or **Auto Axis**): put the origin where you measure from (e.g. the bottom of the tube).
+5. **Mark Circle** (for a ball) or **Mark Rectangle**: draw it around the object.
+6. **Track.** Check the path; fix a frame by dragging the box, then Track again.
+7. **Plots:** choose what to plot (e.g. r against t) and a fit model; the fit gives the period.
+8. **Save Project** (.phystrack), and **Export Data (CSV)…** for the numbers.
+
+### 3. Update or uninstall
+
+- Update: download the code again (or `git pull`) and rerun `install.bat` / `install.sh`.
+- Uninstall: run `uninstall.bat` (Windows) or `sh uninstall.sh` (macOS/Linux). Your videos and projects are kept.
+
+More detail on the app: [qt/README.md](qt/README.md).
+
+---
+
+# Old README (TODO: clean up)
+
+Below is the original README, from the older Tk app. Parts of it are out of date.
+
+## PhysTrackX (original)
+
 ## 🎓 Purpose
 
 PhysTrackX is developed to assist students in understanding physics concepts through visualization and data analysis. It encourages curiosity, supports hands-on learning, and bridges theoretical concepts with practical application.
