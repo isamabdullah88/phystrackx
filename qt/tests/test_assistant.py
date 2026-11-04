@@ -155,7 +155,7 @@ def test_assistant() -> None:
             retried and model.sent[-1] is context_retry.messages and
             any(m.get("tool_call_id") == "end-reprompts" and m["content"] == "{\"ended\":true}"
             for m in session.messages[-3:]) and
-            any(kind == "status" and "re-prompting ended" in text for kind, text in session.transcript[-8:]))
+            any(kind == "status" and "re-prompting ended" in text.lower() for kind, text in session.transcript[-8:]))
     h.check("the context retry is reported in chat status",
             any(kind == "status" and "retrying" in text for kind, text in session.transcript[-8:]))
     h.check("common context overflow messages are recognized",

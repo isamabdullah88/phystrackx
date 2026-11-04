@@ -115,7 +115,7 @@ def test_tools() -> None:
     r = call("set_object_selection", {"n": 1, "box": corrected_box, "frame": 5})
     h.check("the agent can select and correct an object's tracking box",
             r.get("ok", {}).get("selected") == 1 and r["ok"].get("marked_frame") == 5 and
-            all(abs(a - b) < 1e-6 for a, b in zip(r["ok"].get("box", []), corrected_box)), str(r))
+            all(abs(a - b) <= 0.05 + 1e-9 for a, b in zip(r["ok"].get("box", []), corrected_box)), str(r))   # Boxes come back rounded to 0.1 px
     h.check("corrected selection is marked for retracking",
             src.objects[0].changed and src._selected_object() is src.objects[0], str(r))
     r = call("quick_look", {"n": 1, "frame": 5})

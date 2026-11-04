@@ -69,7 +69,7 @@ SPECS = {
                               "then call track to track again from the corrected selection.",
                               {"n": "int", "box": "box?", "frame": "int?"}, ""),
     "remove": ("Remove object n.", {"n": "int"}, ""),
-    "delete_points": ("Delete object n's tracked points on frames start..end (inclusive; end defaults to start), e.g. where the ball is hidden by the stopper. They become gaps that plots, fits and exports skip. Undo with revert.", {"n": "int", "start": "int", "end": "int?"}, ""),
+    "delete_points": ("Drop object n's points on frames start..end (e.g. ball hidden); fits skip them.", {"n": "int", "start": "int", "end": "int?"}, ""),
     "seek": ("Show frame n.", {"n": "int"}, ""),
     "track": ("Track every object from its marked frame to the trim's end; waits. method: "
               + ", ".join(METHODS) + " (default: the one the objects were tracked with, else offline).",
