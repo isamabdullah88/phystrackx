@@ -90,6 +90,18 @@ def serve(port: int, models: list) -> http.server.ThreadingHTTPServer:
     return httpd
 
 
+
+# Every session and panel a test makes stays referenced to the end: dropped, they are garbage in
+# reference cycles, and Python's cycle collector can run on any thread (here the runner's status
+# poller), which would destroy Qt objects off the Qt thread and crash
+KEEP: list = []
+
+
+def settle(session) -> None:
+    """Waits for the request to end, and keeps the session alive (see KEEP)."""
+    KEEP.append(session)
+    h.pump(lambda: session.state == "idle", 30)
+
 def test_status_is_what_the_endpoint_says() -> None:
     # Nothing answers at a custom URL: down, not ready, and quickly (no wait for a server)
     url = f"http://127.0.0.1:{free_port()}/v1"
@@ -125,6 +137,7 @@ def test_status_is_what_the_endpoint_says() -> None:
     try:
         session = AgentSession(llm=OllamaLike(url=f"http://127.0.0.1:{free_port()}/v1", model=MODEL))
         panel = ChatPanel(session)
+        KEEP.extend((session, panel))
         session.runner.check()
         h.check("the dock says so when Ollama is missing, and does not say ready",
                 panel.state_label.text() == "Ollama not installed", panel.state_label.text())
@@ -211,14 +224,14 @@ def test_the_user_says_yes_before_an_install() -> None:
         h.check("before anything is installed, the dock asks", h.pump(lambda: session.state == "waiting", 30))
         h.check("the question offers y and n", session.transcript[-1][0] == "ask" and "y or n" in session.transcript[-1][1])
         session.send("n")
-        h.pump(lambda: session.state == "idle", 30)
+        settle(session)
         h.check("n: nothing is installed, and the request says why",
                 installs == [] and "cannot answer without it" in session.transcript[-1][1], str(session.transcript[-1]))
 
         session.send("What is the period?")
         h.pump(lambda: session.state == "waiting", 30)
         session.send("y")
-        h.pump(lambda: session.state == "idle", 30)
+        settle(session)
         h.check("y: the install runs, and its failure is reported",
                 installs == [1] and session.transcript[-1] == ("error", "installing Ollama failed: test"),
                 str(session.transcript[-2:]))
@@ -233,7 +246,7 @@ def test_linux_shows_the_command_instead() -> None:
     try:
         session = AgentSession(llm=OllamaLike(url=f"http://127.0.0.1:{free_port()}/v1", model=MODEL))
         session.send("What is the period?")
-        h.pump(lambda: session.state == "idle", 30)
+        settle(session)
         h.check("on Linux nothing is asked, and the error carries the install command",
                 session.transcript[-1] == ("error", f"install Ollama in a terminal, then ask again: {runner_mod.LINUX_INSTALL}"),
                 str(session.transcript[-1:]))
