@@ -35,15 +35,20 @@ permissions:
 
 jobs:
   test:
-    name: Test (${{ matrix.os }})
+    name: Test (${{ matrix.os }}${{ matrix.shard != '1/1' && format(', part {0}', matrix.shard) || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5    # Usually 2-3 min; a hung test file is stopped after 2 min (PHYSTRACK_TEST_TIMEOUT below)
     strategy:
       fail-fast: false
       matrix:
         # macOS on Intel: the arm64 (macos-latest) runners were often not available, and the job was
-        # cancelled after 15 min in the queue without starting
-        os: [ubuntu-latest, macos-15-intel, windows-latest]
+        # cancelled after 15 min in the queue without starting. The Intel runner is slow, so its test
+        # files are split over two jobs (shard k/n: build.py test runs every n-th file), each under 5 min
+        include:
+          - {os: ubuntu-latest, shard: "1/1"}
+          - {os: windows-latest, shard: "1/1"}
+          - {os: macos-15-intel, shard: "1/2"}
+          - {os: macos-15-intel, shard: "2/2"}
     defaults:
       run:
         shell: bash
@@ -51,7 +56,7 @@ jobs:
     env:
       PHYSTRACK_NO_PAUSE: "1"   # install.bat and uninstall.bat do not wait for a key press here
       PHYSTRACK_TEST_TIMEOUT: "120"   # s: one test file (the job has 5 min in all)
-      PHYSTRACK_TEST_JOBS: "4"        # Test files at once: the runners have 4 CPUs (half, the default, is too slow on macOS)
+      PHYSTRACK_TEST_SHARD: ${{ matrix.shard }}
     steps:
       - uses: actions/checkout@v4
 
@@ -128,7 +133,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: perf-${{ runner.os }}
+          name: perf-${{ runner.os }}${{ matrix.shard != '1/1' && format('-{0}', strategy.job-index) || '' }}
           path: perf/perf-${{ runner.os }}.json
           if-no-files-found: ignore
           retention-days: 90

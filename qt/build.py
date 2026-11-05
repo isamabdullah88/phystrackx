@@ -108,6 +108,9 @@ def test(jobs: int | None = None) -> int:
     jobs = jobs or int(os.environ.get("PHYSTRACK_TEST_JOBS") or 0) or max(1, (os.cpu_count() or 2) // 2)
     work = os.path.join(tempfile.gettempdir(), "phystrack_qt_tests")
     scripts = sorted(glob.glob(os.path.join(QT, "tests", "test_*.py")))
+    shard = os.environ.get("PHYSTRACK_TEST_SHARD", "1/1")   # "k/n": every n-th file from the k-th (CI splits a slow OS)
+    k, n = (int(x) for x in shard.split("/"))
+    scripts = scripts[k - 1::n]
     timeout = float(os.environ.get("PHYSTRACK_TEST_TIMEOUT") or TEST_TIMEOUT)
     failed = []
 
